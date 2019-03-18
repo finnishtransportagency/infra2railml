@@ -6,7 +6,7 @@ module.exports = {
     return trackService.fetchTrack(trackNumber, from, length);    
   },
   convertTrack: (track) => {
-    console.info("Converting to railML v2.2..");
+    console.info('Converting to railML..\n', JSON.stringify(track, null, 2));
     return Promise.resolve("<railml/>");
   }
 };

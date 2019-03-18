@@ -7,11 +7,11 @@ Converts selected data sets from https://rata.digitraffic.fi/infra-api/0.3 to ra
 - Node.js v10.15.3
 - NPM v6.4.1
 
-# Installation
+## Setup
 
-- `$ git clone ...`
+- `$ git clone <repository>`
 - `$ npm install && npm link`
-- `$ infra2railml [command] <options>`
+- `$ infra2railml --help`
 
 ## Usage
 

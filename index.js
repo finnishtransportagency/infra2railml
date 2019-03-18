@@ -1,5 +1,12 @@
+const trackService = require('./services/track-service');
+
 module.exports = {
-  convertTrack: (trackNumber, from, to) => {
-    console.log(`converting track ${trackNumber} kilometers ${from} to ${to}.`);
+  fetchTrack: (trackNumber, from, length) => {    
+    console.info(`Loading track ${trackNumber} [${from}..${from+length} km] ..`);
+    return trackService.fetchTrack(trackNumber, from, length);    
+  },
+  convertTrack: (track) => {
+    console.info("Converting to railML v2.2..");
+    return Promise.resolve("<railml/>");
   }
 };

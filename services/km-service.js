@@ -21,7 +21,7 @@ function fetchKm(id) {
             return res.data;
         })
         .catch((err) => {
-            console.error(`Error: ${err.messsage}`);
+            console.error(`${err.message}: ${url}`);
             return {};
         });
 }

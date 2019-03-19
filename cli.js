@@ -1,3 +1,4 @@
+const fs = require('fs');
 const cmd = require('commander');
 const app = require('./index');
 const { version } = require('./package.json');
@@ -24,16 +25,15 @@ function track(trackId, args) {
 
   const { from, to, length } = args;
   const kilometers = !!to ? to-from : (length || 0);
-  
+  const filename = `./track-${trackId}_${from}-${from+kilometers}`;
+
   app.fetchTrack(trackId, from, kilometers)
-    .then(app.convertTrack)
-    .then((railml) => {
-      writeToFile(railml, `Track-${trackId}_${from}-${from+kilometers}.railml`);
-    }).then((res) => {
-      console.info("Done.");
-    });
+    .then((track) => app.convertTrack(trackId, from, from+kilometers, track))
+    .then((railml) => writeToFile(`${filename}.railml.xml`, railml))
 };
 
-function writeToFile(data, filename) {
-  console.log(`Writing \"${data}\" to ${filename} ..`);
+function writeToFile(filename, data) {
+  console.log(`Writing ${filename} ..`);
+  const f = fs.writeFile(filename, data, 'utf8', () => console.log("Done."));
+  return data;
 }

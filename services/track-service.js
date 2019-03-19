@@ -6,7 +6,7 @@ const elementService = require('./element-service');
 
 
 const TRACK_PROPERTIES = [
-    'ratanumero', 'ratakm', 'kilometrimerkki', 'elementit' //, 'toimialueet'
+    'ratanumero', 'ratakm', 'pituus', 'paalu', 'kilometrimerkki', 'elementit' //, 'toimialueet'
 ];
 
 /**
@@ -38,7 +38,7 @@ function fetchKilometer(url) {
 
     return axios.get(url, options)
       .then((res) => {
-          console.info(`GET ${url} (${res.status})`);
+          console.info(`${res.status}: ${url}`);
           return res.data;
       })
       .then((trackKm) => {
@@ -48,18 +48,16 @@ function fetchKilometer(url) {
           });
       })
       .then((trackKm) => {
-          console.log(trackKm);
           return Promise.all(_.map(trackKm.elementit, elementService.fetchElement))
             .then((elements) => {
-                console.info(elements);
                 trackKm.elementit = elements; // TODO filter by type
                 return trackKm;
             });
       })
       .catch((err) => {
-          console.error(`GET ${url} (${err.message})`);
+          console.error(`${err.message}: ${url}`);
           process.exit(err.status);
-      });    
+      });
 
 }
 

@@ -14,27 +14,26 @@ const XML_NAMESPACES = {
     'xsi:schemaLocation': 'http://www.railml.org/schemas/2013 http://schemas.railml.org/2013/railML-2.2/railML.xsd'
 };
 
-const RAILML_STUB = '<?xml version="1.0" encoding="UTF-8"?><railml><infrastructure><tracks/></infrastructure></railml>';
+const RAILML_STUB =
+    '<?xml version="1.0" encoding="UTF-8"?><railml><infrastructure><tracks/></infrastructure></railml>';
 
-const cheerioOpts = {
-    xmlMode: true,
-    normalizeWhitespace: true
-};
+const cheerioOpts = { xmlMode: true, normalizeWhitespace: true };
 
 /**
  * Convert given track kilometers in railML.
  */
 function _convert(trackId, from, to, track) {
 
-    const $ = cheerio.load(RAILML_STUB, cheerioOpts);
+    const $ = cheerio.load(RAILML_STUB, { xmlMode: true, normalizeWhitespace: true });
     _.each(XML_NAMESPACES, (val, key) => $('railml').attr(key, val));
 
     const infra = $('railml > infrastructure');
     infra.attr('id', `${trackId}_${from}-${to}`);
     infra.attr('name', `Rata ${trackId} (${from}-${to} km)`)
 
-    const kilometers = _.map(track, _createKilometer);
-    $('railml > infrastructure > tracks').append(kilometers);
+    const accumulator = { absPos: from * 1000, kilometers: [] };
+    const result = _.transform(track, _createKilometer, accumulator);
+    $('railml > infrastructure > tracks').append(result.kilometers);
 
     return Promise.resolve($.html());
 }
@@ -42,27 +41,31 @@ function _convert(trackId, from, to, track) {
 /**
  * Convert one track kilometer to railML.
  */
-function _createKilometer(km, index) {
+function _createKilometer(result, km) {
     
     const $ = cheerio.load(`<track id="${km.ratanumero}-${km.ratakm}"><trackTopology/><trackElements/><ocsElements/></track>`, cheerioOpts);
 
     const topology = $('trackTopology');
-    topology.append(`<trackBegin id="x${km.ratakm}" pos="0.0000" absPos="${km.ratakm*1000}" />`);
-    topology.append(`<trackEnd id="y${km.ratakm}" pos="${km.pituus}" absPos="${(km.ratakm*1000)+km.pituus}" />`);
+    topology.append(`<trackBegin id="x${km.ratakm}" pos="0.0000" absPos="${result.absPos}" />`);
+    topology.append(`<trackEnd id="y${km.ratakm}" pos="${km.pituus}" absPos="${result.absPos + km.pituus}" />`);
     topology.append('<connections/>');
-    
-    const switches = _.map(getElements(km.elementit, 'vaihde'), (v) => switchMarshaller.marshall(km.ratanumero, v));
+
+    const switches = _.map(getElements(km.elementit, 'vaihde'), (v) => switchMarshaller.marshall(km.ratanumero, result.absPos, v));
     $('trackTopology > connections').append(switches);
 
-    const signals = _.map(getElements(km.elementit, 'opastin'), (s) => signalMarshaller.marshall(km.ratanumero, s));
+    const signals = _.map(getElements(km.elementit, 'opastin'), (s) => signalMarshaller.marshall(km.ratanumero, result.absPos, s));
     $('ocsElements').append('<signals/>')
     $('ocsElements > signals').append(signals);
 
-    const balices = _.map(getElements(km.elementit, 'baliisi'), (b) => baliseMarshaller.marshall(km.ratanumero, b));
+    const balices = _.map(getElements(km.elementit, 'baliisi'), (b) => baliseMarshaller.marshall(km.ratanumero, result.absPos, b));
     $('ocsElements').append('<balises/>')
     $('ocsElements > balises').append(balices);
 
-    return $.html();
+    // accumulate absolute position and railMLs
+    result.absPos += km.pituus;
+    result.kilometers.push($.html());
+
+    return result;
 }
 
 function getElements(elements, type) {

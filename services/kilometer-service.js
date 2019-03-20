@@ -2,16 +2,13 @@ const _ = require('lodash');
 const axios = require('axios');
 const c = require('../config.js');
 
-const KM_POLE_PROPERTIES = [ 'tunniste', 'geometria', ]
-
-function fetchKm(id) {
+function findById(id) {
     
     const url = `${c.BASE_URL}/kilometrimerkit/${id}.json`;
     
     const options = {
         params: {
-            srsName: 'crs:84',
-            propertyName: _.join(KM_POLE_PROPERTIES, ',')
+            srsName: 'crs:84'
         },
         transformResponse: (data) => _.first(JSON.parse(data))
     };
@@ -27,5 +24,5 @@ function fetchKm(id) {
 }
 
 module.exports = {
-    fetchKm
-}
+    findById
+};

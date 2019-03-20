@@ -27,7 +27,7 @@ function track(trackId, args) {
   const kilometers = !!to ? to-from : (length || 0);
   const filename = `./track-${trackId}_${from}-${from+kilometers}`;
 
-  app.fetchTrack(trackId, from, kilometers)
+  app.getTrack(trackId, from, kilometers)
     .then((track) => app.convertTrack(trackId, from, from+kilometers, track))
     .then((railml) => writeToFile(`${filename}.railml.xml`, railml))
 };

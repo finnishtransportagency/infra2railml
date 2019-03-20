@@ -2,17 +2,17 @@ const _ = require('lodash');
 const axios = require('axios');
 const c = require('../config.js');
 
-//const ELEMENT_PROPERTIES = [ 'tunniste', 'tyyppi', 'geometria', ]
 
-function fetchElement(id) {
+/**
+ * Find track element by ID.
+ */
+function findById(id) {
     
-
     const url = `${c.BASE_URL}/elementit/${id}.json`;
     
     const options = {
         params: {
-            srsName: 'crs:84',
-            //propertyName: _.join(ELEMENT_PROPERTIES, ',')
+            srsName: 'crs:84'
         },
         transformResponse: (data) => _.first(JSON.parse(data))
     };
@@ -26,5 +26,5 @@ function fetchElement(id) {
 }
 
 module.exports = {
-    fetchElement
+    findById
 }

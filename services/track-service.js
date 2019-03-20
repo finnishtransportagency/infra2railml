@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const axios = require('axios');
 const c = require('../config.js');
-const kmService = require('./km-service');
+const kilometerService = require('./kilometer-service');
 const elementService = require('./element-service');
 
 
@@ -16,17 +16,17 @@ const TRACK_PROPERTIES = [
  * @param {*} from First track kilometer to fetch
  * @param {*} length Number of following kilometers to fetch
  */
-function fetchTrack(trackId, from, length) {
+function getTrack(trackId, from, length) {
     return Promise.all(_.times(length+1, (i) => {
         const url = `${c.BASE_URL}/radat/${trackId}/${from + i}.json`;
-        return fetchKilometer(url);
+        return _fetchKilometer(url);
     }));
 }
 
 /**
  * Fetch single track kilometer.
  */
-function fetchKilometer(url) {
+function _fetchKilometer(url) {
 
     const options = {
         params: {
@@ -41,17 +41,17 @@ function fetchKilometer(url) {
           console.info(`${res.status}: ${url}`);
           return res.data;
       })
-      .then((trackKm) => {
-          return kmService.fetchKm(trackKm.kilometrimerkki).then((mark) => {
-             trackKm.kilometrimerkki = mark;
-             return trackKm; 
+      .then((kilometer) => {
+          return kilometerService.findById(kilometer.kilometrimerkki).then((mark) => {
+             kilometer.kilometrimerkki = mark;
+             return kilometer; 
           });
       })
-      .then((trackKm) => {
-          return Promise.all(_.map(trackKm.elementit, elementService.fetchElement))
+      .then((kilometer) => {
+          return Promise.all(_.map(kilometer.elementit, elementService.fetchElement))
             .then((elements) => {
-                trackKm.elementit = elements; // TODO filter by type
-                return trackKm;
+                kilometer.elementit = elements;
+                return kilometer;
             });
       })
       .catch((err) => {
@@ -62,5 +62,5 @@ function fetchKilometer(url) {
 }
 
 module.exports = {
-    fetchTrack
+    getTrack
 };

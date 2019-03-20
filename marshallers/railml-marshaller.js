@@ -43,11 +43,12 @@ function _convert(trackId, from, to, track) {
  */
 function _createKilometer(result, km) {
     
-    const $ = cheerio.load(`<track id="${km.ratanumero}-${km.ratakm}"><trackTopology/><trackElements/><ocsElements/></track>`, cheerioOpts);
+    const $ = cheerio.load(`<track id="${km.kilometrimerkki.tunniste}" name="${km.ratanumero} - ${km.ratakm}"><trackTopology/><trackElements/><ocsElements/></track>`, cheerioOpts);
 
     const topology = $('trackTopology');
-    topology.append(`<trackBegin id="x${km.ratakm}" pos="0.0000" absPos="${result.absPos}" />`);
-    topology.append(`<trackEnd id="y${km.ratakm}" pos="${km.pituus}" absPos="${result.absPos + km.pituus}" />`);
+
+    topology.append(`<trackBegin id="tb_${km.ratakm}" pos="0.0000" absPos="${result.absPos}"><connection id="tbc_${km.ratakm}" ref="${result.previousKm || ''}"/></trackBegin>`);
+    topology.append(`<trackEnd id="te_${km.ratakm}" pos="${km.pituus}" absPos="${result.absPos + km.pituus}"><connection id="tec_${km.ratakm}" ref="tbc_${km.ratakm + 1}" />`);
     topology.append('<connections/>');
 
     const switches = _.map(getElements(km.elementit, 'vaihde'), (v) => switchMarshaller.marshall(km.ratanumero, result.absPos, v));
@@ -61,8 +62,9 @@ function _createKilometer(result, km) {
     $('ocsElements').append('<balises/>')
     $('ocsElements > balises').append(balices);
 
-    // accumulate absolute position and railMLs
+    // accumulate results
     result.absPos += km.pituus;
+    result.previousKm = `tec_${km.ratakm}`;
     result.kilometers.push($.html());
 
     return result;

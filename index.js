@@ -9,7 +9,7 @@ module.exports = {
   },
 
   convertTrack: (trackId, from, to, track) => {
-    console.info('Converting to railML ..');
+    console.info('Generating railML..');
     return railml.convert(trackId, from, to, track);
   }
 };

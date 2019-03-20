@@ -9,11 +9,9 @@ const c = require('../config.js');
 function findById(id) {
     
     const url = `${c.BASE_URL}/elementit/${id}.json`;
-    
+
     const options = {
-        params: {
-            srsName: 'crs:84'
-        },
+        params: { srsName: 'crs:84' },
         transformResponse: (data) => _.first(JSON.parse(data))
     };
 

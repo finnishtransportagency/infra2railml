@@ -17,7 +17,7 @@ const TRACK_PROPERTIES = [
  * @param {*} length Number of following kilometers to fetch
  */
 function getTrack(trackId, from, length) {
-    return Promise.all(_.times(length+1, (i) => {
+    return Promise.all(_.times(length + 1, (i) => {
         const url = `${c.BASE_URL}/radat/${trackId}/${from + i}.json`;
         return _fetchKilometer(url);
     }));
@@ -48,7 +48,7 @@ function _fetchKilometer(url) {
           });
       })
       .then((kilometer) => {
-          return Promise.all(_.map(kilometer.elementit, elementService.fetchElement))
+          return Promise.all(_.map(kilometer.elementit, elementService.findById))
             .then((elements) => {
                 kilometer.elementit = elements;
                 return kilometer;

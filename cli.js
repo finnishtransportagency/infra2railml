@@ -7,9 +7,9 @@ module.exports = () => {
   
   cmd.version(version)
     .command('track <trackNumber>')
-    .option('-f, --from [km]', 'First track kilometer to include', parseInt, 0)
-    .option('-t, --to [km]', 'Last track kilometer to include', parseInt, 0)
-    .option('-l, --length [km]', 'Number of following kilometers to include', parseInt, 0)
+    .option('-f, --from [km]', 'First track kilometer', parseInt, 0)
+    .option('-t, --to [km]', 'Last track kilometer', parseInt, 0)
+    .option('-l, --length [km]', 'Total number of kilometers', parseInt, 0)
     .action(track)
     
   cmd.parse(process.argv);
@@ -24,8 +24,8 @@ module.exports = () => {
 function track(trackId, args) {
 
   const { from } = args;
-  const length = !!args.to ? args.to - args.from : (args.length || 0);
-  const filename = `./track-${trackId}_${from}-${from + length}`;
+  const length = !!args.to ? args.to - args.from + 1 : (args.length || 1);
+  const filename = `./Track-${trackId}_${from}-${from + length}`;
 
   app.getTrack(trackId, from, length)
     .then((kilometers) => app.kilometersToRailML(trackId, kilometers))

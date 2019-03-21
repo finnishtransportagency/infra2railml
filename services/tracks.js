@@ -4,6 +4,7 @@ const c = require('../config.js');
 const kilometers = require('./kilometers');
 const elements = require('./elements');
 
+
 /**
  * Fetch specified track kilometers.
  * 
@@ -13,7 +14,7 @@ const elements = require('./elements');
  */
 function getTrack(trackId, from, length) {
     return Promise.all(
-        _.times(++length, (i) => getKilometer(trackId, from + i))
+        _.times(length, (i) => getKilometer(trackId, from + i))
     );
 }
 
@@ -22,11 +23,11 @@ function getTrack(trackId, from, length) {
  */
 function getKilometer(trackId, km) {
 
-    const url = `${c.BASE_URL}/radat/${trackId}/${km}.json`;
+    const url = `${c.infraApi.baseUrl}/radat/${trackId}/${km}.json`;
 
     const options = {
         params: { srsName: 'crs:84' },
-        transformResponse: (body) => _.first(JSON.parse(body)) // rid unnecessary array
+        transformResponse: (body) => _.first(JSON.parse(body))
     };
 
     return axios.get(url, options)

@@ -7,7 +7,7 @@ const c = require('../config.js');
  */
 function findById(id) {
     
-    const url = `${c.BASE_URL}/kilometrimerkit/${id}.json`;
+    const url = `${c.infraApi.baseUrl}/kilometrimerkit/${id}.json`;
     
     const options = {
         params: { srsName: 'crs:84' },

@@ -7,7 +7,7 @@ const c = require('../config.js');
  */
 function findById(id) {
     
-    const url = `${c.BASE_URL}/elementit/${id}.json`;
+    const url = `${c.infraApi.baseUrl}/elementit/${id}.json`;
 
     const options = {
         params: { srsName: 'crs:84' },

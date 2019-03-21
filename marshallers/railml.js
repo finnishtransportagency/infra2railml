@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const track = require('./track');
+const config = require('../config');
 
 const XML_NAMESPACES = {
     'version': '2.2',
@@ -22,19 +23,19 @@ function fromKilometers(trackId, kilometers) {
         const from = _.first(kilometers).ratakm || 0;
         const to = _.last(kilometers).ratakm || kilometers.length;
 
-        const $ = cheerio.load(RAILML_STUB, { xmlMode: true, normalizeWhitespace: true });
+        const $ = cheerio.load(RAILML_STUB, config.cheerio);
         _.each(XML_NAMESPACES, (val, key) => $('railml').attr(key, val));
 
         const infra = $('railml > infrastructure');
         infra.attr('id', `${trackId}_${from}-${to}`);
         infra.attr('name', `Rata ${trackId} (${from}-${to} km)`)
 
-        const accumulator = { absPos: from * 1000, tracks: [], previousKm: undefined };
+        const accumulator = { absPos: from * 1000, tracks: [], previousKm: '' };
 
         const result = _.transform(kilometers, (acc, km) => {
             acc.tracks.push(track.fromKilometer(km, acc.absPos, acc.previousKm));
             acc.absPos += km.pituus;
-            acc.previousKm = km.tunniste;
+            acc.previousKm = km.kilometrimerkki.tunniste;
             return acc;
         }, accumulator);
 

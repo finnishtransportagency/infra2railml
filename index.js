@@ -1,5 +1,5 @@
-const trackService = require('./services/track-service');
-const railml = require('./marshallers/railml-marshaller');
+const trackService = require('./services/tracks');
+const railml = require('./marshallers/railml');
 
 module.exports = {
   
@@ -8,8 +8,8 @@ module.exports = {
     return trackService.getTrack(trackNumber, from, length);    
   },
 
-  convertTrack: (trackId, from, to, track) => {
+  kilometersToRailML: (trackId, kilometers) => {
     console.info('Generating railML..');
-    return railml.convert(trackId, from, to, track);
+    return railml.fromKilometers(trackId, kilometers);
   }
 };

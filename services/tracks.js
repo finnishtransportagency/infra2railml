@@ -1,13 +1,8 @@
 const _ = require('lodash');
 const axios = require('axios');
 const c = require('../config.js');
-const kilometerService = require('./kilometer-service');
-const elementService = require('./element-service');
-
-
-const TRACK_PROPERTIES = [
-    'ratanumero', 'ratakm', 'pituus', 'paalu', 'kilometrimerkki', 'elementit' //, 'toimialueet'
-];
+const kilometers = require('./kilometers');
+const elements = require('./elements');
 
 /**
  * Fetch specified track kilometers.
@@ -17,22 +12,20 @@ const TRACK_PROPERTIES = [
  * @param {*} length Number of following kilometers to fetch
  */
 function getTrack(trackId, from, length) {
-    return Promise.all(_.times(length + 1, (i) => {
-        const url = `${c.BASE_URL}/radat/${trackId}/${from + i}.json`;
-        return _fetchKilometer(url);
-    }));
+    return Promise.all(
+        _.times(++length, (i) => getKilometer(trackId, from + i))
+    );
 }
 
 /**
  * Fetch single track kilometer.
  */
-function _fetchKilometer(url) {
+function getKilometer(trackId, km) {
+
+    const url = `${c.BASE_URL}/radat/${trackId}/${km}.json`;
 
     const options = {
-        params: {
-            srsName: 'crs:84',
-            propertyName: _.join(TRACK_PROPERTIES, ',')
-        },
+        params: { srsName: 'crs:84' },
         transformResponse: (body) => _.first(JSON.parse(body)) // rid unnecessary array
     };
 
@@ -42,13 +35,13 @@ function _fetchKilometer(url) {
           return res.data;
       })
       .then((kilometer) => {
-          return kilometerService.findById(kilometer.kilometrimerkki).then((mark) => {
+          return kilometers.findById(kilometer.kilometrimerkki).then((mark) => {
              kilometer.kilometrimerkki = mark;
              return kilometer; 
           });
       })
       .then((kilometer) => {
-          return Promise.all(_.map(kilometer.elementit, elementService.findById))
+          return Promise.all(_.map(kilometer.elementit, elements.findById))
             .then((elements) => {
                 kilometer.elementit = elements;
                 return kilometer;
@@ -62,5 +55,5 @@ function _fetchKilometer(url) {
 }
 
 module.exports = {
-    getTrack
+    getTrack, getKilometer
 };

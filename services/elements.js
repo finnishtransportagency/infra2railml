@@ -2,7 +2,6 @@ const _ = require('lodash');
 const axios = require('axios');
 const c = require('../config.js');
 
-
 /**
  * Find track element by ID.
  */

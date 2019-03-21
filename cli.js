@@ -6,7 +6,7 @@ const { version } = require('./package.json');
 module.exports = () => {
   
   cmd.version(version)
-    .command('track <id>')
+    .command('track <trackNumber>')
     .option('-f, --from [km]', 'First track kilometer to include', parseInt, 0)
     .option('-t, --to [km]', 'Last track kilometer to include', parseInt, 0)
     .option('-l, --length [km]', 'Number of following kilometers to include', parseInt, 0)
@@ -23,12 +23,12 @@ module.exports = () => {
  */
 function track(trackId, args) {
 
-  const { from, to, length } = args;
-  const kilometers = !!to ? to-from : (length || 0);
-  const filename = `./track-${trackId}_${from}-${from+kilometers}`;
+  const { from } = args;
+  const length = !!args.to ? args.to - args.from : (args.length || 0);
+  const filename = `./track-${trackId}_${from}-${from + length}`;
 
-  app.getTrack(trackId, from, kilometers)
-    .then((track) => app.convertTrack(trackId, from, from+kilometers, track))
+  app.getTrack(trackId, from, length)
+    .then((kilometers) => app.kilometersToRailML(trackId, kilometers))
     .then((railml) => writeToFile(`${filename}.railml.xml`, railml))
 };
 

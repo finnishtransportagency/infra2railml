@@ -2,6 +2,7 @@ const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 
+// railML tSwitchType
 const SwitchType = {
     ORDINARY: 'ordinary',
     INSIDE_CURVED_SWITCH: 'insideCurvedSwitch',
@@ -26,17 +27,19 @@ const SWITCH_TYPES = {
 };
 
 module.exports = {
-    marshall: (trackId, absPos, vaihde) => {
+    marshall: (trackId, absPos, element) => {
         
-        const type = SWITCH_TYPES[vaihde.vaihde.tyyppi];
-        const sijainti = _.find(vaihde.ratakmsijainnit, { ratanumero: trackId });
+        const type = SWITCH_TYPES[element.vaihde.tyyppi];
+        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
 
         const $ = cheerio.load('<switch/>', config.cheerio);
-        $('switch').attr('id', vaihde.tunniste);
-        $('switch').attr('name', vaihde.nimi);
+        $('switch').attr('id', element.tunniste);
+        $('switch').attr('name', element.nimi);
         $('switch').attr('type', type);
         $('switch').attr('pos', sijainti.etaisyys);
         $('switch').attr('absPos', absPos + sijainti.etaisyys);
+
+
 
         return $.html();
     }

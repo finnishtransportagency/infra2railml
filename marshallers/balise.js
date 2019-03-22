@@ -3,14 +3,14 @@ const cheerio = require('cheerio');
 const config = require('../config');
 
 module.exports = {
-    marshall: (trackId, absPos, baliisi) => {
+    marshall: (trackId, absPos, element) => {
         
-        const dir = baliisi.baliisi.suunta == 'nouseva' ? 'up' : 'down';
-        const sijainti = _.find(baliisi.ratakmsijainnit, { ratanumero: trackId });
+        const dir = element.baliisi.suunta == 'nouseva' ? 'up' : 'down';
+        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
 
         const $ = cheerio.load('<balise/>', config.cheerio);
-        $('balise').attr('id', baliisi.tunniste);
-        $('balise').attr('name', baliisi.nimi);
+        $('balise').attr('id', element.tunniste);
+        $('balise').attr('name', element.nimi);
         $('balise').attr('pos', sijainti.etaisyys);
         $('balise').attr('absPos', absPos + sijainti.etaisyys);
         $('balise').attr('dir', dir);

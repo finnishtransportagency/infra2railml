@@ -2,6 +2,7 @@ const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 
+// railML tSignalType
 const SignalType = {
     MAIN: 'main',
     DISTANT: 'distant',
@@ -42,19 +43,22 @@ const SIGNAL_TYPES = {
 };
 
 module.exports = {
-    marshall: (trackId, absPos, opastin) => {
+    marshall: (trackId, absPos, element) => {
 
-        const dir = opastin.opastin.suunta == 'nouseva' ? 'up' : 'down';
-        const sijainti = _.find(opastin.ratakmsijainnit, { ratanumero: trackId });
-        const type = SIGNAL_TYPES[opastin.opastin.tyyppi];
+        const dir = element.opastin.suunta == 'nouseva' ? 'up' : 'down';
+        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
+        const type = SIGNAL_TYPES[element.opastin.tyyppi];
 
         const $ = cheerio.load('<signal/>', config.cheerio);
-        $('signal').attr('id', opastin.tunniste);
+        $('signal').attr('id', element.tunniste);
         $('signal').attr('type', type);
-        $('signal').attr('name', opastin.nimi);
+        $('signal').attr('name', element.nimi);
         $('signal').attr('pos', sijainti.etaisyys);
         $('signal').attr('absPos', absPos + sijainti.etaisyys);
         $('signal').attr('dir', dir);
+
+        // TODO element.opastin.puoli (vas/oik), railML term?
+        // TODO aSignal attribute "function" (tSignalFunction: exit|home|blocking|intermediate)
 
         return $.html();        
     }

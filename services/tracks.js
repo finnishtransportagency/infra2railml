@@ -42,12 +42,12 @@ function getKilometer(trackId, km) {
           });
       })
       .then((kilometer) => {
-          return Promise.all(_.map(kilometer.elementit, elements.findById))
-            .then((elements) => {
-                kilometer.elementit = elements;
-                return kilometer;
-            });
-      })
+        return Promise.all(_.map(kilometer.elementit, elements.findById))
+          .then((elements) => {
+              kilometer.elementit = elements;
+              return kilometer;
+          });
+        })
       .catch((err) => {
           console.error(`${err.message}: ${url}`);
           process.exit(err.status);

@@ -13,13 +13,13 @@ const SwitchType = {
 const SWITCH_TYPES = {
     "yvo" : SwitchType.ORDINARY,
     "yvv" : SwitchType.ORDINARY,
-    "rr" : '',
-    "yrv" : '',
-    "krv" : '',
+    "rr" : 'rr', // raideristeys/diamond crossing (railML tCrossing)
+    "yrv" : SwitchType.ORDINARY,
+    "krv" : SwitchType.ORDINARY,
     "tyv" : SwitchType.ORDINARY,
     "kvo" : SwitchType.THREE_WAY_SWITCH,
     "kvv" : SwitchType.THREE_WAY_SWITCH,
-    "srr" : '',
+    "srr" : 'srr', // sovitettu raideristeys (railML tCrossing)
     "ukvv" : SwitchType.OUTSIDE_CURVED_SWITCH,
     "ukvo" : SwitchType.OUTSIDE_CURVED_SWITCH,
     "skvv" : SwitchType.INSIDE_CURVED_SWITCH,

@@ -4,7 +4,7 @@ const railml = require('./marshallers/railml');
 module.exports = {
   
   getTrack: (trackNumber, from, length) => {    
-    console.info(`Loading track ${trackNumber} [${from}..${from+length} km] ..`);
+    console.info(`Loading track ${trackNumber} [${from}..${from+length-1} km] ..`);
     return trackService.getTrack(trackNumber, from, length);    
   },
 

@@ -25,7 +25,7 @@ function track(trackId, args) {
 
   const { from } = args;
   const length = !!args.to ? args.to - args.from + 1 : (args.length || 1);
-  const filename = `./Track-${trackId}_${from}-${from + length}`;
+  const filename = `./Track-${trackId}_${from}-${from + length - 1}`;
 
   app.getTrack(trackId, from, length)
     .then((kilometers) => app.kilometersToRailML(trackId, kilometers))

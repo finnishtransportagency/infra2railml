@@ -1,8 +1,10 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const track = require('./track');
-const speeds = require('./speeds');
 const config = require('../config');
+const trackRef = require('./track-ref');
+const trackVis = require('./track-vis');
+
 
 const XML_NAMESPACES = {
     'version': '2.2',
@@ -12,7 +14,7 @@ const XML_NAMESPACES = {
 };
 
 const RAILML_STUB =
-    '<?xml version="1.0" encoding="UTF-8"?><railml><infrastructure><infraAttrGroups/><tracks/></infrastructure></railml>';
+    '<?xml version="1.0" encoding="UTF-8"?><railml><infrastructure><infraAttrGroups/><tracks/><trackGroups/></infrastructure><infrastructureVisualizations/></railml>';
 
 /**
  * Convert given track kilometers to rail-ml tracks.
@@ -44,6 +46,15 @@ function fromKilometers(trackId, kilometers) {
 
         $('railml > infrastructure > tracks').append(result.tracks);
         $('railml > infrastructure > infraAttrGroups').append(_.flatten(result.speeds));
+
+        const lineId = `${trackId}_${from}_${to}`;
+        const trackRefs = _.map(kilometers, trackRef.marshall);
+        $('railml > infrastructure > trackGroups').append(`<line id="${lineId}" name="${trackId} ${from}-${to}"/>`)
+        $('railml > infrastructure > trackGroups > line').append(trackRefs);
+
+        const visualization = _.map(kilometers, trackVis.marshall);
+        $('railml > infrastructureVisualizations').append(`<lineVis ref="${lineId}"/>`);
+        $('railml > infrastructureVisualizations > lineVis').append(visualization);
 
         resolve($.html());
     });

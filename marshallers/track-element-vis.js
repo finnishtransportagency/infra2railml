@@ -15,7 +15,7 @@ module.exports = {
         const y = MARGIN + (row * ROW_HEIGHT);
         const dx = x + COLUMN_WIDTH;
 
-        const $ = cheerio.load(`<trackVis id="${km.kilometrimerkki.tunniste}">`, config.cheerio);
+        const $ = cheerio.load(`<trackVis ref="${km.kilometrimerkki.tunniste}">`, config.cheerio);
         $('trackVis').append(`<trackElementVis ref="tb_${km.ratakm}"><position x="${x}" y="${y}"/></trackElementVis>`);
         $('trackVis').append(`<trackElementVis ref="te_${km.ratakm}"><position x="${dx}" y="${y}"/></trackElementVis>`);
 

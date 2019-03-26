@@ -12,22 +12,16 @@ const cheerioOpts = { xmlMode: true, normalizeWhitespace: true };
 /**
  * Convert one track kilometer to railML.
  */
-function fromKilometer(km, absPos, prevKmId) {
+function marshall(km, absPos, prevKmId) {
     
     const $ = cheerio.load(`<track id="${km.kilometrimerkki.tunniste}" name="${km.ratanumero} - ${km.ratakm}"><trackTopology/><trackElements/><ocsElements/></track>`, cheerioOpts);
 
     const topology = $('trackTopology');
-
     topology.append(`<trackBegin id="tb_${km.ratakm}" pos="0.0000" absPos="${absPos}"><connection id="tbc_${km.ratakm}" ref="${prevKmId}"/></trackBegin>`);
     topology.append(`<trackEnd id="te_${km.ratakm}" pos="${km.pituus}" absPos="${absPos + km.pituus}"><connection id="tec_${km.ratakm}" ref="tbc_${km.ratakm + 1}" />`);
     topology.append('<connections/>');
 
-    // group elements by type
-    const elementTypes = _.reject(_.map(km.elementit, 'tyyppi'), _.isUndefined);
-    const elements = _.transform(elementTypes, (result, type) => {
-        result[type] = _.filter(km.elementit, { tyyppi: type });
-        return result;
-    }, {});
+    const elements = _.groupBy(km.elementit, 'tyyppi');
 
     const switches = _.map(elements.vaihde, (v) => _switch.marshall(km.ratanumero, absPos, v));
     if (!_.isEmpty(switches)) {
@@ -58,10 +52,24 @@ function fromKilometer(km, absPos, prevKmId) {
         $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
 
-    return { 'element': $.html(), 'speeds': _.uniq(_.flatMap(nopeudet, speeds.marshall)) };
+    return {
+        'element': $.html(),
+        'speeds': _.uniq(_.flatMap(nopeudet, speeds.marshall))
+    };
+}
+
+/**
+ * Transformer function.
+ */
+function fromKilometers(acc, km) {
+    const track = marshall(km, acc.absPos, acc.previousKm);
+    acc.tracks = _.concat(acc.tracks, track.element);
+    acc.speeds = _.concat(acc.speeds, track.speeds);
+    acc.absPos += (km.pituus || km.ratakm * 1000);
+    acc.previousKm = km.kilometrimerkki.tunniste || '';
+    return acc;
 }
 
 module.exports = {
-    fromKilometer
-    // TODO fromRails
+    fromKilometers
 };

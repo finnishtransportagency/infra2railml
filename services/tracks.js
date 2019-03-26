@@ -15,7 +15,7 @@ const elements = require('./elements');
 function getTrack(trackId, from, length) {
     return Promise.all(
         _.times(length, (i) => getKilometer(trackId, from + i))
-    );
+    ).then((kilometers) => _.filter(kilometers, (km) => !_.isEmpty(km)));
 }
 
 /**
@@ -36,10 +36,11 @@ function getKilometer(trackId, km) {
           return res.data;
       })
       .then((kilometer) => {
-          return kilometers.findById(kilometer.kilometrimerkki).then((mark) => {
-             kilometer.kilometrimerkki = mark;
-             return kilometer; 
-          });
+          return kilometers.findById(kilometer.kilometrimerkki)
+            .then((mark) => {
+                kilometer.kilometrimerkki = mark;
+                return kilometer; 
+            });
       })
       .then((kilometer) => {
         return Promise.all(_.map(kilometer.elementit, elements.findById))
@@ -50,7 +51,8 @@ function getKilometer(trackId, km) {
         })
       .catch((err) => {
           console.error(`${err.message}: ${url}`);
-          process.exit(err.status);
+          //process.exit(err.status);
+          return {};
       });
 
 }

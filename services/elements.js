@@ -16,7 +16,10 @@ function findById(id) {
     };
 
     return axios.get(url, options)
-        .then((res) => res.data)
+        .then((res) => {
+            console.info(`${res.status}: ${url}`);
+            return res.data;
+        })
         .then(fetchRails)
         .catch((err) => {
             console.error(`${err.message}: ${url}`);

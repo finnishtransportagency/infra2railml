@@ -3,6 +3,10 @@ const cheerio = require('cheerio');
 const balise = require('./balise');
 const signal = require('./signal');
 const _switch = require('./switch');
+const crossing = require('./crossing');
+const speedChange = require('./speed-change');
+const speeds = require('./speeds');
+
 const cheerioOpts = { xmlMode: true, normalizeWhitespace: true };
 
 /**
@@ -18,25 +22,35 @@ function fromKilometer(km, absPos, prevKmId) {
     topology.append(`<trackEnd id="te_${km.ratakm}" pos="${km.pituus}" absPos="${absPos + km.pituus}"><connection id="tec_${km.ratakm}" ref="tbc_${km.ratakm + 1}" />`);
     topology.append('<connections/>');
 
-    const switches = _.map(getElements(km.elementit, 'vaihde'), (v) => _switch.marshall(km.ratanumero, absPos, v));
+    // group elements by type
+    const elementTypes = _.filter(_.map(km.elementit, 'tyyppi'), _.isNotEmpty);
+    const elements = _.transform(elementTypes, (result, type) => {
+        result[type] = _.filter(km.elementit, { tyyppi: type });
+        return result;
+    }, {});
+
+    const switches = _.map(elements.vaihde, (v) => _switch.marshall(km.ratanumero, absPos, v));
     $('trackTopology > connections').append(switches);
 
-    const signals = _.map(getElements(km.elementit, 'opastin'), (s) => signal.marshall(km.ratanumero, absPos, s));
-    $('ocsElements').append('<signals/>')
-    $('ocsElements > signals').append(signals);
+    const risteykset = _.filter(elements.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
+    const crossings = _.map(risteykset, (r) => crossing.marshall(km.ratanumero, absPos, r));
+    $('trackTopology > connections').append(crossings);
 
-    const balices = _.map(getElements(km.elementit, 'baliisi'), (b) => balise.marshall(km.ratanumero, absPos, b));
-    $('ocsElements').append('<balises/>')
-    $('ocsElements > balises').append(balices);
+    const signals = _.map(elements.opastin, (o) => signal.marshall(km.ratanumero, absPos, o));    
+    $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`)
 
-    return $.html();
-}
+    const balises = _.map(elements.baliisi, (b) => balise.marshall(km.ratanumero, absPos, b));    
+    $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
 
-function getElements(elements, type) {
-    return _.filter(elements, { tyyppi: type });
+    const raiteet = _.filter(_.uniqBy(_.filter(_.flatMap(km.elementit, (e) => e.raiteet), _.isNotEmpty), 'tunniste'), { 'tyyppi': 'linja' });
+    const nopeudet = _.filter(_.flatMap(raiteet, (r) => r.nopeusrajoitukset), (nr) => nr.ratakmvali.ratanumero === km.ratanumero && nr.ratakmvali.alku.ratakm === km.ratakm);
+    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(km.ratanumero, absPos, n)));
+    $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
+
+    return { 'element': $.html(), 'speeds': _.uniq(_.flatMap(nopeudet, speeds.marshall)) };
 }
 
 module.exports = {
-    fromKilometer: fromKilometer,
+    fromKilometer
     // TODO fromRails
 };

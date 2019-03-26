@@ -15,7 +15,10 @@ function findById(id) {
     };
 
     return axios.get(url, options)
-        .then((res) => res.data)
+        .then((res) => {
+            console.log(`${res.status}: ${url}`);
+            return res.data;
+        })
         .catch((err) => {
             console.error(`${err.message}: ${url}`);
             return {};

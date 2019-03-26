@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const track = require('./track');
+const speeds = require('./speeds');
 const config = require('../config');
 
 const XML_NAMESPACES = {
@@ -11,7 +12,7 @@ const XML_NAMESPACES = {
 };
 
 const RAILML_STUB =
-    '<?xml version="1.0" encoding="UTF-8"?><railml><infrastructure><tracks/></infrastructure></railml>';
+    '<?xml version="1.0" encoding="UTF-8"?><railml><infrastructure><infraAttrGroups/><tracks/></infrastructure></railml>';
 
 /**
  * Convert given track kilometers to rail-ml tracks.
@@ -30,16 +31,19 @@ function fromKilometers(trackId, kilometers) {
         infra.attr('id', `${trackId}_${from}-${to}`);
         infra.attr('name', `Rata ${trackId} (${from}-${to} km)`)
 
-        const accumulator = { absPos: from * 1000, tracks: [], previousKm: '' };
+        const accumulator = { absPos: from * 1000, tracks: [], speeds: [], previousKm: '' };
 
         const result = _.transform(kilometers, (acc, km) => {
-            acc.tracks.push(track.fromKilometer(km, acc.absPos, acc.previousKm));
-            acc.absPos += km.pituus;
+            const t = track.fromKilometer(km, acc.absPos, acc.previousKm);
+            acc.tracks.push(t.element);
+            acc.speeds.push(t.speeds);
+            acc.absPos += (km.pituus || km.ratakm * 1000);
             acc.previousKm = km.kilometrimerkki.tunniste;
             return acc;
         }, accumulator);
 
         $('railml > infrastructure > tracks').append(result.tracks);
+        $('railml > infrastructure > infraAttrGroups').append(_.flatten(result.speeds));
 
         resolve($.html());
     });

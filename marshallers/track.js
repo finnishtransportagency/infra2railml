@@ -23,29 +23,40 @@ function fromKilometer(km, absPos, prevKmId) {
     topology.append('<connections/>');
 
     // group elements by type
-    const elementTypes = _.filter(_.map(km.elementit, 'tyyppi'), _.isNotEmpty);
+    const elementTypes = _.reject(_.map(km.elementit, 'tyyppi'), _.isUndefined);
     const elements = _.transform(elementTypes, (result, type) => {
         result[type] = _.filter(km.elementit, { tyyppi: type });
         return result;
     }, {});
 
     const switches = _.map(elements.vaihde, (v) => _switch.marshall(km.ratanumero, absPos, v));
-    $('trackTopology > connections').append(switches);
+    if (!_.isEmpty(switches)) {
+        $('trackTopology > connections').append(switches);
+    }
 
     const risteykset = _.filter(elements.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
     const crossings = _.map(risteykset, (r) => crossing.marshall(km.ratanumero, absPos, r));
-    $('trackTopology > connections').append(crossings);
+    if (!_.isEmpty(crossings)) {
+        $('trackTopology > connections').append(crossings);
+    }
 
     const signals = _.map(elements.opastin, (o) => signal.marshall(km.ratanumero, absPos, o));    
-    $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`)
+    if (!_.isEmpty(signals)) {
+        $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`);
+    }
 
-    const balises = _.map(elements.baliisi, (b) => balise.marshall(km.ratanumero, absPos, b));    
-    $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
+    const balises = _.map(elements.baliisi, (b) => balise.marshall(km.ratanumero, absPos, b));
+    if (!_.isEmpty(balises)) {
+        $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
+    }
 
-    const raiteet = _.filter(_.uniqBy(_.filter(_.flatMap(km.elementit, (e) => e.raiteet), _.isNotEmpty), 'tunniste'), { 'tyyppi': 'linja' });
+    const raiteet = _.filter(_.uniqBy(_.reject(_.flatMap(km.elementit, (e) => e.raiteet), _.isUndefined), 'tunniste'), { 'tyyppi': 'linja' });
     const nopeudet = _.filter(_.flatMap(raiteet, (r) => r.nopeusrajoitukset), (nr) => nr.ratakmvali.ratanumero === km.ratanumero && nr.ratakmvali.alku.ratakm === km.ratakm);
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(km.ratanumero, absPos, n)));
-    $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
+    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(absPos, n)));
+    
+    if (!_.isEmpty(speedChanges)) {
+        $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
+    }
 
     return { 'element': $.html(), 'speeds': _.uniq(_.flatMap(nopeudet, speeds.marshall)) };
 }

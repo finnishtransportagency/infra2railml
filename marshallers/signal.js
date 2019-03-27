@@ -56,6 +56,7 @@ module.exports = {
         $('signal').attr('pos', sijainti.etaisyys);
         $('signal').attr('absPos', absPos + sijainti.etaisyys);
         $('signal').attr('dir', dir);
+        $('signal').attr('virtual', 'false');
 
         // TODO element.opastin.puoli (vas/oik), railML term?
         // TODO aSignal attribute "function" (tSignalFunction: exit|home|blocking|intermediate)

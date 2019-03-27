@@ -32,8 +32,9 @@ function fromKilometers(trackId, kilometers) {
         _.each(XML_NAMESPACES, (val, key) => $('railml').attr(key, val));
 
         // infra & topology
+        const infraId = `infra_${trackId}_${from}-${to}`;
         const infra = $('railml > infrastructure');
-        infra.attr('id', `${trackId}_${from}-${to}`);
+        infra.attr('id', infraId);
         infra.attr('name', `Rata ${trackId} (${from}-${to} km)`)
 
         const memo = { absPos: from * 1000, tracks: [], speeds: [], previousKm: '' };
@@ -42,14 +43,15 @@ function fromKilometers(trackId, kilometers) {
         $('railml > infrastructure > infraAttrGroups').append(result.speeds);
 
         // track groups & visualization
-        const lineId = `${trackId}_${from}_${to}`;
+        const lineId = `line_${trackId}_${from}_${to}`;
         const trackRefs = _.map(kilometers, trackRef.marshall);
         $('railml > infrastructure > trackGroups').append(`<line id="${lineId}" name="${trackId} ${from}-${to}"/>`)
         $('railml > infrastructure > trackGroups > line').append(trackRefs);
 
-        const visualization = _.map(kilometers, trackElemVis.marshall);
-        $('railml > infrastructureVisualizations').append(`<lineVis ref="${lineId}"/>`);
-        $('railml > infrastructureVisualizations > lineVis').append(visualization);
+        const trackVis = _.map(kilometers, trackElemVis.marshall);
+        $('railml > infrastructureVisualizations').append(`<visualization id="${lineId}_vis" version="2.2" infrastructureRef="${infraId}"/>`);
+        $('railml > infrastructureVisualizations > visualization').append(`<lineVis ref="${lineId}"/>`);
+        $('railml > infrastructureVisualizations > visualization > lineVis').append(trackVis);
 
         resolve($.html());
     });

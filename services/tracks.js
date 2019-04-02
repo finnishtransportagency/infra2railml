@@ -3,26 +3,14 @@ const axios = require('axios');
 const c = require('../config.js');
 const kilometers = require('./kilometers');
 const elements = require('./elements');
+const rails = require('./rails');
 
 
 /**
- * Fetch specified track kilometers.
- * 
- * @param {*} trackId Track ID
- * @param {*} from First track kilometer to fetch
- * @param {*} length Number of following kilometers to fetch
+ * Fetch plain track kilometer object.
  */
-function getTrack(trackId, from, length) {
-    return Promise.all(
-        _.times(length, (i) => getKilometer(trackId, from + i))
-    ).then((kilometers) => _.filter(kilometers, (km) => !_.isEmpty(km)));
-}
-
-/**
- * Fetch single track kilometer.
- */
-function getKilometer(trackId, km) {
-
+function fetchKilometer(trackId, km) {
+    
     const url = `${c.infraApi.baseUrl}/radat/${trackId}/${km}.json`;
 
     const options = {
@@ -34,7 +22,28 @@ function getKilometer(trackId, km) {
       .then((res) => {
           console.info(`${res.status}: ${url}`);
           return res.data;
-      })
+      });
+}
+
+/**
+ * Fetch specified track kilometers.
+ * 
+ * @param {*} trackId Track ID
+ * @param {*} from First track kilometer to fetch
+ * @param {*} length Number of kilometers to fetch
+ */
+function getKilometers(trackId, from, length) {
+    return Promise.all(
+        _.times(length, (i) => getKilometer(trackId, from + i))
+    ).then((kilometers) => _.filter(kilometers, (km) => !_.isEmpty(km)));
+}
+
+/**
+ * Fetch single track kilometer, complemented with child objects.
+ */
+function getKilometer(trackId, km) {
+
+    return fetchKilometer(trackId, km)
       .then((kilometer) => {
           return kilometers.findById(kilometer.kilometrimerkki)
             .then((mark) => {
@@ -45,6 +54,14 @@ function getKilometer(trackId, km) {
       .then((kilometer) => {
         return Promise.all(_.map(kilometer.elementit, elements.findById))
           .then((elements) => {
+              return Promise.all(_.map(elements, (e) => {
+                return rails.findAllById(e.raiteet).then((rails) => {
+                    e.raiteet = rails;
+                    return e;
+                  })
+              }));
+          })
+          .then((elements) => {
               kilometer.elementit = elements;
               return kilometer;
           });
@@ -54,9 +71,8 @@ function getKilometer(trackId, km) {
           //process.exit(err.status);
           return {};
       });
-
 }
 
 module.exports = {
-    getTrack, getKilometer
+    getKilometer, getKilometers
 };

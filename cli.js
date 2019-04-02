@@ -12,6 +12,12 @@ module.exports = () => {
     .option('-l, --length [km]', 'Total number of kilometers', parseInt, 0)
     .action(track)
     
+  cmd.command('rails <trackNumber>')
+    .option('-f, --from [km]', 'First track kilometer', parseInt, 0)
+    .option('-t, --to [km]', 'Last track kilometer', parseInt, 0)
+    .option('-l, --length [km]', 'Total number of kilometers', parseInt, 0)
+    .action(rails)
+
   cmd.parse(process.argv);
 };
 
@@ -31,6 +37,21 @@ function track(trackId, args) {
     .then((kilometers) => app.kilometersToRailML(trackId, kilometers))
     .then((railml) => writeToFile(`${filename}.railml.xml`, railml))
 };
+
+/**
+ * Rails command controller.
+ */
+function rails(trackId, args) {
+
+  const { from } = args;
+  const length = !!args.to ? args.to - args.from + 1 : (args.length || 1);
+  const filename = `./Rails-${trackId}_${from}-${from + length - 1}.railml.xml`;
+
+  app.getTrack(trackId, from, length)
+    .then((kms) => app.createIndex(trackId, kms))
+    .then(app.railsToRailML)
+    .then((railml) => writeToFile(filename, railml));
+}
 
 function writeToFile(filename, data) {
   console.log(`Writing ${filename} ..`);

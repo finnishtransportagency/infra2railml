@@ -22,6 +22,10 @@ function findById(id) {
         });
 }
 
+function findAllById(ids) {
+    return Promise.all(_.map(ids, findById));
+}
+
 module.exports = {
-    findById
+    findById, findAllById
 }

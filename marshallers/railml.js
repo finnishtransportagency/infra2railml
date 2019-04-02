@@ -4,7 +4,8 @@ const track = require('./track');
 const config = require('../config');
 const trackRef = require('./track-ref');
 const trackElemVis = require('./track-element-vis');
-
+const infrastructure = require('./infrastructure');
+const infrastructureVis = require('./infrastructure-vis');
 
 const XML_NAMESPACES = {
     'version': '2.2',
@@ -38,7 +39,8 @@ function fromKilometers(trackId, kilometers) {
         infra.attr('name', `Rata ${trackId} (${from}-${to} km)`)
 
         const memo = { absPos: from * 1000, tracks: [], speeds: [], previousKm: '' };
-        const result = _.transform(kilometers, track.fromKilometers, memo);
+        const result = _.transform(kilometers, track.fromKilometer, memo);
+       
         $('railml > infrastructure > tracks').append(result.tracks);
         $('railml > infrastructure > infraAttrGroups').append(result.speeds);
 
@@ -57,6 +59,28 @@ function fromKilometers(trackId, kilometers) {
     });
 }
 
+function fromRails(index) {
+    return new Promise((resolve) => {
+        
+        const memo = { index, absPos: index.from * 1000, speeds: [], tracks: [], previousTrack: '' }
+        const results = _.transform(index.raiteet, track.fromRail, memo);
+        
+        const infra = infrastructure.marshall(results);
+        const visuals = infrastructureVis.marshall(results)
+        const railml = marshall(infra, visuals);
+
+        resolve(railml);
+    });
+}
+
+function marshall(infra, visuals) {
+    const $ = cheerio.load(`<railml/>`, config.cheerio);
+    _.each(XML_NAMESPACES, (val, key) => $('railml').attr(key, val));
+    $('railml').append(infra);
+    $('railml').append(visuals);
+    return $.html();
+}
+
 module.exports = {
-    fromKilometers
+    marshall, fromKilometers, fromRails
 };

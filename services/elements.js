@@ -20,18 +20,10 @@ function findById(id) {
             console.info(`${res.status}: ${url}`);
             return res.data;
         })
-        .then(fetchRails)
         .catch((err) => {
             console.error(`${err.message}: ${url}`);
             return {};
         });
-}
-
-function fetchRails(element) {
-    return Promise.all(_.map(element.raiteet, rails.findById)).then((rails) => {
-        element.raiteet = rails;
-        return element;
-    });
 }
 
 module.exports = {

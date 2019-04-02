@@ -30,6 +30,8 @@ const SWITCH_TYPES = {
 module.exports = {
     marshall: (trackId, absPos, element) => {
         
+        const { vaihde } = element;
+
         const type = SWITCH_TYPES[element.vaihde.tyyppi];
         const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
 
@@ -40,7 +42,18 @@ module.exports = {
         $('switch').attr('pos', sijainti.etaisyys);
         $('switch').attr('absPos', absPos + sijainti.etaisyys);
 
+        const straight = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'taka');
+        const parting = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && (y.minneRooli === 'vasen' || y.minneRooli === 'oikea'));
+        const partingCourse = parting.minneRooli === 'oikea' ? 'right' : 'left';
 
+        const connections = [
+            `<connection id="swc_${element.tunniste}_a" ref="tec_${straight.mista}" course="straight" orientation="incoming" />`,
+            `<connection id="swc_${element.tunniste}_b" ref="tbc_${straight.minne}" course="straight" orientation="outgoing" />`,
+            `<connection id="swc_${element.tunniste}_c" ref="tbc_${parting.minne}" course="${partingCourse}" orientation="outgoing" />`
+        ];
+
+
+        $('switch').append(connections);
 
         return $.html();
     }

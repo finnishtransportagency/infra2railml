@@ -73,19 +73,19 @@ function fromKilometer(acc, km) {
 function fromRail(acc, rail, i) {
 
     const { index } = acc;
-    const km = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
+    const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
 
     const id = rail.tunniste;
-    const name = `Raide ${index.trackId} ${km.alku.ratakm}+${km.alku.etaisyys} - ${km.loppu.ratakm}+${km.loppu.etaisyys}`;
-    const beginAbsPos = km.alku.ratakm * 1000 + km.alku.etaisyys;
-    const endAbsPos = km.loppu.ratakm * 1000 + km.loppu.etaisyys;
+    const name = `Raide ${index.trackId} ${ratakmvali.alku.ratakm}+${ratakmvali.alku.etaisyys} - ${ratakmvali.loppu.ratakm}+${ratakmvali.loppu.etaisyys}`;
+    const beginAbsPos = ratakmvali.alku.ratakm * 1000 + ratakmvali.alku.etaisyys;
+    const endAbsPos = ratakmvali.loppu.ratakm * 1000 + ratakmvali.loppu.etaisyys;
     const endPos = endAbsPos - beginAbsPos;
 
     const elements = _.uniqBy(_.filter(index.elementit, (e) => _.find(e.raiteet, (r) => r.tunniste === rail.tunniste)), 'tunniste');
     const elementGroups = _.groupBy(elements, 'tyyppi');
 
-    const trackBeginRef = findTrackConnectionRef(elementGroups.vaihde, km.alku.ratakm, km.alku.etaisyys);
-    const trackEndRef = findTrackConnectionRef(elementGroups.vaihde, km.loppu.ratakm, km.loppu.etaisyys);
+    const trackBeginRef = findTrackConnectionRef(elementGroups.vaihde, ratakmvali.alku.ratakm, ratakmvali.alku.etaisyys);
+    const trackEndRef = findTrackConnectionRef(elementGroups.vaihde, ratakmvali.loppu.ratakm, ratakmvali.loppu.etaisyys);
 
     const $ = cheerio.load(`<track id="${id}" name="${name}"><trackTopology></trackTopology><trackElements/><ocsElements/></track>`, cheerioOpts);
     

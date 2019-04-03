@@ -46,10 +46,16 @@ module.exports = {
         const parting = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && (y.minneRooli === 'vasen' || y.minneRooli === 'oikea'));
         const partingCourse = parting.minneRooli === 'oikea' ? 'right' : 'left';
 
+        const ao = straight.minneSuunta === 'nouseva' ? 'incoming' : 'outgoing';
+        const bo = ao === 'incoming' ? 'outgoing' : 'incoming';
+        const co = parting.minneSuunta === 'nouseva' ? 'incoming' : 'outgoing';
+
+        const prefixes = { incoming: 'tec', outgoing: 'tbc'};
+
         const connections = [
-            `<connection id="swc_${element.tunniste}_a" ref="tec_${straight.mista}" course="straight" orientation="incoming" />`,
-            `<connection id="swc_${element.tunniste}_b" ref="tbc_${straight.minne}" course="straight" orientation="outgoing" />`,
-            `<connection id="swc_${element.tunniste}_c" ref="tbc_${parting.minne}" course="${partingCourse}" orientation="outgoing" />`
+            `<connection id="swc_${element.tunniste}_a" ref="${prefixes[ao]}_${straight.mista}" course="straight" orientation="${ao}" />`,
+            `<connection id="swc_${element.tunniste}_b" ref="${prefixes[bo]}_${straight.minne}" course="straight" orientation="${bo}" />`,
+            `<connection id="swc_${element.tunniste}_c" ref="${prefixes[co]}_${parting.minne}" course="${partingCourse}" orientation="${co}" />`
         ];
 
 

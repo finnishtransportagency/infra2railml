@@ -7,19 +7,20 @@ const SwitchType = {
     ORDINARY: 'ordinary',
     INSIDE_CURVED_SWITCH: 'insideCurvedSwitch',
     OUTSIDE_CURVED_SWITCH: 'outsideCurvedSwitch',
-    THREE_WAY_SWITCH: 'threeWaySwitch'
+    THREE_WAY_SWITCH: 'threeWaySwitch',
+    OTHER: (tyyppi) => `other:${tyyppi}`
 };
 
 const SWITCH_TYPES = {
     "yvo" : SwitchType.ORDINARY,
     "yvv" : SwitchType.ORDINARY,
-    "rr" : 'rr', // raideristeys/diamond crossing (railML tCrossing)
+    "rr" : SwitchType.OTHER('rr'), // raideristeys/diamond crossing (railML tCrossing)
     "yrv" : SwitchType.ORDINARY,
     "krv" : SwitchType.ORDINARY,
     "tyv" : SwitchType.ORDINARY,
     "kvo" : SwitchType.THREE_WAY_SWITCH,
     "kvv" : SwitchType.THREE_WAY_SWITCH,
-    "srr" : 'srr', // sovitettu raideristeys (railML tCrossing)
+    "srr" : SwitchType.OTHER('srr'), // sovitettu raideristeys (railML tCrossing)
     "ukvv" : SwitchType.OUTSIDE_CURVED_SWITCH,
     "ukvo" : SwitchType.OUTSIDE_CURVED_SWITCH,
     "skvv" : SwitchType.INSIDE_CURVED_SWITCH,

@@ -8,14 +8,15 @@ const SignalType = {
     DISTANT: 'distant',
     REPEATER: 'repeater',
     COMBINED: 'combined',
-    SHUNTING: 'shunting'
+    SHUNTING: 'shunting',
+    OTHER: (tyyppi) => `other:${tyyppi}`
 };
 
 const SIGNAL_TYPES = {
     "es": SignalType.DISTANT,
     "jo": SignalType.SHUNTING,
-    "jp": 'jp', // Junakulkutien päätekohtamerkki
-    "me": 'me', // Matkustajalaiturin ennakkomerkki
+    "jp": SignalType.OTHER('jp'), // Junakulkutien päätekohtamerkki
+    "me": SignalType.OTHER('me'), // Matkustajalaiturin ennakkomerkki
     "pa": SignalType.MAIN,
     "pav": SignalType.MAIN,
     "pa2": SignalType.MAIN,
@@ -26,7 +27,7 @@ const SIGNAL_TYPES = {
     "ra": SignalType.SHUNTING,
     "rd": SignalType.MAIN,
     "rp": SignalType.SHUNTING,
-    "sm": 'sm', // Seismerkki
+    "sm": SignalType.OTHER('sm'), // Seismerkki
     "su": SignalType.MAIN,
     "to": SignalType.REPEATER,
     "vk": SignalType.SHUNTING,

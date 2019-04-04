@@ -105,15 +105,16 @@ function marshallRail(rail, index) {
     }
 
     // trackElements
-    const speeds = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(nr, index.trackId, alku.ratakm, alku.etaisyys, loppu.ratakm, loppu.etaisyys));
-    const speedChanges = _.uniq(_.flatMap(speeds, (n) => speedChange.marshall(beginAbsPos, n)));
+    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(nr, index.trackId, alku.ratakm, alku.etaisyys, loppu.ratakm, loppu.etaisyys));
+    const speedAttrs = _.uniq(_.flatMap(nopeudet, speeds.marshall));
+    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(beginAbsPos, n)));
     if (!_.isEmpty(speedChanges)) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
 
     return {
         element: $.html(),
-        speeds,
+        speeds: speedAttrs,
         length: endPos
     };
 }

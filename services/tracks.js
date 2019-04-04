@@ -67,7 +67,7 @@ function getKilometer(trackId, km) {
           });
         })
       .catch((err) => {
-          console.error(`${err.message}: ${url}`);
+          console.error(`${err.message}`);
           //process.exit(err.status);
           return {};
       });

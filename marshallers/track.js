@@ -53,8 +53,68 @@ function marshallKm(km, absPos, prevTrackId) {
     }
 
     return {
-        'element': $.html(),
-        'speeds': _.uniq(_.flatMap(nopeudet, speeds.marshall))
+        element: $.html(),
+        speeds: _.uniq(_.flatMap(nopeudet, speeds.marshall))
+    };
+}
+
+function marshallRail(rail, index) {
+
+    const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
+    const { alku, loppu } = ratakmvali;
+
+    const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(e, rail.tunniste, index.trackId, alku.ratakm, alku.etaisyys, loppu.ratakm, loppu.etaisyys)), 'tunniste');
+    const elementGroups = _.groupBy(elements, 'tyyppi');
+   
+    // track element
+    const railId = rail.tunniste;
+    const name = `Raide ${index.trackId} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
+    const $ = cheerio.load(`<track id="${railId}" name="${name}"><trackTopology></trackTopology><trackElements/><ocsElements/></track>`, cheerioOpts);
+
+    console.log(name);
+
+    // trackTopology element
+    const beginAbsPos = alku.ratakm * 1000 + alku.etaisyys;
+    const endAbsPos = loppu.ratakm * 1000 + loppu.etaisyys;
+    const endPos = endAbsPos - beginAbsPos;
+    const trackBeginRef = findTrackConnectionRef(alku.ratakm, alku.etaisyys, elementGroups.vaihde, elementGroups.puskin);
+    const trackEndRef = findTrackConnectionRef(loppu.ratakm, loppu.etaisyys, elementGroups.vaihde, elementGroups.puskin);
+    const switches = _.map(elementGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
+    
+    const risteykset = _.filter(elements.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
+    const crossings = _.map(risteykset, (r) => crossing.marshall(km.ratanumero, absPos, r));
+    
+    $('trackTopology').append(`<trackBegin id="tb_${railId}" pos="0.0000" absPos="${beginAbsPos}"><connection id="tbc_${railId}" ref="${trackBeginRef}" /></trackBegin>`);
+    $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}"><connection id="tec_${railId}" ref="${trackEndRef}" /></trackEnd>`);
+    $('trackTopology').append('<connections/>');    
+    if (!_.isEmpty(switches)) {
+        $('trackTopology > connections').append(switches);
+    }
+    if (!_.isEmpty(crossings)) {
+        $('trackTopology > connections').append(crossings);
+    }
+
+    // ocsElements
+    const signals = _.map(elementGroups.opastin, (o) => signal.marshall(index.trackId, beginAbsPos, o));    
+    if (!_.isEmpty(signals)) {
+        $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`);
+    }
+    const balises = _.map(elementGroups.baliisi, (b) => balise.marshall(index.trackId, beginAbsPos, b));
+    if (!_.isEmpty(balises)) {
+        $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
+    }
+
+    // trackElements
+    const speeds = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(nr, index.trackId, alku.ratakm, alku.etaisyys, loppu.ratakm, loppu.etaisyys));
+    const speedChanges = _.uniq(_.flatMap(speeds, (n) => speedChange.marshall(beginAbsPos, n)));
+    if (!_.isEmpty(speedChanges)) {
+        $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
+    }
+
+    return {
+        element: $.html(),
+        speeds,
+        length: endPos
     };
 }
 
@@ -62,68 +122,41 @@ function marshallKm(km, absPos, prevTrackId) {
  * Kilometer transformer function.
  */
 function fromKilometer(acc, km) {
+
     const track = marshallKm(km, acc.absPos, acc.previousTrack);
+    
     acc.tracks = _.concat(acc.tracks, track.element);
     acc.speeds = _.concat(acc.speeds, track.speeds);
     acc.absPos += (km.pituus || km.ratakm * 1000);
     acc.previousTrack = km.kilometrimerkki.tunniste || '';
+    
     return acc;
 }
 
-function fromRail(acc, rail, i) {
-
-    const { index } = acc;
-    const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
-
-    const id = rail.tunniste;
-    const name = `Raide ${index.trackId} ${ratakmvali.alku.ratakm}+${ratakmvali.alku.etaisyys} - ${ratakmvali.loppu.ratakm}+${ratakmvali.loppu.etaisyys}`;
-    const beginAbsPos = ratakmvali.alku.ratakm * 1000 + ratakmvali.alku.etaisyys;
-    const endAbsPos = ratakmvali.loppu.ratakm * 1000 + ratakmvali.loppu.etaisyys;
-    const endPos = endAbsPos - beginAbsPos;
-
-    const elements = _.uniqBy(_.filter(index.elementit, (e) => _.find(e.raiteet, (r) => r.tunniste === rail.tunniste)), 'tunniste');
-    const elementGroups = _.groupBy(elements, 'tyyppi');
-
-    const trackBeginRef = findTrackConnectionRef(elementGroups.vaihde, ratakmvali.alku.ratakm, ratakmvali.alku.etaisyys);
-    const trackEndRef = findTrackConnectionRef(elementGroups.vaihde, ratakmvali.loppu.ratakm, ratakmvali.loppu.etaisyys);
-
-    const $ = cheerio.load(`<track id="${id}" name="${name}"><trackTopology></trackTopology><trackElements/><ocsElements/></track>`, cheerioOpts);
+function fromRail(acc, rail) {
     
-    const topology = $('trackTopology');
-    topology.append(`<trackBegin id="tb_${id}" pos="0.0000" absPos="${beginAbsPos}"><connection id="tbc_${id}" ref="${trackBeginRef}" /></trackBegin>`);
-    topology.append(`<trackEnd id="te_${id}" pos="${endPos}" absPos="${endAbsPos}"><connection id="tec_${id}" ref="${trackEndRef}" /></trackEnd>`);
+    const track = marshallRail(rail, acc.index);
+    acc.tracks = _.concat(acc.tracks, track.element);
+    acc.speeds = _.concat(acc.speeds, track.speeds);
 
-    const switches = _.map(elementGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
-    if (!_.isEmpty(switches)) {
-        topology.append('<connections/>');
-        $('trackTopology > connections').append(switches);
-    }
-
-    const signals = _.map(elementGroups.opastin, (o) => signal.marshall(index.trackId, beginAbsPos, o));    
-    if (!_.isEmpty(signals)) {
-        $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`);
-    }
-
-    const balises = _.map(elementGroups.baliisi, (b) => balise.marshall(index.trackId, beginAbsPos, b));
-    if (!_.isEmpty(balises)) {
-        $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
-    }
-
-    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => nr.ratakmvali.ratanumero === index.trackId);
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(beginAbsPos, n)));
-    if (!_.isEmpty(speedChanges)) {
-        $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
-    }
-
-    acc.tracks.push($.html());
-    acc.speeds.push(_.uniq(_.flatMap(nopeudet, speeds.marshall)))
-    acc.previousTrack = trackEndRef;
-    return acc; 
+    return acc;
 }
 
-function findTrackConnectionRef(switches, km, etaisyys) {
-    const s = _.find(switches, (s) => _.find(s.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
-    return s ? s.tunniste : 'undefined';
+function findTrackConnectionRef(km, etaisyys, vaihteet, puskimet) {
+    const vaihde = _.find(vaihteet, (v) => _.find(v.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys })) || {};
+    const puskin = _.find(puskimet, (p) => _.find(p.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys })) || {};
+    return vaihde.tunniste || puskin.tunniste || '';
+}
+
+function isRailElement(element, railId, trackId, kmMin, distMin, kmMax, distMax) {
+    const included = _.map(element.raiteet, 'tunniste').includes(railId);
+    const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
+    return included && !_.isEmpty(sijainti) && sijainti.ratakm >= kmMin && sijainti.etaisyys >= distMin && sijainti.ratakm <= kmMax && sijainti.etaisyys <= distMax;
+}
+
+function isRailSpeedChange(speed, trackId, kmMin, distMin, kmMax, distMax) {
+    const { ratanumero, alku } = speed.ratakmvali;
+    return ratanumero === trackId && alku.ratakm >= kmMin && alku.etaisyys >= distMin && alku.ratakm <= kmMax && alku.etaisyys <= distMax;
 }
 
 module.exports = {

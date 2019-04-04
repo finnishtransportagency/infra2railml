@@ -31,17 +31,28 @@ module.exports = {
   /**
    * Convert kilometers to object index.
    */
-  createIndex: (trackId, kilometers) => {
+  createIndex: (trackId, kilometrit) => {
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
 
-      const from = _.first(kilometers).ratakm || 0;
-      const to = _.last(kilometers).ratakm || kilometers.length;
+      if (_.isEmpty(kilometrit)) {
+        reject(new Error('No kilometers to process.'));
+      }
 
-      const elementit = _.uniqBy(_.filter(_.flatMap(kilometers, 'elementit'), (e) => _.find(e.ratakmsijainnit, { ratanumero: trackId })), 'tunniste');
-      const raiteet = _.uniqBy(_.filter(_.flatMap(elementit, 'raiteet'), (r) => _.find(r.ratakmvalit, { ratanumero: trackId })), 'tunniste');
+      const sorted = _.sortBy(kilometrit, 'ratakm');
+      const from = _.first(sorted).ratakm || 0;
+      const to = _.last(sorted).ratakm || kilometrit.length;
+      const totalLength = _.sumBy(sorted, 'pituus');
+
+      const elementit = _.uniqBy(_.filter(_.flatMap(kilometrit, 'elementit'), (e) => !_.isEmpty(_.find(e.ratakmsijainnit, { ratanumero: trackId }))), 'tunniste');
+      //const raiteet = _.uniqBy(_.filter(_.flatMap(elementit, 'raiteet'), (r) => _.find(r.ratakmvalit, { ratanumero: trackId })), 'tunniste');
       
-      const index = { trackId, from, to, kilometrit: kilometers, raiteet, elementit};
+      const raiteet = _.uniqBy(_.flatMap(elementit, 'raiteet'), 'tunniste');
+      const radanRaiteet = _.filter(raiteet, (r) => !_.isEmpty(_.find(r.ratakmvalit, { ratanumero: trackId })));
+      
+      console.log(`found ${raiteet.length} relevant rails out of ${raiteet.length}`);
+
+      const index = { trackId, from, to, totalLength, kilometrit, raiteet: radanRaiteet, elementit};
 
       resolve(index);
     });

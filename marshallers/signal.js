@@ -50,12 +50,14 @@ module.exports = {
         const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
         const type = SIGNAL_TYPES[element.opastin.tyyppi];
 
+        const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
+
         const $ = cheerio.load('<signal/>', config.cheerio);
         $('signal').attr('id', element.tunniste);
         $('signal').attr('type', type);
         $('signal').attr('name', element.nimi);
-        $('signal').attr('pos', sijainti.etaisyys);
-        $('signal').attr('absPos', absPos + sijainti.etaisyys);
+        $('signal').attr('pos', pos);
+        $('signal').attr('absPos', absPos + pos);
         $('signal').attr('dir', dir);
         $('signal').attr('virtual', 'false');
 

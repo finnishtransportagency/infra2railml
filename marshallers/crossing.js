@@ -17,13 +17,14 @@ module.exports = {
         
         const type = CROSSING_TYPES[element.vaihde.tyyppi];
         const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
+        const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
 
         const $ = cheerio.load('<crossing/>', config.cheerio);
         $('crossing').attr('id', element.tunniste);
         $('crossing').attr('name', element.nimi);
         $('crossing').attr('type', type);
-        $('crossing').attr('pos', sijainti.etaisyys);
-        $('crossing').attr('absPos', absPos + sijainti.etaisyys);
+        $('crossing').attr('pos', pos);
+        $('crossing').attr('absPos', absPos + pos);
 
         return $.html();
     }

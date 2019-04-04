@@ -27,6 +27,11 @@ const SWITCH_TYPES = {
     "skvo" : SwitchType.INSIDE_CURVED_SWITCH,    
 };
 
+const REF_PREFIX = {
+    incoming: 'tec',
+    outgoing: 'tbc'
+};
+
 module.exports = {
     marshall: (trackId, absPos, element) => {
         
@@ -35,27 +40,27 @@ module.exports = {
         const type = SWITCH_TYPES[element.vaihde.tyyppi];
         const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
 
+        const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
+
         const $ = cheerio.load('<switch/>', config.cheerio);
         $('switch').attr('id', element.tunniste);
         $('switch').attr('name', element.nimi);
         $('switch').attr('type', type);
-        $('switch').attr('pos', sijainti.etaisyys);
-        $('switch').attr('absPos', absPos + sijainti.etaisyys);
+        $('switch').attr('pos', pos);
+        $('switch').attr('absPos', absPos + pos);
 
-        const straight = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'taka');
-        const parting = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && (y.minneRooli === 'vasen' || y.minneRooli === 'oikea'));
+        const straight = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'taka') || {};
+        const parting = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && (y.minneRooli === 'vasen' || y.minneRooli === 'oikea')) || {};
         const partingCourse = parting.minneRooli === 'oikea' ? 'right' : 'left';
 
         const ao = straight.minneSuunta === 'nouseva' ? 'incoming' : 'outgoing';
         const bo = ao === 'incoming' ? 'outgoing' : 'incoming';
         const co = parting.minneSuunta === 'nouseva' ? 'incoming' : 'outgoing';
 
-        const prefixes = { incoming: 'tec', outgoing: 'tbc'};
-
         const connections = [
-            `<connection id="swc_${element.tunniste}_a" ref="${prefixes[ao]}_${straight.mista}" course="straight" orientation="${ao}" />`,
-            `<connection id="swc_${element.tunniste}_b" ref="${prefixes[bo]}_${straight.minne}" course="straight" orientation="${bo}" />`,
-            `<connection id="swc_${element.tunniste}_c" ref="${prefixes[co]}_${parting.minne}" course="${partingCourse}" orientation="${co}" />`
+            `<connection id="swc_${element.tunniste}_a" ref="${REF_PREFIX[ao]}_${straight.mista}" course="straight" orientation="${ao}" />`,
+            `<connection id="swc_${element.tunniste}_b" ref="${REF_PREFIX[bo]}_${straight.minne}" course="straight" orientation="${bo}" />`,
+            `<connection id="swc_${element.tunniste}_c" ref="${REF_PREFIX[co]}_${parting.minne}" course="${partingCourse}" orientation="${co}" />`
         ];
 
 

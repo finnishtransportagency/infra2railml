@@ -60,11 +60,14 @@ function fromKilometers(trackId, kilometers) {
 }
 
 function fromRails(index) {
+
     return new Promise((resolve) => {
         
-        const memo = { index, absPos: index.from * 1000, speeds: [], tracks: [], previousTrack: '' }
+        // FiXME assumption of each track kilometer being exactly 1000 meters
+        const absPos = index.from * 1000;
+
+        const memo = { index, absPos, speeds: [], tracks: [], previousTrack: '' }
         const results = _.transform(index.raiteet, track.fromRail, memo);
-        
         const infra = infrastructure.marshall(results);
         const visuals = infrastructureVis.marshall(results)
         const railml = marshall(infra, visuals);

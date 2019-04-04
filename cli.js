@@ -50,7 +50,10 @@ function rails(trackId, args) {
   app.getTrack(trackId, from, length)
     .then((kms) => app.createIndex(trackId, kms))
     .then(app.railsToRailML)
-    .then((railml) => writeToFile(filename, railml));
+    .then((railml) => writeToFile(filename, railml))
+    .catch((err) => {
+      console.error(err);
+    });
 }
 
 function writeToFile(filename, data) {

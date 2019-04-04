@@ -73,19 +73,33 @@ function marshallRail(rail, index) {
 
     console.log(name);
 
-    // trackTopology element
+    // track begin / end
     const beginAbsPos = alku.ratakm * 1000 + alku.etaisyys;
     const endAbsPos = loppu.ratakm * 1000 + loppu.etaisyys;
     const endPos = endAbsPos - beginAbsPos;
-    const trackBeginRef = findTrackConnectionRef(alku.ratakm, alku.etaisyys, elementGroups.vaihde, elementGroups.puskin);
-    const trackEndRef = findTrackConnectionRef(loppu.ratakm, loppu.etaisyys, elementGroups.vaihde, elementGroups.puskin);
-    const switches = _.map(elementGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
+    $('trackTopology').append(`<trackBegin id="tb_${railId}" pos="0.0000" absPos="${beginAbsPos}">`);
+    $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}">`); 
+        
+    const beginElement = findConnectingElement(alku.ratakm, alku.etaisyys, elementGroups.vaihde, elementGroups.puskin);
+    const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups.vaihde, elementGroups.puskin);
     
+    if (beginElement && beginElement.tyyppi === 'vaihde') {
+        $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginElement.tunniste}" />`);
+    } else if (beginElement && beginElement.tyyppi === 'puskin') {
+        console.log(beginElement);
+        $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi}" ref="${beginElement.tunniste}" />`);
+    }
+
+    if (endElement && endElement.tyyppi === 'vaihde') {
+        $('trackEnd').append(`<connection id="tec_${railId}" ref="${endElement.tunniste}" />`);
+    } else if (endElement && endElement.tyyppi === 'puskin') {
+        console.log(endElement);
+        $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi}" ref="${endElement.tunniste}" />`);
+    }
+
+    const switches = _.map(elementGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
     const risteykset = _.filter(elements.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
     const crossings = _.map(risteykset, (r) => crossing.marshall(km.ratanumero, absPos, r));
-    
-    $('trackTopology').append(`<trackBegin id="tb_${railId}" pos="0.0000" absPos="${beginAbsPos}"><connection id="tbc_${railId}" ref="${trackBeginRef}" /></trackBegin>`);
-    $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}"><connection id="tec_${railId}" ref="${trackEndRef}" /></trackEnd>`);
     $('trackTopology').append('<connections/>');    
     if (!_.isEmpty(switches)) {
         $('trackTopology > connections').append(switches);
@@ -143,10 +157,10 @@ function fromRail(acc, rail) {
     return acc;
 }
 
-function findTrackConnectionRef(km, etaisyys, vaihteet, puskimet) {
-    const vaihde = _.find(vaihteet, (v) => _.find(v.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys })) || {};
-    const puskin = _.find(puskimet, (p) => _.find(p.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys })) || {};
-    return vaihde.tunniste || puskin.tunniste || '';
+function findConnectingElement(km, etaisyys, vaihteet, puskimet) {
+    const vaihde = _.find(vaihteet, (v) => _.find(v.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
+    const puskin = _.find(puskimet, (p) => _.find(p.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
+    return vaihde || puskin;
 }
 
 function isRailElement(element, railId, trackId, kmMin, distMin, kmMax, distMax) {

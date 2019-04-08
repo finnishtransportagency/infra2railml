@@ -44,15 +44,15 @@ module.exports = {
       const to = _.last(sorted).ratakm || kilometrit.length;
       const totalLength = _.sumBy(sorted, 'pituus');
 
-      const elementit = _.uniqBy(_.filter(_.flatMap(kilometrit, 'elementit'), (e) => !_.isEmpty(_.find(e.ratakmsijainnit, { ratanumero: trackId }))), 'tunniste');
-      //const raiteet = _.uniqBy(_.filter(_.flatMap(elementit, 'raiteet'), (r) => _.find(r.ratakmvalit, { ratanumero: trackId })), 'tunniste');
-      
+      const elementit = _.uniqBy(_.filter(_.flatMap(kilometrit, 'elementit'), (e) => !_.isEmpty(_.find(e.ratakmsijainnit, { ratanumero: trackId }))), 'tunniste');   
       const raiteet = _.uniqBy(_.flatMap(elementit, 'raiteet'), 'tunniste');
       const radanRaiteet = _.filter(raiteet, (r) => !_.isEmpty(_.find(r.ratakmvalit, { ratanumero: trackId })));
       
       console.log(`found ${raiteet.length} relevant rails out of ${raiteet.length}`);
 
-      const index = { trackId, from, to, totalLength, kilometrit, raiteet: radanRaiteet, elementit};
+      const index = {
+        trackId, from, to, totalLength, kilometrit, raiteet: radanRaiteet, elementit
+      };
 
       resolve(index);
     });

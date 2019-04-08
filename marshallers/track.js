@@ -5,6 +5,7 @@ const signal = require('./signal');
 const _switch = require('./switch');
 const crossing = require('./crossing');
 const speedChange = require('./speed-change');
+const electrificationChange = require('./electrification-change');
 const speeds = require('./speeds');
 
 const cheerioOpts = { xmlMode: true, normalizeWhitespace: true };
@@ -47,9 +48,13 @@ function marshallKm(km, absPos, prevTrackId) {
     const raiteet = _.filter(_.uniqBy(_.reject(_.flatMap(km.elementit, (e) => e.raiteet), _.isUndefined), 'tunniste'), { 'tyyppi': 'linja' });
     const nopeudet = _.filter(_.flatMap(raiteet, (r) => r.nopeusrajoitukset), (nr) => nr.ratakmvali.ratanumero === km.ratanumero && nr.ratakmvali.alku.ratakm === km.ratakm);
     const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(absPos, n)));
-    
     if (!_.isEmpty(speedChanges)) {
         $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
+    }
+
+    const electrificationChanges = _.map(elements.erotinjakso, (ej) => electrificationChange.marshall(absPos, ej));
+    if (!_.isEmpty(electrificationChanges)) {
+        $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
 
     return {
@@ -69,7 +74,7 @@ function marshallRail(rail, index) {
     // track element
     const railId = rail.tunniste;
     const name = `Raide ${index.trackId} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
-    const $ = cheerio.load(`<track id="${railId}" name="${name}"><trackTopology></trackTopology><trackElements/><ocsElements/></track>`, cheerioOpts);
+    const $ = cheerio.load(`<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`, cheerioOpts);
 
     console.log(name);
 
@@ -86,15 +91,13 @@ function marshallRail(rail, index) {
     if (beginElement && beginElement.tyyppi === 'vaihde') {
         $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginElement.tunniste}" />`);
     } else if (beginElement && beginElement.tyyppi === 'puskin') {
-        console.log(beginElement);
-        $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi}" ref="${beginElement.tunniste}" />`);
+        $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
     }
 
     if (endElement && endElement.tyyppi === 'vaihde') {
         $('trackEnd').append(`<connection id="tec_${railId}" ref="${endElement.tunniste}" />`);
     } else if (endElement && endElement.tyyppi === 'puskin') {
-        console.log(endElement);
-        $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi}" ref="${endElement.tunniste}" />`);
+        $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
     }
 
     const switches = _.map(elementGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
@@ -124,6 +127,11 @@ function marshallRail(rail, index) {
     const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(beginAbsPos, n)));
     if (!_.isEmpty(speedChanges)) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
+    }
+
+    const electrificationChanges = _.map(elementGroups.erotusjakso, (ej) => electrificationChange.marshall(absPos, ej));
+    if (!_.isEmpty(electrificationChanges)) {
+        $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
 
     return {

@@ -15,7 +15,10 @@ const trackRef = require('./track-ref');
  */
 function marshallKm(km, absPos, prevTrackId) {
     
-    const $ = cheerio.load(`<track id="${km.kilometrimerkki.tunniste}" name="${km.ratanumero} - ${km.ratakm}"><trackTopology/><trackElements/><ocsElements/></track>`, cheerioOpts);
+    const trackId = km.kilometrimerkki.tunniste;
+    const trackName = `${km.ratanumero} - ${km.ratakm}`;
+    const stub = `<track id="${trackId}" name="${trackName}"><trackTopology/><trackElements/><ocsElements/></track>`;
+    const $ = cheerio.load(stub, config.cheerio);
 
     const topology = $('trackTopology');
     topology.append(`<trackBegin id="tb_${km.ratakm}" pos="0.0000" absPos="${absPos}"><connection id="tbc_${km.ratakm}" ref="${prevTrackId}"/></trackBegin>`);
@@ -75,7 +78,8 @@ function marshallRail(rail, index) {
     // track element
     const railId = rail.tunniste;
     const name = `Raide ${index.trackId} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
-    const $ = cheerio.load(`<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`, config.cheerio);
+    const stub = `<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`;
+    const $ = cheerio.load(stub, config.cheerio);
 
     console.log(name);
 

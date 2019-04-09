@@ -34,12 +34,14 @@ function track(trackId, args) {
   const filename = `./Track-${trackId}_${from}-${from + length - 1}`;
 
   app.getTrack(trackId, from, length)
-    .then((kilometers) => app.kilometersToRailML(trackId, kilometers))
+    .then((kms) => app.createIndex(trackId, kms))
+    .then(app.kilometersToRailML)
     .then((railml) => writeToFile(`${filename}.railml.xml`, railml))
+    .catch((err) => console.log(err.message));
 };
 
 /**
- * Rails command controller.
+ * "rails" command controller.
  */
 function rails(trackId, args) {
 
@@ -51,9 +53,8 @@ function rails(trackId, args) {
     .then((kms) => app.createIndex(trackId, kms))
     .then(app.railsToRailML)
     .then((railml) => writeToFile(filename, railml))
-    .catch((err) => {
-      console.error(err);
-    });
+    .catch((err) => console.log(err.message));
+
 }
 
 function writeToFile(filename, data) {

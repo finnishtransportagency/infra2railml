@@ -2,9 +2,9 @@ const cheerio = require('cheerio');
 const config = require('../config');
 
 module.exports = {
-    marshall: (km) => {
+    marshall: (obj) => {
         const $ = cheerio.load('<trackRef/>', config.cheerio);
-        $('trackRef').attr('id', km.kilometrimerkki.tunniste);
+        $('trackRef').attr('id', obj.tunniste || obj.kilometrimerkki.tunniste);
         return $.html();
     }
 };

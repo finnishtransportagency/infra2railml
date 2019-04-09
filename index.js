@@ -7,7 +7,7 @@ module.exports = {
   /**
    * Get track kilometers from API, complemented with selected child objects.
    */
-  getTrack: (trackNumber, from, length) => {    
+  getTrack: (trackNumber, from, length) => {
     console.info(`Loading track ${trackNumber} [${from}..${from+length-1} km] ..`);
     return trackService.getKilometers(trackNumber, from, length);    
   },
@@ -15,9 +15,9 @@ module.exports = {
   /**
    * Convert track kilometers to railML.
    */
-  kilometersToRailML: (trackId, kilometers) => {
+  kilometersToRailML: (index) => {
     console.info('Generating railML based on kilometers..');
-    return railml.fromKilometers(trackId, kilometers);
+    return railml.fromKilometers(index);
   },
 
   /**
@@ -42,16 +42,14 @@ module.exports = {
       const sorted = _.sortBy(kilometrit, 'ratakm');
       const from = _.first(sorted).ratakm || 0;
       const to = _.last(sorted).ratakm || kilometrit.length;
-      const totalLength = _.sumBy(sorted, 'pituus');
+      const absLength = _.sumBy(sorted, 'pituus');
 
       const elementit = _.uniqBy(_.filter(_.flatMap(kilometrit, 'elementit'), (e) => !_.isEmpty(_.find(e.ratakmsijainnit, { ratanumero: trackId }))), 'tunniste');   
       const raiteet = _.uniqBy(_.flatMap(elementit, 'raiteet'), 'tunniste');
       const radanRaiteet = _.filter(raiteet, (r) => !_.isEmpty(_.find(r.ratakmvalit, { ratanumero: trackId })));
       
-      console.log(`found ${raiteet.length} relevant rails out of ${raiteet.length}`);
-
       const index = {
-        trackId, from, to, totalLength, kilometrit, raiteet: radanRaiteet, elementit
+        trackId, from, to, absLength, kilometrit, raiteet: radanRaiteet, elementit
       };
 
       resolve(index);

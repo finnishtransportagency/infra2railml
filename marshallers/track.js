@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
+const config = require('../config');
 const balise = require('./balise');
 const signal = require('./signal');
 const _switch = require('./switch');
@@ -7,8 +8,7 @@ const crossing = require('./crossing');
 const speedChange = require('./speed-change');
 const electrificationChange = require('./electrification-change');
 const speeds = require('./speeds');
-
-const cheerioOpts = { xmlMode: true, normalizeWhitespace: true };
+const trackRef = require('./track-ref');
 
 /**
  * Convert one track kilometer to railML.
@@ -59,7 +59,8 @@ function marshallKm(km, absPos, prevTrackId) {
 
     return {
         element: $.html(),
-        speeds: _.uniq(_.flatMap(nopeudet, speeds.marshall))
+        speeds: _.uniq(_.flatMap(nopeudet, speeds.marshall)),
+        trackRef: trackRef.marshall(km)
     };
 }
 
@@ -68,13 +69,13 @@ function marshallRail(rail, index) {
     const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
     const { alku, loppu } = ratakmvali;
 
-    const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(e, rail.tunniste, index.trackId, alku.ratakm, alku.etaisyys, loppu.ratakm, loppu.etaisyys)), 'tunniste');
+    const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(e, rail.tunniste, index.trackId, alku, loppu)), 'tunniste');
     const elementGroups = _.groupBy(elements, 'tyyppi');
-   
+
     // track element
     const railId = rail.tunniste;
     const name = `Raide ${index.trackId} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
-    const $ = cheerio.load(`<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`, cheerioOpts);
+    const $ = cheerio.load(`<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`, config.cheerio);
 
     console.log(name);
 
@@ -122,7 +123,7 @@ function marshallRail(rail, index) {
     }
 
     // trackElements
-    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(nr, index.trackId, alku.ratakm, alku.etaisyys, loppu.ratakm, loppu.etaisyys));
+    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(nr, index.trackId, alku, loppu));
     const speedAttrs = _.uniq(_.flatMap(nopeudet, speeds.marshall));
     const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(beginAbsPos, n)));
     if (!_.isEmpty(speedChanges)) {
@@ -137,6 +138,7 @@ function marshallRail(rail, index) {
     return {
         element: $.html(),
         speeds: speedAttrs,
+        trackRef: trackRef.marshall(rail),
         length: endPos
     };
 }
@@ -150,7 +152,8 @@ function fromKilometer(acc, km) {
     
     acc.tracks = _.concat(acc.tracks, track.element);
     acc.speeds = _.concat(acc.speeds, track.speeds);
-    acc.absPos += (km.pituus || km.ratakm * 1000);
+    acc.trackRefs = _.concat(acc.trackRefs, track.trackRef);
+    acc.absPos += (km.pituus || 1000);
     acc.previousTrack = km.kilometrimerkki.tunniste || '';
     
     return acc;
@@ -161,6 +164,7 @@ function fromRail(acc, rail) {
     const track = marshallRail(rail, acc.index);
     acc.tracks = _.concat(acc.tracks, track.element);
     acc.speeds = _.concat(acc.speeds, track.speeds);
+    acc.trackRefs = _.concat(acc.trackRefs, track.trackRef);
 
     return acc;
 }
@@ -171,15 +175,23 @@ function findConnectingElement(km, etaisyys, vaihteet, puskimet) {
     return vaihde || puskin;
 }
 
-function isRailElement(element, railId, trackId, kmMin, distMin, kmMax, distMax) {
+function isRailElement(element, railId, trackId, raideAlku, raideLoppu) {
     const included = _.map(element.raiteet, 'tunniste').includes(railId);
     const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
-    return included && !_.isEmpty(sijainti) && sijainti.ratakm >= kmMin && sijainti.etaisyys >= distMin && sijainti.ratakm <= kmMax && sijainti.etaisyys <= distMax;
+    return included && !_.isEmpty(sijainti) &&
+        sijainti.ratakm >= raideAlku.ratakm &&
+        sijainti.etaisyys >= raideAlku.etaisyys &&
+        sijainti.ratakm <= raideLoppu.ratakm &&
+        sijainti.etaisyys <= raideLoppu.etaisyys;
 }
 
-function isRailSpeedChange(speed, trackId, kmMin, distMin, kmMax, distMax) {
+function isRailSpeedChange(speed, raideRataNr, raideAlku, raideLoppu) {
     const { ratanumero, alku } = speed.ratakmvali;
-    return ratanumero === trackId && alku.ratakm >= kmMin && alku.etaisyys >= distMin && alku.ratakm <= kmMax && alku.etaisyys <= distMax;
+    return ratanumero === raideRataNr &&
+        alku.ratakm >= raideAlku.ratakm &&
+        alku.etaisyys >= raideAlku.etaisyys &&
+        alku.ratakm <= raideLoppu.ratakm &&
+        alku.etaisyys <= raideLoppu.etaisyys;
 }
 
 module.exports = {

@@ -6,7 +6,7 @@ const COLUMN_WIDTH = 1000;
 const ROW_HEIGHT = 750;
 
 module.exports = {
-    marshall: (km, i) => {
+    marshall: (obj, i) => {
 
         const col = Math.round(10 * ((i / 10) % 1));
         const row = Math.floor(i / 10);
@@ -15,9 +15,12 @@ module.exports = {
         const y = MARGIN + (row * ROW_HEIGHT);
         const dx = x + COLUMN_WIDTH;
 
-        const $ = cheerio.load(`<trackVis ref="${km.kilometrimerkki.tunniste}">`, config.cheerio);
-        $('trackVis').append(`<trackElementVis ref="tb_${km.ratakm}"><position x="${x}" y="${y}"/></trackElementVis>`);
-        $('trackVis').append(`<trackElementVis ref="te_${km.ratakm}"><position x="${dx}" y="${y}"/></trackElementVis>`);
+        const id = obj.tunniste || obj.kilometrimerkki.tunniste;
+        const refId = obj.ratakm || id;
+
+        const $ = cheerio.load(`<trackVis ref="${id}">`, config.cheerio);
+        $('trackVis').append(`<trackElementVis ref="tb_${refId}"><position x="${x}" y="${y}"/></trackElementVis>`);
+        $('trackVis').append(`<trackElementVis ref="te_${refId}"><position x="${dx}" y="${y}"/></trackElementVis>`);
 
         return $.html();
     }

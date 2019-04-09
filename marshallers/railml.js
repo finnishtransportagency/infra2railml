@@ -13,21 +13,37 @@ const XML_NAMESPACES = {
 
 const RAILML_STUB = '<?xml version="1.0" encoding="UTF-8"?><railml/>';
 
+/**
+ * Infra-API base types from which the railML track elements are created.
+ */
+const BaseType = {
+    RAILS: 'raiteet',
+    KILOMETERS: 'kilometrit'
+};
+
+/**
+ * Track element marshallers for base types.
+ */
 const TRACK_MARSHALLERS = {
     kilometrit: track.fromKilometer,
     raiteet: track.fromRail
 };
 
 /**
- * Marshall given index to railML.
+ * Marshall given base types to railML tracks.
  */
 function marshall(baseType, index) {
-    return new Promise((resolve) => {
-    
-        const objects = index[baseType];
-        const transformer = TRACK_MARSHALLERS[baseType];
 
-        const absPos = index.from * 1000; // FIXME assumption of each track kilometer being exactly 1000 meters
+    const objects = index[baseType];
+    const transformer = TRACK_MARSHALLERS[baseType];
+
+    return new Promise((resolve, reject) => {
+    
+        if (!objects || !transformer) {
+            reject(new Error(`Invalid base type '${baseType}'.`));
+        }
+        
+        const absPos = index.from * 1000; // FIXME assumes each track kilometer being exactly 1000m
         const memo = { index, absPos, tracks: [], speeds: [], trackRefs: [], previousKm: '' };
         const results = _.transform(objects, transformer, memo);
 
@@ -45,5 +61,5 @@ function marshall(baseType, index) {
 }
 
 module.exports = {
-    marshall
+    BaseType, marshall
 };

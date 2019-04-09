@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const trackService = require('./services/tracks');
 const railml = require('./marshallers/railml');
+const { BaseType } = railml;
 
 module.exports = {
   
@@ -17,7 +18,7 @@ module.exports = {
    */
   kilometersToRailML: (index) => {
     console.info('Generating railML based on kilometers..');
-    return railml.marshall('kilometrit', index);
+    return railml.marshall(BaseType.KILOMETERS, index);
   },
 
   /**
@@ -25,7 +26,7 @@ module.exports = {
    */
   railsToRailML: (index) => {
     console.info('Generating railML based on rails..');
-    return railml.marshall('raiteet', index);
+    return railml.marshall(BaseType.RAILS, index);
   },
 
   /**

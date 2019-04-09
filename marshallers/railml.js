@@ -13,61 +13,37 @@ const XML_NAMESPACES = {
 
 const RAILML_STUB = '<?xml version="1.0" encoding="UTF-8"?><railml/>';
 
-/**
- * Main document composer.
- */
-function marshall(infra, visuals) {
-
-    const $ = cheerio.load(RAILML_STUB, config.cheerio);
-    _.each(XML_NAMESPACES, (val, key) => $('railml').attr(key, val));
-    
-    $('railml').append(infra);
-    $('railml').append(visuals);
-    
-    return $.html();
-}
+const TRACK_MARSHALLERS = {
+    kilometrit: track.fromKilometer,
+    raiteet: track.fromRail
+};
 
 /**
- * Convert track kilometers to railML track elements.
+ * Marshall given index to railML.
  */
-function fromKilometers(index) {
-
+function marshall(baseType, index) {
     return new Promise((resolve) => {
+    
+        const objects = index[baseType];
+        const transformer = TRACK_MARSHALLERS[baseType];
 
-        // FIXME assumption of each track kilometer being exactly 1000 meters
-        const absPos = index.from * 1000;
-
+        const absPos = index.from * 1000; // FIXME assumption of each track kilometer being exactly 1000 meters
         const memo = { index, absPos, tracks: [], speeds: [], trackRefs: [], previousKm: '' };
-        const results = _.transform(index.kilometrit, track.fromKilometer, memo);
-       
-        const infra = infrastructure.marshall(results);
-        const visuals = infrastructureVis.marshallKm(results);
-        const railml = marshall(infra, visuals);
+        const results = _.transform(objects, transformer, memo);
 
-        resolve(railml);
-    });
-}
-
-/**
- * Convert track rails to railML track elements.
- */
-function fromRails(index) {
-
-    return new Promise((resolve) => {
+        const $ = cheerio.load(RAILML_STUB, config.cheerio);
+        _.each(XML_NAMESPACES, (val, key) => $('railml').attr(key, val));
         
-        // FiXME assumption of each track kilometer being exactly 1000 meters
-        const absPos = index.from * 1000;
-
-        const memo = { index, absPos, speeds: [], tracks: [] };
-        const results = _.transform(index.raiteet, track.fromRail, memo);
         const infra = infrastructure.marshall(results);
-        const visuals = infrastructureVis.marshallRails(results)
-        const railml = marshall(infra, visuals);
-        
-        resolve(railml);
+        const visuals = infrastructureVis.marshall(baseType, results)
+
+        $('railml').append(infra);
+        $('railml').append(visuals);
+
+        resolve( $.html());
     });
 }
 
 module.exports = {
-    marshall, fromKilometers, fromRails
+    marshall
 };

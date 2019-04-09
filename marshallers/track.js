@@ -81,8 +81,6 @@ function marshallRail(rail, index) {
     const stub = `<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`;
     const $ = cheerio.load(stub, config.cheerio);
 
-    console.log(name);
-
     // track begin / end
     const beginAbsPos = alku.ratakm * 1000 + alku.etaisyys;
     const endAbsPos = loppu.ratakm * 1000 + loppu.etaisyys;
@@ -90,8 +88,8 @@ function marshallRail(rail, index) {
     $('trackTopology').append(`<trackBegin id="tb_${railId}" pos="0.0000" absPos="${beginAbsPos}">`);
     $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}">`); 
         
-    const beginElement = findConnectingElement(alku.ratakm, alku.etaisyys, elementGroups.vaihde, elementGroups.puskin);
-    const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups.vaihde, elementGroups.puskin);
+    const beginElement = findConnectingElement(alku.ratakm, alku.etaisyys, elementGroups);
+    const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
     
     if (beginElement && beginElement.tyyppi === 'vaihde') {
         $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginElement.tunniste}" />`);
@@ -173,9 +171,9 @@ function fromRail(acc, rail) {
     return acc;
 }
 
-function findConnectingElement(km, etaisyys, vaihteet, puskimet) {
-    const vaihde = _.find(vaihteet, (v) => _.find(v.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
-    const puskin = _.find(puskimet, (p) => _.find(p.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
+function findConnectingElement(km, etaisyys, elements) {
+    const vaihde = _.find(elements.vaihde, (v) => !!_.find(v.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
+    const puskin = _.find(elements.puskin, (p) => !!_.find(p.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
     return vaihde || puskin;
 }
 

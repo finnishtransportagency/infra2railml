@@ -37,7 +37,7 @@ function track(trackId, args) {
     .then((kms) => app.createIndex(trackId, kms))
     .then(app.kilometersToRailML)
     .then((railml) => writeToFile(`${filename}.railml.xml`, railml))
-    .catch((err) => console.log(err.message));
+    .catch((err) => console.error(err.message));
 };
 
 /**
@@ -53,7 +53,7 @@ function rails(trackId, args) {
     .then((kms) => app.createIndex(trackId, kms))
     .then(app.railsToRailML)
     .then((railml) => writeToFile(filename, railml))
-    .catch((err) => console.log(err.message));
+    .catch((err) => console.error(err.message));
 
 }
 

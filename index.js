@@ -17,7 +17,7 @@ module.exports = {
    */
   kilometersToRailML: (index) => {
     console.info('Generating railML based on kilometers..');
-    return railml.fromKilometers(index);
+    return railml.marshall('kilometrit', index);
   },
 
   /**
@@ -25,7 +25,7 @@ module.exports = {
    */
   railsToRailML: (index) => {
     console.info('Generating railML based on rails..');
-    return railml.fromRails(index);
+    return railml.marshall('raiteet', index);
   },
 
   /**
@@ -46,7 +46,7 @@ module.exports = {
 
       const elementit = _.uniqBy(_.filter(_.flatMap(kilometrit, 'elementit'), (e) => !_.isEmpty(_.find(e.ratakmsijainnit, { ratanumero: trackId }))), 'tunniste');   
       const raiteet = _.uniqBy(_.flatMap(elementit, 'raiteet'), 'tunniste');
-      const radanRaiteet = _.filter(raiteet, (r) => !_.isEmpty(_.find(r.ratakmvalit, { ratanumero: trackId })));
+      const radanRaiteet = _.filter(raiteet, (r) => !!_.find(r.ratakmvalit, { ratanumero: trackId }));
       
       const index = {
         trackId, from, to, absLength, kilometrit, raiteet: radanRaiteet, elementit

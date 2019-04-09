@@ -22,6 +22,6 @@ module.exports = {
         $('trackVis').append(`<trackElementVis ref="tb_${refId}"><position x="${x}" y="${y}"/></trackElementVis>`);
         $('trackVis').append(`<trackElementVis ref="te_${refId}"><position x="${dx}" y="${y}"/></trackElementVis>`);
 
-        return $.html();
+        return $.xml();
     }
 };

@@ -5,6 +5,6 @@ module.exports = {
     marshall: (obj) => {
         const $ = cheerio.load('<trackRef/>', config.cheerio);
         $('trackRef').attr('id', obj.tunniste || obj.kilometrimerkki.tunniste);
-        return $.html();
+        return $.xml();
     }
 };

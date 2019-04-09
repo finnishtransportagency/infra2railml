@@ -16,6 +16,6 @@ module.exports = {
         $('infrastructure > trackGroups').append(`<line id="line_${index.trackId}_${index.from}_${index.to}"/>`);
         $('infrastructure > trackGroups > line').append(model.trackRefs);
 
-        return $.html();
+        return $.xml();
     }
 }

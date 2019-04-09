@@ -36,6 +36,6 @@ module.exports = {
         a('eletricficationChange').attr('dir', dir);
         a('eletricficationChange').attr('vMax', max);
 
-        return a.html();
+        return a.xml();
     }
 };

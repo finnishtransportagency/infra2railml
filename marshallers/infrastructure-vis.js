@@ -18,6 +18,6 @@ module.exports = {
         $('infrastructureVisualizations > visualization').append(`<lineVis ref="${lineId}"/>`);
         $('infrastructureVisualizations > visualization > lineVis').append(trackVis);
 
-        return $.html();
+        return $.xml();
     }
 }

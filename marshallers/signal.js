@@ -64,6 +64,6 @@ module.exports = {
         // TODO element.opastin.puoli (vas/oik), railML term?
         // TODO aSignal attribute "function" (tSignalFunction: exit|home|blocking|intermediate)
 
-        return $.html();        
+        return $.xml();        
     }
 };

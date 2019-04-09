@@ -66,6 +66,6 @@ module.exports = {
 
         $('switch').append(connections);
 
-        return $.html();
+        return $.xml();
     }
 };

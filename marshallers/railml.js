@@ -56,7 +56,7 @@ function marshall(baseType, index) {
         $('railml').append(infra);
         $('railml').append(visuals);
 
-        resolve( $.html());
+        resolve($.xml());
     });
 }
 

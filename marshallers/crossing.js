@@ -26,6 +26,6 @@ module.exports = {
         $('crossing').attr('pos', pos);
         $('crossing').attr('absPos', absPos + pos);
 
-        return $.html();
+        return $.xml();
     }
 };

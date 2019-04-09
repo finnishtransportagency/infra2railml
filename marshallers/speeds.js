@@ -15,7 +15,7 @@ module.exports = {
         $('infraAttributes').attr('id', profileRef);
         $('infraAttributes > speeds').append(speeds);
         
-        return $.html();
+        return $.xml();
     },
     
 };

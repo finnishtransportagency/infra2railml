@@ -61,7 +61,7 @@ function marshallKm(km, absPos, prevTrackId) {
     }
 
     return {
-        element: $.html(),
+        element: $.xml(),
         speeds: _.uniq(_.flatMap(nopeudet, speeds.marshall)),
         trackRef: trackRef.marshall(km)
     };
@@ -138,7 +138,7 @@ function marshallRail(rail, index) {
     }
 
     return {
-        element: $.html(),
+        element: $.xml(),
         speeds: speedAttrs,
         trackRef: trackRef.marshall(rail),
         length: endPos

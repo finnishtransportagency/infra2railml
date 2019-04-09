@@ -34,6 +34,6 @@ module.exports = {
         a('speedChange').attr('profileRef', profileRef);
         a('speedChange').attr('vMax', max);
 
-        return a.html();
+        return a.xml();
     }
 };

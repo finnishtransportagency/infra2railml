@@ -17,6 +17,6 @@ module.exports = {
         $('balise').attr('absPos', absPos + pos);
         $('balise').attr('dir', dir);
 
-        return $.html();        
+        return $.xml();        
     }
 };

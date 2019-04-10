@@ -42,7 +42,7 @@ function marshall(baseType, index) {
         if (!objects || !transformer) {
             reject(new Error(`Invalid base type '${baseType}'.`));
         }
-        
+
         const absPos = index.from * 1000; // FIXME assumes each track kilometer being exactly 1000m
         const memo = { index, absPos, tracks: [], speeds: [], trackRefs: [], previousTrack: '' };
         const results = _.transform(objects, transformer, memo);

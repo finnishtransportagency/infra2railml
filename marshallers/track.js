@@ -91,14 +91,19 @@ function marshallRail(rail, index) {
     const beginElement = findConnectingElement(alku.ratakm, alku.etaisyys, elementGroups);
     const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
     
+    // TODO miksi jotkut trackit jäävät täysin ilman elementtejä ja nopeusrajoituksia yms???
+    // 
+
     if (beginElement && beginElement.tyyppi === 'vaihde') {
-        $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginElement.tunniste}" />`);
+         // TODO nouseva raideyhteys.minne === railId, mikä kolmesta switch-connectionista??
+        $('trackBegin').append(`<connection id="tbc_${railId}" ref="swc_${beginElement.tunniste}" />`);
     } else if (beginElement && beginElement.tyyppi === 'puskin') {
         $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
     }
 
     if (endElement && endElement.tyyppi === 'vaihde') {
-        $('trackEnd').append(`<connection id="tec_${railId}" ref="${endElement.tunniste}" />`);
+        // TODO nouseva raideyhteys.mista === railId, mikä kolmesta switch-connectionista??
+        $('trackEnd').append(`<connection id="tec_${railId}" ref="swc_${endElement.tunniste}_" />`);
     } else if (endElement && endElement.tyyppi === 'puskin') {
         $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
     }

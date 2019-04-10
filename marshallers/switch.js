@@ -49,6 +49,8 @@ module.exports = {
         $('switch').attr('pos', pos);
         $('switch').attr('absPos', absPos + pos);
 
+        // TODO filter by 'nouseva', find etu-taka, taka-etu. etu-vas/oik, vas/oik-etu etc.
+        
         const straight = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'taka') || {};
         const parting = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && (y.minneRooli === 'vasen' || y.minneRooli === 'oikea')) || {};
         const partingCourse = parting.minneRooli === 'oikea' ? 'right' : 'left';

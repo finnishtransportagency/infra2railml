@@ -44,7 +44,7 @@ function marshall(baseType, index) {
         }
         
         const absPos = index.from * 1000; // FIXME assumes each track kilometer being exactly 1000m
-        const memo = { index, absPos, tracks: [], speeds: [], trackRefs: [], previousKm: '' };
+        const memo = { index, absPos, tracks: [], speeds: [], trackRefs: [], previousTrack: '' };
         const results = _.transform(objects, transformer, memo);
 
         const $ = cheerio.load(RAILML_STUB, config.cheerio);

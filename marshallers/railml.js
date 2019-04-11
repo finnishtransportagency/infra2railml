@@ -51,10 +51,10 @@ function marshall(baseType, index) {
         _.each(XML_NAMESPACES, (val, key) => $('railml').attr(key, val));
         
         const infra = infrastructure.marshall(results);
-        const visuals = infrastructureVis.marshall(baseType, results)
+        //const visuals = infrastructureVis.marshall(baseType, results)
 
         $('railml').append(infra);
-        $('railml').append(visuals);
+        //$('railml').append(visuals);
 
         resolve($.xml());
     });

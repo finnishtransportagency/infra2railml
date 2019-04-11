@@ -50,24 +50,40 @@ module.exports = {
         $('switch').attr('absPos', absPos + pos);
 
         // TODO filter by 'nouseva', find etu-taka, taka-etu. etu-vas/oik, vas/oik-etu etc.
-        
-        const straight = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'taka') || {};
-        const parting = _.find(vaihde.raideyhteydet, (y) => y.mistaRooli === 'etu' && (y.minneRooli === 'vasen' || y.minneRooli === 'oikea')) || {};
-        const partingCourse = parting.minneRooli === 'oikea' ? 'right' : 'left';
 
-        const ao = straight.minneSuunta === 'nouseva' ? 'incoming' : 'outgoing';
-        const bo = ao === 'incoming' ? 'outgoing' : 'incoming';
-        const co = parting.minneSuunta === 'nouseva' ? 'incoming' : 'outgoing';
+        const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
+        const etuTaka = findConnection(nousevat, 'etu', 'taka');
+        const takaEtu = findConnection(nousevat, 'taka', 'etu');
+        const etuVasen = findConnection(nousevat, 'etu', 'vasen');
+        const vasenEtu = findConnection(nousevat, 'vasen', 'etu');
+        const etuOikea = findConnection(nousevat, 'etu', 'oikea');
+        const oikeaEtu = findConnection(nousevat, 'oikea', 'etu');
+
+        const straight = etuTaka || takaEtu;
+        const parting = etuVasen || etuOikea || vasenEtu || oikeaEtu;
+
+        const straightInRef = straight.mistaRooli === 'etu' ? straight.mista : straight.minne;
+        const straightInOrientation = straight.mistaRooli === 'etu' ? 'incoming' : 'outgoing';
+
+        const straightOutRef = straight.mistaRooli === 'etu' ? straight.minne : straight.mista;
+        const straightOutOrientation = straightInOrientation === 'incoming' ? 'outgoing' : 'incoming';
+
+        const partingRef = parting.mistaRooli === 'etu' ? parting.minne : parting.mista;
+        const partingOrientation = straightInOrientation === 'incoming' ? 'outgoing' : 'incoming';
+        const partingCourse = parting.mistaRooli === 'oikea' || parting.minneRooli === 'oikea' ? 'right' : 'left';
 
         const connections = [
-            `<connection id="swc_${element.tunniste}_a" ref="${REF_PREFIX[ao]}_${straight.mista}" course="straight" orientation="${ao}" />`,
-            `<connection id="swc_${element.tunniste}_b" ref="${REF_PREFIX[bo]}_${straight.minne}" course="straight" orientation="${bo}" />`,
-            `<connection id="swc_${element.tunniste}_c" ref="${REF_PREFIX[co]}_${parting.minne}" course="${partingCourse}" orientation="${co}" />`
+            `<connection id="swc1_${element.tunniste}" ref="${REF_PREFIX[straightInOrientation]}_${straightInRef}" course="straight" orientation="${straightInOrientation}" />`,
+            `<connection id="swc2_${element.tunniste}" ref="${REF_PREFIX[straightOutOrientation]}_${straightOutRef}" course="straight" orientation="${straightOutOrientation}" />`,
+            `<connection id="swc3_${element.tunniste}" ref="${REF_PREFIX[partingOrientation]}_${partingRef}" course="${partingCourse}" orientation="${partingOrientation}" />`
         ];
-
 
         $('switch').append(connections);
 
         return $.xml();
     }
 };
+
+function findConnection(yhteydet, mista, minne) {
+   return  _.find(yhteydet, (y) => y.mistaRooli === mista && y.minneRooli === minne);
+}

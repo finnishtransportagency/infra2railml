@@ -91,19 +91,16 @@ function marshallRail(rail, index) {
     const beginElement = findConnectingElement(alku.ratakm, alku.etaisyys, elementGroups);
     const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
     
-    // TODO miksi jotkut trackit jäävät täysin ilman elementtejä ja nopeusrajoituksia yms???
-    // 
-
     if (beginElement && beginElement.tyyppi === 'vaihde') {
-         // TODO nouseva raideyhteys.minne === railId, mikä kolmesta switch-connectionista??
-        $('trackBegin').append(`<connection id="tbc_${railId}" ref="swc_${beginElement.tunniste}" />`);
+        const beginSwitchConnection = findSwitchConnection(railId, beginElement);
+        $('trackBegin').append(`<connection id="tbc_${railId}" ref="swc${beginSwitchConnection}_${beginElement.tunniste}" />`);
     } else if (beginElement && beginElement.tyyppi === 'puskin') {
         $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
     }
 
     if (endElement && endElement.tyyppi === 'vaihde') {
-        // TODO nouseva raideyhteys.mista === railId, mikä kolmesta switch-connectionista??
-        $('trackEnd').append(`<connection id="tec_${railId}" ref="swc_${endElement.tunniste}_" />`);
+        const endSwitchConnection = findSwitchConnection(railId, endElement);        
+        $('trackEnd').append(`<connection id="tec_${railId}" ref="swc${endSwitchConnection}_${endElement.tunniste}" />`);
     } else if (endElement && endElement.tyyppi === 'puskin') {
         $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
     }
@@ -176,10 +173,36 @@ function fromRail(acc, rail) {
     return acc;
 }
 
+/**
+ * Resolve the track begin/end element, e.g. switch or stop buffer.
+ */
 function findConnectingElement(km, etaisyys, elements) {
     const vaihde = _.find(elements.vaihde, (v) => !!_.find(v.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
     const puskin = _.find(elements.puskin, (p) => !!_.find(p.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
     return vaihde || puskin;
+}
+
+/**
+ * Resolve reference from track begin/end connection to switch connection (swc1, swc2 or swc3)
+ */
+function findSwitchConnection(railId, element) {
+
+    if (!element || !element.vaihde) {
+        return '';
+    }
+
+    const mista = _.find(element.vaihde.raideyhteydet, (y) => y.mista === railId);
+    const minne = _.find(element.vaihde.raideyhteydet, (y) => y.minne === railId);
+    const yhteys = mista || minne;
+
+    if (!yhteys) return '';
+
+    if (yhteys.mista === railId && yhteys.mistaRooli === 'etu') return 1
+    else if (yhteys.mista === railId && yhteys.mistaRooli === 'taka') return 2
+    else if (yhteys.minne === railId && yhteys.minneRooli === 'etu') return 1
+    else if (yhteys.minne === railId && yhteys.minneRooli === 'taka') return 2
+    
+    return 3;
 }
 
 function isRailElement(element, railId, trackId, raideAlku, raideLoppu) {

@@ -35,8 +35,6 @@ const REF_PREFIX = {
 module.exports = {
     marshall: (trackId, absPos, element) => {
         
-        const { vaihde } = element;
-
         const type = SWITCH_TYPES[element.vaihde.tyyppi];
         const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
 
@@ -49,40 +47,55 @@ module.exports = {
         $('switch').attr('pos', pos);
         $('switch').attr('absPos', absPos + pos);
 
-        // TODO filter by 'nouseva', find etu-taka, taka-etu. etu-vas/oik, vas/oik-etu etc.
 
-        const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
-        const etuTaka = findConnection(nousevat, 'etu', 'taka');
-        const takaEtu = findConnection(nousevat, 'taka', 'etu');
-        const etuVasen = findConnection(nousevat, 'etu', 'vasen');
-        const vasenEtu = findConnection(nousevat, 'vasen', 'etu');
-        const etuOikea = findConnection(nousevat, 'etu', 'oikea');
-        const oikeaEtu = findConnection(nousevat, 'oikea', 'etu');
-
-        const straight = etuTaka || takaEtu;
-        const parting = etuVasen || etuOikea || vasenEtu || oikeaEtu;
-
-        const straightInRef = straight.mistaRooli === 'etu' ? straight.mista : straight.minne;
-        const straightInOrientation = straight.mistaRooli === 'etu' ? 'incoming' : 'outgoing';
-
-        const straightOutRef = straight.mistaRooli === 'etu' ? straight.minne : straight.mista;
-        const straightOutOrientation = straightInOrientation === 'incoming' ? 'outgoing' : 'incoming';
-
-        const partingRef = parting.mistaRooli === 'etu' ? parting.minne : parting.mista;
-        const partingOrientation = straightInOrientation === 'incoming' ? 'outgoing' : 'incoming';
-        const partingCourse = parting.mistaRooli === 'oikea' || parting.minneRooli === 'oikea' ? 'right' : 'left';
-
-        const connections = [
-            `<connection id="swc1_${element.tunniste}" ref="${REF_PREFIX[straightInOrientation]}_${straightInRef}" course="straight" orientation="${straightInOrientation}" />`,
-            `<connection id="swc2_${element.tunniste}" ref="${REF_PREFIX[straightOutOrientation]}_${straightOutRef}" course="straight" orientation="${straightOutOrientation}" />`,
-            `<connection id="swc3_${element.tunniste}" ref="${REF_PREFIX[partingOrientation]}_${partingRef}" course="${partingCourse}" orientation="${partingOrientation}" />`
-        ];
-
+        const connections = getConnections(element);
         $('switch').append(connections);
 
         return $.xml();
     }
 };
+
+function getConnections(element) {
+
+    const { vaihde } = element;
+
+    const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
+    if (nousevat.length === 0) {
+        console.warn(`WARN: switch ${element.tunniste} has no connections!`);
+        return [];
+    }
+
+    const etuTaka = findConnection(nousevat, 'etu', 'taka');
+    const takaEtu = findConnection(nousevat, 'taka', 'etu');
+    const etuVasen = findConnection(nousevat, 'etu', 'vasen');
+    const vasenEtu = findConnection(nousevat, 'vasen', 'etu');
+    const etuOikea = findConnection(nousevat, 'etu', 'oikea');
+    const oikeaEtu = findConnection(nousevat, 'oikea', 'etu');
+
+    const straight = etuTaka || takaEtu;
+    const parting = etuVasen || etuOikea || vasenEtu || oikeaEtu;
+
+    if (_.isEmpty(straight) || _.isEmpty(parting)) {
+        console.warn(`WARN: unable to resolve connections on switch ${element.tunniste}`);
+        return [];
+    }
+
+    const straightInRef = straight.mistaRooli === 'etu' ? straight.mista : straight.minne;
+    const straightInOrientation = straight.mistaRooli === 'etu' ? 'incoming' : 'outgoing';
+
+    const straightOutRef = straight.mistaRooli === 'etu' ? straight.minne : straight.mista;
+    const straightOutOrientation = straightInOrientation === 'incoming' ? 'outgoing' : 'incoming';
+
+    const partingRef = parting.mistaRooli === 'etu' ? parting.minne : parting.mista;
+    const partingOrientation = straightInOrientation === 'incoming' ? 'outgoing' : 'incoming';
+    const partingCourse = parting.mistaRooli === 'oikea' || parting.minneRooli === 'oikea' ? 'right' : 'left';
+
+    return [
+        `<connection id="swc1_${element.tunniste}" ref="${REF_PREFIX[straightInOrientation]}_${straightInRef}" course="straight" orientation="${straightInOrientation}" />`,
+        `<connection id="swc2_${element.tunniste}" ref="${REF_PREFIX[straightOutOrientation]}_${straightOutRef}" course="straight" orientation="${straightOutOrientation}" />`,
+        `<connection id="swc3_${element.tunniste}" ref="${REF_PREFIX[partingOrientation]}_${partingRef}" course="${partingCourse}" orientation="${partingOrientation}" />`
+    ];
+}
 
 function findConnection(yhteydet, mista, minne) {
    return  _.find(yhteydet, (y) => y.mistaRooli === mista && y.minneRooli === minne);

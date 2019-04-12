@@ -5,5 +5,8 @@ module.exports = {
     cheerio: {
         xmlMode: true,
         normalizeWhitespace: true
+    },
+    railml: {
+        visualize: false
     }
 };

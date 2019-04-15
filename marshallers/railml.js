@@ -6,7 +6,7 @@ const infrastructure = require('./infrastructure');
 const infrastructureVis = require('./infrastructure-vis');
 
 const XML_NAMESPACES = {
-    'version': '2.2', 'xmlns': '',
+    'version': '2.2', 'xmlns': 'http://www.railml.org/schemas/2013',
     'xmlns:xsi': 'http://www.railml.org/schemas/2013',
     'xsi:schemaLocation': 'http://www.railml.org/schemas/2013 http://schemas.railml.org/2013/railML-2.2/railML.xsd'
 };
@@ -44,7 +44,7 @@ function marshall(baseType, index) {
         }
 
         const absPos = index.from * 1000; // FIXME assumes each track kilometer being exactly 1000m
-        const memo = { index, absPos, tracks: [], speeds: [], trackRefs: [], previousTrack: '' };
+        const memo = { index, absPos, tracks: [], speeds: [], trackRefs: [], marshalled: [], previousTrack: '' };
         const results = _.transform(objects, transformer, memo);
 
         const $ = cheerio.load(RAILML_STUB, config.cheerio);

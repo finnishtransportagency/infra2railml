@@ -67,7 +67,9 @@ function marshallKm(km, absPos, prevTrackId) {
     };
 }
 
-function marshallRail(rail, index) {
+function marshallRail(rail, memo) {
+
+    const { index, marshalled } = memo;
 
     const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
     const { alku, loppu } = ratakmvali;
@@ -105,8 +107,11 @@ function marshallRail(rail, index) {
         $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
     }
 
-    const switches = _.map(elementGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
-    const risteykset = _.filter(elements.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
+    // rule out switches that may have been already marshalled for some other rail
+    const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
+    const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
+    const switches = _.map(unmarshalledGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
+    const risteykset = _.filter(unmarshalledGroups.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
     const crossings = _.map(risteykset, (r) => crossing.marshall(km.ratanumero, absPos, r));
     $('trackTopology').append('<connections/>');    
     if (!_.isEmpty(switches)) {
@@ -115,6 +120,9 @@ function marshallRail(rail, index) {
     if (!_.isEmpty(crossings)) {
         $('trackTopology > connections').append(crossings);
     }
+
+    memo.marshalled = _.concat(memo.marshalled, _.map(unmarshalledElements, 'tunniste'));
+
 
     // ocsElements
     const signals = _.map(elementGroups.opastin, (o) => signal.marshall(index.trackId, beginAbsPos, o));    
@@ -165,7 +173,7 @@ function fromKilometer(acc, km) {
 
 function fromRail(acc, rail) {
     
-    const track = marshallRail(rail, acc.index);
+    const track = marshallRail(rail, acc);
     acc.tracks = _.concat(acc.tracks, track.element);
     acc.speeds = _.concat(acc.speeds, track.speeds);
     acc.trackRefs = _.concat(acc.trackRefs, track.trackRef);

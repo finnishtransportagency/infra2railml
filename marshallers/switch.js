@@ -4,7 +4,7 @@ const config = require('../config');
 
 // railML tSwitchType
 const SwitchType = {
-    ORDINARY: 'ordinary',
+    ORDINARY: 'ordinarySwitch',
     INSIDE_CURVED_SWITCH: 'insideCurvedSwitch',
     OUTSIDE_CURVED_SWITCH: 'outsideCurvedSwitch',
     THREE_WAY_SWITCH: 'threeWaySwitch',

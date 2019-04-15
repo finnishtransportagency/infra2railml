@@ -98,6 +98,8 @@ function marshallRail(rail, memo) {
         $('trackBegin').append(`<connection id="tbc_${railId}" ref="swc${beginSwitchConnection}_${beginElement.tunniste}" />`);
     } else if (beginElement && beginElement.tyyppi === 'puskin') {
         $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
+    } else {
+        $('trackBegin').append(`<openEnd id="tbc_${railId}" name="${rail.tunniste}" />`);
     }
 
     if (endElement && endElement.tyyppi === 'vaihde') {
@@ -105,6 +107,8 @@ function marshallRail(rail, memo) {
         $('trackEnd').append(`<connection id="tec_${railId}" ref="swc${endSwitchConnection}_${endElement.tunniste}" />`);
     } else if (endElement && endElement.tyyppi === 'puskin') {
         $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
+    } else {
+        $('trackEnd').append(`<openEnd id="tec_${railId}" name="${rail.tunniste}" />`);
     }
 
     // rule out switches that may have been already marshalled for some other rail

@@ -7,8 +7,8 @@ const infrastructureVis = require('./infrastructure-vis');
 
 const XML_NAMESPACES = {
     'version': '2.2', 'xmlns': 'http://www.railml.org/schemas/2013',
-    'xmlns:xsi': 'http://www.railml.org/schemas/2013',
-    'xsi:schemaLocation': 'http://www.railml.org/schemas/2013 http://schemas.railml.org/2013/railML-2.2/railML.xsd'
+    'xmlns:xsi': 'http://www.railml.org/schemas/2013'
+    //'xsi:schemaLocation': 'http://www.railml.org/schemas/2013 http://schemas.railml.org/2013/railML-2.2/railML.xsd'
 };
 
 const RAILML_STUB = '<?xml version="1.0" encoding="UTF-8"?><railml/>';

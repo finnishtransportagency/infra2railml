@@ -74,22 +74,24 @@ function marshallRail(rail, memo) {
     const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
     const { alku, loppu } = ratakmvali;
 
+    // find & group all elements related to current rail
     const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(e, rail.tunniste, index.trackId, alku, loppu)), 'tunniste');
     const elementGroups = _.groupBy(elements, 'tyyppi');
 
-    // track element
+    // main track element
     const railId = rail.tunniste;
     const name = `Raide ${index.trackId} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
     const stub = `<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`;
     const $ = cheerio.load(stub, config.cheerio);
 
-    // track begin / end
+    // track begin/end elements
     const beginAbsPos = alku.ratakm * 1000 + alku.etaisyys;
     const endAbsPos = loppu.ratakm * 1000 + loppu.etaisyys;
     const endPos = endAbsPos - beginAbsPos;
     $('trackTopology').append(`<trackBegin id="tb_${railId}" pos="0.0000" absPos="${beginAbsPos}">`);
     $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}">`); 
         
+    // find the incoming/outgoing elements of rail, typically a switch or buffer stop
     const beginElement = findConnectingElement(alku.ratakm, alku.etaisyys, elementGroups);
     const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
     
@@ -111,12 +113,14 @@ function marshallRail(rail, memo) {
         $('trackEnd').append(`<openEnd id="tec_${railId}" name="${rail.tunniste}" />`);
     }
 
-    // rule out switches that may have been already marshalled for some other rail
+    // avoid duplicate switch elements by rejecting the already processed ones
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
+
     const switches = _.map(unmarshalledGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
     const risteykset = _.filter(unmarshalledGroups.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
     const crossings = _.map(risteykset, (r) => crossing.marshall(km.ratanumero, absPos, r));
+    
     $('trackTopology').append('<connections/>');    
     if (!_.isEmpty(switches)) {
         $('trackTopology > connections').append(switches);
@@ -128,12 +132,17 @@ function marshallRail(rail, memo) {
     memo.marshalled = _.concat(memo.marshalled, _.map(unmarshalledElements, 'tunniste'));
 
 
+    // find elements located between rail begin and end as the first and last kilometers may
+    // contain elements related to previous/next rail
+    const onRailElements = _.filter(elements, (e) => isOnRail(e, index.trackId, alku, loppu));
+    const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
+
     // ocsElements
-    const signals = _.map(elementGroups.opastin, (o) => signal.marshall(index.trackId, beginAbsPos, o));    
+    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(index.trackId, beginAbsPos, o));    
     if (!_.isEmpty(signals)) {
         $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`);
     }
-    const balises = _.map(elementGroups.baliisi, (b) => balise.marshall(index.trackId, beginAbsPos, b));
+    const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(index.trackId, beginAbsPos, b));
     if (!_.isEmpty(balises)) {
         $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
     }
@@ -146,7 +155,8 @@ function marshallRail(rail, memo) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
 
-    const electrificationChanges = _.map(elementGroups.erotusjakso, (ej) => electrificationChange.marshall(absPos, ej));
+    // TODO is electrificationChange correct mapping?
+    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(absPos, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
@@ -175,6 +185,9 @@ function fromKilometer(acc, km) {
     return acc;
 }
 
+/**
+ * Rail transformer.
+ */
 function fromRail(acc, rail) {
     
     const track = marshallRail(rail, acc);
@@ -217,16 +230,29 @@ function findSwitchConnection(railId, element) {
     return 3;
 }
 
-function isRailElement(element, railId, trackId, raideAlku, raideLoppu) {
-    const included = _.map(element.raiteet, 'tunniste').includes(railId);
+
+/**
+ * Tells if the given element is (anyhow) related to specified rail.
+ */
+function isRailElement(element, railId) {
+    return _.map(element.raiteet, 'tunniste').includes(railId);
+}
+
+/**
+ * Tells if the given element is between rail begin and end points, i.e. "on rail".
+ */
+function isOnRail(element, trackId, raideAlku, raideLoppu) {
     const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
-    return included && !_.isEmpty(sijainti) &&
+    return !_.isEmpty(sijainti) &&
         sijainti.ratakm >= raideAlku.ratakm &&
         sijainti.etaisyys >= raideAlku.etaisyys &&
         sijainti.ratakm <= raideLoppu.ratakm &&
         sijainti.etaisyys <= raideLoppu.etaisyys;
 }
 
+/**
+ * Tells if the given speed change is between rail begin and end points.
+ */
 function isRailSpeedChange(speed, raideRataNr, raideAlku, raideLoppu) {
     const { ratanumero, alku } = speed.ratakmvali;
     return ratanumero === raideRataNr &&

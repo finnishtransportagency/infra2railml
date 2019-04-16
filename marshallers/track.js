@@ -149,8 +149,8 @@ function marshallRail(rail, memo) {
 
     // trackElements
     const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(nr, index.trackId, alku, loppu));
-    const speedAttrs = _.uniq(_.flatMap(nopeudet, speeds.marshall));
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(beginAbsPos, n)));
+    const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(n, railId)));
+    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(beginAbsPos, n, railId)));
     if (!_.isEmpty(speedChanges)) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }

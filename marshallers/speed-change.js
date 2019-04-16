@@ -13,13 +13,13 @@ const DIRECTIONS = {
 };
 
 module.exports = {
-    marshall: (absPos, limits) => {
+    marshall: (absPos, limits, railId) => {
 
         const { ratanumero, alku } = limits.ratakmvali;
 
-        const id = `sc_${alku.ratakm}_${alku.etaisyys}`;
+        const id = `sc_${railId}_${alku.ratakm}_${alku.etaisyys}`;
         const name = `${ratanumero} ${alku.ratakm}+${alku.etaisyys}`;
-        const profileRef = `sppr_${ratanumero}_${alku.ratakm}_${alku.etaisyys}`;        
+        const profileRef = `sppr_${railId}_${alku.ratakm}_${alku.etaisyys}`;
         const dir = DIRECTIONS[limits.suunnattu] || Direction.UP;
         const max = _.max(_.map(limits.nopeusrajoitukset, 'nopeus'));
 

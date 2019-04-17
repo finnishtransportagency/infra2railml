@@ -37,7 +37,6 @@ module.exports = {
         
         const type = SWITCH_TYPES[element.vaihde.tyyppi];
         const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
-
         const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
 
         const $ = cheerio.load('<switch/>', config.cheerio);
@@ -47,9 +46,12 @@ module.exports = {
         $('switch').attr('pos', pos);
         $('switch').attr('absPos', absPos + pos);
 
-
         const connections = getConnections(element);
-        $('switch').append(connections);
+        if (_.isEmpty(connections)) {
+            return '';
+        } else {
+            $('switch').append(connections);
+        }
 
         return $.xml();
     }
@@ -61,7 +63,7 @@ function getConnections(element) {
 
     const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
     if (nousevat.length === 0) {
-        console.warn(`WARN: switch ${element.tunniste} has no connections!`);
+        console.warn(`ERROR: switch ${element.tunniste} has no connections!`);
         return [];
     }
 
@@ -76,7 +78,7 @@ function getConnections(element) {
     const parting = etuVasen || etuOikea || vasenEtu || oikeaEtu;
 
     if (_.isEmpty(straight) || _.isEmpty(parting)) {
-        console.warn(`WARN: unable to resolve connections on switch ${element.tunniste}`);
+        console.warn(`ERROR: unable to resolve connections on switch ${element.tunniste}`);
         return [];
     }
 

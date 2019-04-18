@@ -27,6 +27,7 @@ const SWITCH_TYPES = {
     "skvo" : SwitchType.INSIDE_CURVED_SWITCH,    
 };
 
+// id prefixes for rail begin/end connections
 const REF_PREFIX = {
     incoming: 'tec',
     outgoing: 'tbc'
@@ -39,19 +40,18 @@ module.exports = {
         const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
         const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
 
+        const connections = getConnections(element);
+        if (_.isEmpty(connections)) {
+            return '';
+        }
+
         const $ = cheerio.load('<switch/>', config.cheerio);
         $('switch').attr('id', element.tunniste);
         $('switch').attr('name', element.nimi);
         $('switch').attr('type', type);
         $('switch').attr('pos', pos);
         $('switch').attr('absPos', absPos + pos);
-
-        const connections = getConnections(element);
-        if (_.isEmpty(connections)) {
-            return '';
-        } else {
-            $('switch').append(connections);
-        }
+        $('switch').append(connections);
 
         return $.xml();
     }

@@ -63,39 +63,30 @@ function getConnections(element) {
 
     const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
     if (nousevat.length === 0) {
-        console.warn(`ERROR: switch ${element.tunniste} has no connections!`);
+        console.error(`ERROR: switch ${element.tunniste} has no connections!`);
         return [];
     }
 
-    const etuTaka = findConnection(nousevat, 'etu', 'taka');
-    const takaEtu = findConnection(nousevat, 'taka', 'etu');
     const etuVasen = findConnection(nousevat, 'etu', 'vasen');
     const vasenEtu = findConnection(nousevat, 'vasen', 'etu');
     const etuOikea = findConnection(nousevat, 'etu', 'oikea');
     const oikeaEtu = findConnection(nousevat, 'oikea', 'etu');
-
-    const straight = etuTaka || takaEtu;
     const parting = etuVasen || etuOikea || vasenEtu || oikeaEtu;
 
-    if (_.isEmpty(straight) || _.isEmpty(parting)) {
-        console.warn(`ERROR: unable to resolve connections on switch ${element.tunniste}`);
+    if (_.isEmpty(parting)) {
+        console.error(`ERROR: unable to resolve connections on switch ${element.tunniste}`);
         return [];
     }
 
-    const straightInRef = straight.mistaRooli === 'etu' ? straight.mista : straight.minne;
-    const straightInOrientation = straight.mistaRooli === 'etu' ? 'incoming' : 'outgoing';
+    const ref = parting.mistaRooli === 'etu' ? parting.minne : parting.mista;
+    const course = parting.mistaRooli === 'oikea' || parting.minneRooli === 'oikea' ? 'right' : 'left';
+    const orientation = parting.mistaRooli === 'etu' ? 'outgoing' : 'incoming';    
 
-    const straightOutRef = straight.mistaRooli === 'etu' ? straight.minne : straight.mista;
-    const straightOutOrientation = straightInOrientation === 'incoming' ? 'outgoing' : 'incoming';
-
-    const partingRef = parting.mistaRooli === 'etu' ? parting.minne : parting.mista;
-    const partingOrientation = straightInOrientation === 'incoming' ? 'outgoing' : 'incoming';
-    const partingCourse = parting.mistaRooli === 'oikea' || parting.minneRooli === 'oikea' ? 'right' : 'left';
-
+    // Max. 3 connections, single connection style following the OpenTrack generated models
+    // where only the parting direction is referenced by side tracks and straight direction
+    // tracks reference each others directly.
     return [
-        `<connection id="swc1_${element.tunniste}" ref="${REF_PREFIX[straightInOrientation]}_${straightInRef}" course="straight" orientation="${straightInOrientation}" />`,
-        `<connection id="swc2_${element.tunniste}" ref="${REF_PREFIX[straightOutOrientation]}_${straightOutRef}" course="straight" orientation="${straightOutOrientation}" />`,
-        `<connection id="swc3_${element.tunniste}" ref="${REF_PREFIX[partingOrientation]}_${partingRef}" course="${partingCourse}" orientation="${partingOrientation}" />`
+        `<connection id="swc_${element.tunniste}" ref="${REF_PREFIX[orientation]}_${ref}" course="${course}" orientation="${orientation}" />`
     ];
 }
 

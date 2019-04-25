@@ -11,7 +11,8 @@ const speeds = require('./speeds');
 const trackRef = require('./track-ref');
 
 /**
- * Convert one track kilometer to railML.
+ * Convert one track kilometer to railML. Produces a simple line level model without
+ * individual rails.
  */
 function marshallKm(km, absPos, prevTrackId) {
     
@@ -67,12 +68,17 @@ function marshallKm(km, absPos, prevTrackId) {
     };
 }
 
+/**
+ * Rail marshaller.
+ */
 function marshallRail(rail, memo) {
 
     const { index, marshalled } = memo;
 
     const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
     const { alku, loppu } = ratakmvali;
+
+    console.log(`Generating track ${rail.tunniste} (${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
 
     // find & group all elements related to current rail
     const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(e, rail.tunniste, index.trackId, alku, loppu)), 'tunniste');
@@ -96,8 +102,8 @@ function marshallRail(rail, memo) {
     const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
     
     if (beginElement && beginElement.tyyppi === 'vaihde') {
-        const beginSwitchConnection = findSwitchConnection(railId, beginElement);
-        $('trackBegin').append(`<connection id="tbc_${railId}" ref="swc${beginSwitchConnection}_${beginElement.tunniste}" />`);
+        const beginRef = findConnectionRef(railId, beginElement);
+        $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginRef}" />`);
     } else if (beginElement && beginElement.tyyppi === 'puskin') {
         $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
     } else {
@@ -105,8 +111,8 @@ function marshallRail(rail, memo) {
     }
 
     if (endElement && endElement.tyyppi === 'vaihde') {
-        const endSwitchConnection = findSwitchConnection(railId, endElement);        
-        $('trackEnd').append(`<connection id="tec_${railId}" ref="swc${endSwitchConnection}_${endElement.tunniste}" />`);
+        const endRef = findConnectionRef(railId, endElement);        
+        $('trackEnd').append(`<connection id="tec_${railId}" ref="${endRef}" />`);
     } else if (endElement && endElement.tyyppi === 'puskin') {
         $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
     } else {
@@ -131,9 +137,8 @@ function marshallRail(rail, memo) {
 
     memo.marshalled = _.concat(memo.marshalled, _.map(unmarshalledElements, 'tunniste'));
 
-
-    // find elements located between rail begin and end as the first and last kilometers may
-    // contain elements related to previous/next rail
+    // Find elements located between rail begin and end, as the first and last kilometers may
+    // also contain elements related to previous/next rail.
     const onRailElements = _.filter(elements, (e) => isOnRail(e, index.trackId, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
 
@@ -155,7 +160,7 @@ function marshallRail(rail, memo) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
 
-    // TODO is electrificationChange correct mapping?
+    // TODO is electrificationChange correct railML term?
     const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(absPos, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
@@ -186,7 +191,7 @@ function fromKilometer(acc, km) {
 }
 
 /**
- * Rail transformer.
+ * Rail transformer function.
  */
 function fromRail(acc, rail) {
     
@@ -208,26 +213,47 @@ function findConnectingElement(km, etaisyys, elements) {
 }
 
 /**
- * Resolve reference from track begin/end connection to switch connection (swc1, swc2 or swc3)
+ * Resolve reference from track begin/end connection to track or switch connection. The connections
+ * determined here are to follow OpenTrack generated models where only the parting switch direction is
+ * referenced by tracks and the straight direction references are from track end to track beginning.
  */
-function findSwitchConnection(railId, element) {
+function findConnectionRef(railId, element) {
 
-    if (!element || !element.vaihde) {
-        return '';
-    }
+    if (!element || !element.vaihde) return '';
 
-    const mista = _.find(element.vaihde.raideyhteydet, (y) => y.mista === railId);
-    const minne = _.find(element.vaihde.raideyhteydet, (y) => y.minne === railId);
+    const nousevat = _.filter(element.vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
+    const mista = _.find(nousevat, (y) => y.mista === railId);
+    const minne = _.find(nousevat, (y) => y.minne === railId);
     const yhteys = mista || minne;
 
     if (!yhteys) return '';
 
-    if (yhteys.mista === railId && yhteys.mistaRooli === 'etu') return 1
-    else if (yhteys.mista === railId && yhteys.mistaRooli === 'taka') return 2
-    else if (yhteys.minne === railId && yhteys.minneRooli === 'etu') return 1
-    else if (yhteys.minne === railId && yhteys.minneRooli === 'taka') return 2
+    if (yhteys.mista === yhteys.minne) {
+        // Infra-API special case where a switch is located "in the middle" of a rail,
+        // i.e. "mista" and "minne" references are the same rail. This may not be the
+        // correct solution, but at least it avoids the self-reference / loop. 
+        return `swc_${element.tunniste}`;
+
+    } else if (yhteys.mistaRooli === 'vasen' || yhteys.mistaRooli === 'oikea') {
+        // incoming from parting direction
+        return `swc_${element.tunniste}`;
+
+    } else if (yhteys.minneRooli === 'vasen' || yhteys.minneRooli === 'oikea') {
+        // outgoing parting direction
+        return `swc_${element.tunniste}`;
+
+    } else if (yhteys.mista === railId) {
+        // straight, incoming track referencing the next track's begin connection
+        return `tbc_${yhteys.minne}`;
     
-    return 3;
+    } else if (yhteys.minne === railId) {
+        // straight, outgoing track referencing the previous track's end connection
+        return `tec_${yhteys.mista}`;
+    }
+
+    console.warn(`WARN: unable to determine track ${railId} connection reference!`);
+
+    return '';
 }
 
 

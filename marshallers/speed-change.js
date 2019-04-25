@@ -13,27 +13,44 @@ const DIRECTIONS = {
 };
 
 module.exports = {
-    marshall: (absPos, limits, railId) => {
+    Direction,
+    DIRECTIONS,
+    marshall: (railId, absPos, nopeudet) => {
 
-        const { ratanumero, alku } = limits.ratakmvali;
-
-        const id = `sc_${railId}_${alku.ratakm}_${alku.etaisyys}`;
-        const name = `${ratanumero} ${alku.ratakm}+${alku.etaisyys}`;
-        const profileRef = `sppr_${railId}_${alku.ratakm}_${alku.etaisyys}`;
-        const dir = DIRECTIONS[limits.suunnattu] || Direction.UP;
-        const max = _.max(_.map(limits.nopeusrajoitukset, 'nopeus'));
-
-        const pos = ((alku.ratakm * 1000) + alku.etaisyys) - absPos;
-
-        const a = cheerio.load('<speedChange/>', config.cheerio);
-        a('speedChange').attr('id', id);
-        a('speedChange').attr('name', name);
-        a('speedChange').attr('pos', pos);
-        a('speedChange').attr('absPos', absPos + pos);
-        a('speedChange').attr('dir', dir);
-        a('speedChange').attr('profileRef', profileRef);
-        a('speedChange').attr('vMax', max);
-
-        return a.xml();
+        if (nopeudet.suunnattu) {
+            const dir = DIRECTIONS[nopeudet.suunnattu] || Direction.UP;
+            return [
+                getSpeedChange(railId, absPos, nopeudet, dir)
+            ];
+        }
+        
+        // if direction is unspecified, assume the same in both directions
+        return [
+            getSpeedChange(railId, absPos, nopeudet, Direction.UP),
+            getSpeedChange(railId, absPos, nopeudet, Direction.DOWN)
+        ];
     }
 };
+
+function getSpeedChange(railId, absPos, nopeudet, dir) {
+
+    const { ratanumero, alku } = nopeudet.ratakmvali;
+
+    const id = `sc_${railId}_${alku.ratakm}_${alku.etaisyys}_${dir}`;
+    const name = `${ratanumero} ${alku.ratakm}+${alku.etaisyys}`;
+    const profileRef = `sppr_${railId}_${alku.ratakm}_${alku.etaisyys}_${dir}`;
+    const max = _.max(_.map(nopeudet.nopeusrajoitukset, 'nopeus'));
+
+    const pos = ((alku.ratakm * 1000) + alku.etaisyys) - absPos;
+
+    const $ = cheerio.load('<speedChange/>', config.cheerio);
+    $('speedChange').attr('id', id);
+    $('speedChange').attr('name', name);
+    $('speedChange').attr('pos', pos);
+    $('speedChange').attr('absPos', absPos + pos);
+    $('speedChange').attr('dir', dir);
+    $('speedChange').attr('profileRef', profileRef);
+    $('speedChange').attr('vMax', max);
+
+    return $.xml();
+}

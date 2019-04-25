@@ -153,9 +153,9 @@ function marshallRail(rail, memo) {
     }
 
     // trackElements
-    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(nr, index.trackId, alku, loppu));
-    const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(n, railId)));
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(beginAbsPos, n, railId)));
+    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(index.trackId, alku, loppu, nr));
+    const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(railId, n)));
+    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(railId, beginAbsPos, n)));
     if (!_.isEmpty(speedChanges)) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
@@ -279,8 +279,8 @@ function isOnRail(element, trackId, raideAlku, raideLoppu) {
 /**
  * Tells if the given speed change is between rail begin and end points.
  */
-function isRailSpeedChange(speed, raideRataNr, raideAlku, raideLoppu) {
-    const { ratanumero, alku } = speed.ratakmvali;
+function isRailSpeedChange(raideRataNr, raideAlku, raideLoppu, nopeudet) {
+    const { ratanumero, alku } = nopeudet.ratakmvali;
     return ratanumero === raideRataNr &&
         alku.ratakm >= raideAlku.ratakm &&
         alku.etaisyys >= raideAlku.etaisyys &&

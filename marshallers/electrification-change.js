@@ -13,28 +13,23 @@ const DIRECTIONS = {
 };
 
 module.exports = {
-    marshall: (absPos, erotusjakso) => {
+    marshall: (trackId, absPos, erotusjakso) => {
 
+        const sijainti = _.find(erotusjakso.ratakmsijainnit, { ratanumero: trackId });
 
-        console.log(erotusjakso.tunniste);
-        
-        const { ratanumero, alku } = erotusjakso.ratakmvali;
-
-        const id = `sc_${alku.ratakm}_${alku.etaisyys}`;
-        const name = `${ratanumero} ${alku.ratakm}+${alku.etaisyys}`;
-
+        const id = `${erotusjakso.tunniste}`;
+        const name = `${sijainti.ratanumero} ${sijainti.ratakm}+${sijainti.etaisyys}`;
         const dir = DIRECTIONS[erotusjakso.suunnattu] || Direction.UP;
         const max = _.max(_.map(erotusjakso.nopeusrajoitukset, 'nopeus'));
-
-        const pos = ((alku.ratakm * 1000) + alku.etaisyys) - absPos;
+        const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
 
         const a = cheerio.load('<electrificationChange/>', config.cheerio);
-        a('eletricficationChange').attr('id', id);
-        a('eletricficationChange').attr('name', name);
-        a('eletricficationChange').attr('pos', pos);
-        a('eletricficationChange').attr('absPos', absPos + pos);
-        a('eletricficationChange').attr('dir', dir);
-        a('eletricficationChange').attr('vMax', max);
+        a('electrificationChange').attr('id', id);
+        a('electrificationChange').attr('name', name);
+        a('electrificationChange').attr('pos', pos);
+        a('electrificationChange').attr('absPos', absPos + pos);
+        a('electrificationChange').attr('dir', dir);
+        a('electrificationChange').attr('vMax', max);
 
         return a.xml();
     }

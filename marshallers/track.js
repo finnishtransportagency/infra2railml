@@ -51,7 +51,7 @@ function marshallKm(km, absPos, prevTrackId) {
 
     const raiteet = _.filter(_.uniqBy(_.reject(_.flatMap(km.elementit, (e) => e.raiteet), _.isUndefined), 'tunniste'), { 'tyyppi': 'linja' });
     const nopeudet = _.filter(_.flatMap(raiteet, (r) => r.nopeusrajoitukset), (nr) => nr.ratakmvali.ratanumero === km.ratanumero && nr.ratakmvali.alku.ratakm === km.ratakm);
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(absPos, n)));
+    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(railId, absPos, n)));
     if (!_.isEmpty(speedChanges)) {
         $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
@@ -75,13 +75,13 @@ function marshallRail(rail, memo) {
 
     const { index, marshalled } = memo;
 
-    const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId });
+    const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId }) || _.first(rail.ratakmvalit);
     const { alku, loppu } = ratakmvali;
 
-    console.log(`Generating track ${rail.tunniste} (${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
+    console.log(`Generating track ${rail.tunniste} (${ratakmvali.ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
 
     // find & group all elements related to current rail
-    const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(e, rail.tunniste, index.trackId, alku, loppu)), 'tunniste');
+    const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(rail.tunniste, e)), 'tunniste');
     const elementGroups = _.groupBy(elements, 'tyyppi');
 
     // main track element
@@ -161,7 +161,7 @@ function marshallRail(rail, memo) {
     }
 
     // TODO is electrificationChange correct railML term?
-    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(absPos, ej));
+    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(index.trackId, beginAbsPos, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
@@ -231,7 +231,8 @@ function findConnectionRef(railId, element) {
     if (yhteys.mista === yhteys.minne) {
         // Infra-API special case where a switch is located "in the middle" of a rail,
         // i.e. "mista" and "minne" references are the same rail. This may not be the
-        // correct solution, but at least it avoids the self-reference / loop. 
+        // correct solution, but at least it avoids the self-reference / loop.
+        console.warn(`WARN: switch ${element.tunniste} refers rail ${yhteys.mista} both incoming and outgoing.`);
         return `swc_${element.tunniste}`;
 
     } else if (yhteys.mistaRooli === 'vasen' || yhteys.mistaRooli === 'oikea') {
@@ -260,7 +261,7 @@ function findConnectionRef(railId, element) {
 /**
  * Tells if the given element is (anyhow) related to specified rail.
  */
-function isRailElement(element, railId) {
+function isRailElement(railId, element) {
     return _.map(element.raiteet, 'tunniste').includes(railId);
 }
 

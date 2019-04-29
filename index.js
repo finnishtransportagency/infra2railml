@@ -47,10 +47,9 @@ module.exports = {
 
       const elementit = _.uniqBy(_.filter(_.flatMap(kilometrit, 'elementit'), (e) => !_.isEmpty(_.find(e.ratakmsijainnit, { ratanumero: trackId }))), 'tunniste');   
       const raiteet = _.uniqBy(_.flatMap(elementit, 'raiteet'), 'tunniste');
-      const radanRaiteet = _.filter(raiteet, (r) => !!_.find(r.ratakmvalit, { ratanumero: trackId }));
-      
+            
       const index = {
-        trackId, from, to, absLength, kilometrit, raiteet: radanRaiteet, elementit
+        trackId, from, to, absLength, kilometrit, raiteet, elementit
       };
 
       resolve(index);

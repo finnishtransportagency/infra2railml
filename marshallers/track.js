@@ -100,7 +100,7 @@ function marshallRail(rail, memo) {
     // find the incoming/outgoing elements of rail, typically a switch or buffer stop
     const beginElement = findConnectingElement(alku.ratakm, alku.etaisyys, elementGroups);
     if (beginElement && beginElement.tyyppi === 'vaihde') {
-        const beginRef = findConnectionRef(railId, beginElement, index.raiteet);
+        const beginRef = findConnectionRef(railId, beginElement);
         if (beginRef) {
             $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginRef}" />`);
         } else {
@@ -114,7 +114,7 @@ function marshallRail(rail, memo) {
 
     const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
     if (endElement && endElement.tyyppi === 'vaihde') {
-        const endRef = findConnectionRef(railId, endElement, index.raiteet);
+        const endRef = findConnectionRef(railId, endElement);
         if (endRef) {  
             $('trackEnd').append(`<connection id="tec_${railId}" ref="${endRef}" />`);
         } else {

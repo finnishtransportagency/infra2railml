@@ -76,7 +76,7 @@ function marshallRail(rail, memo) {
     const { index, marshalled } = memo;
 
     const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId }) || _.first(rail.ratakmvalit);
-    const { alku, loppu } = ratakmvali;
+    const { ratanumero, alku, loppu } = ratakmvali;
 
     console.log(`Generating track ${rail.tunniste} (${ratakmvali.ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
 
@@ -86,7 +86,7 @@ function marshallRail(rail, memo) {
 
     // main track element
     const railId = rail.tunniste;
-    const name = `Raide ${index.trackId} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
+    const name = `Raide ${ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
     const stub = `<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`;
     const $ = cheerio.load(stub, config.cheerio);
 
@@ -99,20 +99,27 @@ function marshallRail(rail, memo) {
         
     // find the incoming/outgoing elements of rail, typically a switch or buffer stop
     const beginElement = findConnectingElement(alku.ratakm, alku.etaisyys, elementGroups);
-    const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
-    
     if (beginElement && beginElement.tyyppi === 'vaihde') {
-        const beginRef = findConnectionRef(railId, beginElement);
-        $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginRef}" />`);
+        const beginRef = findConnectionRef(railId, beginElement, index.raiteet);
+        if (beginRef) {
+            $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginRef}" />`);
+        } else {
+            $('trackBegin').append(`<openEnd id="tbc_${railId}" name="${rail.tunniste}" />`);
+        }
     } else if (beginElement && beginElement.tyyppi === 'puskin') {
         $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
     } else {
         $('trackBegin').append(`<openEnd id="tbc_${railId}" name="${rail.tunniste}" />`);
     }
 
+    const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
     if (endElement && endElement.tyyppi === 'vaihde') {
-        const endRef = findConnectionRef(railId, endElement);        
-        $('trackEnd').append(`<connection id="tec_${railId}" ref="${endRef}" />`);
+        const endRef = findConnectionRef(railId, endElement, index.raiteet);
+        if (endRef) {  
+            $('trackEnd').append(`<connection id="tec_${railId}" ref="${endRef}" />`);
+        } else {
+            $('trackEnd').append(`<openEnd id="tec_${railId}" name="${rail.tunniste}" />`);
+        }
     } else if (endElement && endElement.tyyppi === 'puskin') {
         $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
     } else {
@@ -123,9 +130,9 @@ function marshallRail(rail, memo) {
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
 
-    const switches = _.map(unmarshalledGroups.vaihde, (v) => _switch.marshall(index.trackId, beginAbsPos, v));
+    const switches = _.map(unmarshalledGroups.vaihde, (v) => _switch.marshall(ratanumero, beginAbsPos, v));
     const risteykset = _.filter(unmarshalledGroups.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
-    const crossings = _.map(risteykset, (r) => crossing.marshall(km.ratanumero, absPos, r));
+    const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, beginAbsPos, r));
     
     $('trackTopology').append('<connections/>');    
     if (!_.isEmpty(switches)) {
@@ -139,21 +146,21 @@ function marshallRail(rail, memo) {
 
     // Find elements located between rail begin and end, as the first and last kilometers may
     // also contain elements related to previous/next rail.
-    const onRailElements = _.filter(elements, (e) => isOnRail(e, index.trackId, alku, loppu));
+    const onRailElements = _.filter(elements, (e) => isOnRail(e, ratanumero, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
 
     // ocsElements
-    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(index.trackId, beginAbsPos, o));    
+    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o));    
     if (!_.isEmpty(signals)) {
         $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`);
     }
-    const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(index.trackId, beginAbsPos, b));
+    const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(ratanumero, beginAbsPos, b));
     if (!_.isEmpty(balises)) {
         $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
     }
 
     // trackElements
-    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(index.trackId, alku, loppu, nr));
+    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(ratanumero, alku, loppu, nr));
     const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(railId, n)));
     const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(railId, beginAbsPos, n)));
     if (!_.isEmpty(speedChanges)) {
@@ -161,7 +168,7 @@ function marshallRail(rail, memo) {
     }
 
     // TODO is electrificationChange correct railML term?
-    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(index.trackId, beginAbsPos, ej));
+    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, beginAbsPos, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
@@ -207,8 +214,11 @@ function fromRail(acc, rail) {
  * Resolve the track begin/end element, e.g. switch or stop buffer.
  */
 function findConnectingElement(km, etaisyys, elements) {
-    const vaihde = _.find(elements.vaihde, (v) => !!_.find(v.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
-    const puskin = _.find(elements.puskin, (p) => !!_.find(p.ratakmsijainnit, { ratakm: km, etaisyys: etaisyys }));
+
+    const position = { ratakm: km, etaisyys: etaisyys };
+    const vaihde = _.find(elements.vaihde, (v) => !!_.find(v.ratakmsijainnit, position));
+    const puskin = _.find(elements.puskin, (p) => !!_.find(p.ratakmsijainnit, position));
+
     return vaihde || puskin;
 }
 

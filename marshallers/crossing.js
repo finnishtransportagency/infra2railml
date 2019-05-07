@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
+const config = require('../config');
 
 const CrossingType = {
     SIMPLE: 'simpleCrossing',
@@ -16,7 +17,7 @@ module.exports = {
     marshall: (trackId, absPos, element) => {
         
         const type = CROSSING_TYPES[element.vaihde.tyyppi];
-        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
+        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId }) || _.first(element.ratakmsijainnit);
         const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
 
         const $ = cheerio.load('<crossing/>', config.cheerio);

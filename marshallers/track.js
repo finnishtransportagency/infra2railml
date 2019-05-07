@@ -79,7 +79,7 @@ function marshallRail(rail, memo) {
     const { ratanumero, alku, loppu } = ratakmvali;
 
     console.log(`Generating track ${rail.tunniste} (${ratakmvali.ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
-
+    
     // find & group all elements related to current rail
     const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(rail.tunniste, e)), 'tunniste');
     const elementGroups = _.groupBy(elements, 'tyyppi');
@@ -104,12 +104,12 @@ function marshallRail(rail, memo) {
         if (beginRef) {
             $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginRef}" />`);
         } else {
-            $('trackBegin').append(`<openEnd id="tbc_${railId}" name="${rail.tunniste}" />`);
+            $('trackBegin').append(`<openEnd id="tboe_${railId}" name="${rail.tunniste}" />`);
         }
     } else if (beginElement && beginElement.tyyppi === 'puskin') {
         $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
     } else {
-        $('trackBegin').append(`<openEnd id="tbc_${railId}" name="${rail.tunniste}" />`);
+        $('trackBegin').append(`<openEnd id="tboe_${railId}" name="${rail.tunniste}" />`);
     }
 
     const endElement = findConnectingElement(loppu.ratakm, loppu.etaisyys, elementGroups);
@@ -118,12 +118,12 @@ function marshallRail(rail, memo) {
         if (endRef) {  
             $('trackEnd').append(`<connection id="tec_${railId}" ref="${endRef}" />`);
         } else {
-            $('trackEnd').append(`<openEnd id="tec_${railId}" name="${rail.tunniste}" />`);
+            $('trackEnd').append(`<openEnd id="teoe_${railId}" name="${rail.tunniste}" />`);
         }
     } else if (endElement && endElement.tyyppi === 'puskin') {
         $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
     } else {
-        $('trackEnd').append(`<openEnd id="tec_${railId}" name="${rail.tunniste}" />`);
+        $('trackEnd').append(`<openEnd id="teoe_${railId}" name="${rail.tunniste}" />`);
     }
 
     // avoid duplicate switch elements by rejecting the already processed ones

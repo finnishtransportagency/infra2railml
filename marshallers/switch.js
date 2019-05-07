@@ -37,7 +37,7 @@ module.exports = {
     marshall: (trackId, absPos, element) => {
         
         const type = SWITCH_TYPES[element.vaihde.tyyppi];
-        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
+        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId }) || _.first(element.ratakmsijainnit);
         const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
 
         const connections = getConnections(element);

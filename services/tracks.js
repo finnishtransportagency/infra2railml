@@ -28,14 +28,19 @@ function fetchKilometer(trackId, km) {
 /**
  * Fetch specified track kilometers.
  * 
- * @param {*} trackId Track ID
+ * @param {*} trackNumber Track ID
  * @param {*} from First track kilometer to fetch
  * @param {*} length Number of kilometers to fetch
  */
-function getKilometers(trackId, from, length) {
+function getKilometers(trackNumber, from, length) {
+
+    console.info(`Loading track ${trackNumber} [${from}..${from+length-1} km] ..`);
+
     return Promise.all(
-        _.times(length, (i) => getKilometer(trackId, from + i))
-    ).then((kilometers) => _.filter(kilometers, (km) => !_.isEmpty(km)));
+        _.times(length, (i) => getKilometer(trackNumber, from + i))
+    ).then((kilometers) =>
+        _.reject(kilometers, _.isEmpty)
+    );
 }
 
 /**
@@ -68,7 +73,6 @@ function getKilometer(trackId, km) {
         })
       .catch((err) => {
           console.error(`${err.message}`);
-          //process.exit(err.status);
           return {};
       });
 }

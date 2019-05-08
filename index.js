@@ -9,7 +9,6 @@ module.exports = {
    * Get track kilometers from API, complemented with selected child objects.
    */
   getTrack: (trackNumber, from, length) => {
-    console.info(`Loading track ${trackNumber} [${from}..${from+length-1} km] ..`);
     return trackService.getKilometers(trackNumber, from, length);    
   },
 
@@ -45,9 +44,9 @@ module.exports = {
       const to = _.last(sorted).ratakm || kilometrit.length;
       const absLength = _.sumBy(sorted, 'pituus');
 
-      const elementit = _.uniqBy(_.filter(_.flatMap(kilometrit, 'elementit'), (e) => !_.isEmpty(_.find(e.ratakmsijainnit, { ratanumero: trackId }))), 'tunniste');   
-      const raiteet = _.uniqBy(_.flatMap(elementit, 'raiteet'), 'tunniste');
-            
+      const elementit = _.uniqBy(_.reject(_.flatMap(kilometrit, 'elementit'), _.isEmpty), 'tunniste');
+      const raiteet = _.uniqBy(_.reject(_.flatMap(elementit, 'raiteet'), _.isEmpty), 'tunniste');
+
       const index = {
         trackId, from, to, absLength, kilometrit, raiteet, elementit
       };

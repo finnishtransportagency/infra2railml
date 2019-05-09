@@ -9,6 +9,7 @@ const speedChange = require('./speed-change');
 const electrificationChange = require('./electrification-change');
 const speeds = require('./speeds');
 const trackRef = require('./track-ref');
+const milepost = require('./milepost');
 
 /**
  * Convert one track kilometer to railML. Produces a simple line level model without
@@ -82,7 +83,7 @@ function marshallRail(rail, memo) {
     
     // find & group all elements related to current rail
     const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(rail.tunniste, e)), 'tunniste');
-    const elementGroups = _.groupBy(index.elementit, 'tyyppi');
+    const elementsByType = _.groupBy(elements, 'tyyppi');
 
     // main track element
     const railId = rail.tunniste;
@@ -98,10 +99,10 @@ function marshallRail(rail, memo) {
     $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}">`); 
         
     // find the incoming/outgoing elements of rail, typically a switch or buffer stop
-    const beginElement = findConnectingElement('begin', alku.ratakm, alku.etaisyys, elementGroups);
+    const beginElement = findConnectingElement('begin', alku.ratakm, alku.etaisyys, elementsByType);
     const beginRef = findConnectionRef(railId, 'begin', beginElement);
 
-    const endElement = findConnectingElement('end', loppu.ratakm, loppu.etaisyys, elementGroups);
+    const endElement = findConnectingElement('end', loppu.ratakm, loppu.etaisyys, elementsByType);
     const endRef = findConnectionRef(railId, 'end', endElement);
 
     if (beginElement && beginRef && beginElement.tyyppi === 'vaihde') {
@@ -142,11 +143,14 @@ function marshallRail(rail, memo) {
     // also contain elements related to previous/next rail.
     const onRailElements = _.filter(elements, (e) => isOnRail(e, ratanumero, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
-
+    const railKmPosts = _.filter(index.kilometrit, (k) => isKilometerChangeOnRail(ratanumero, alku, loppu, k));
+    
     // ocsElements
-    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o));    
+    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o));
+    const mileposts = _.map(railKmPosts, (p) => milepost.marshall(ratanumero, railId, alku, p));
+    const signalsAndPosts = _.flatten(_.concat(signals, mileposts));
     if (!_.isEmpty(signals)) {
-        $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`);
+        $('ocsElements').append(`<signals>${_.join(signalsAndPosts, '')}</signals>`);
     }
     const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(ratanumero, beginAbsPos, b));
     if (!_.isEmpty(balises)) {
@@ -301,6 +305,15 @@ function isRailSpeedChange(raideRataNr, raideAlku, raideLoppu, nopeudet) {
         alku.ratakm <= raideLoppu.ratakm &&
         alku.etaisyys <= raideLoppu.etaisyys;
 }
+
+/**
+ * Tells if hte given kilometer/mileage post is within given track range.
+ */
+function isKilometerChangeOnRail(ratanumero, alku, loppu, km) {
+    return km.ratanumero === ratanumero &&
+        (km.ratakm > alku.ratakm && km.ratakm <= loppu.ratakm);
+}
+
 
 module.exports = {
     fromKilometer, fromRail

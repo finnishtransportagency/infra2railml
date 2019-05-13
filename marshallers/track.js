@@ -279,7 +279,7 @@ function findConnectionRef(railId, type, element) {
  * Tells if the given element is (anyhow) related to specified rail.
  */
 function isRailElement(railId, element) {
-    return _.map(element.raiteet, 'tunniste').includes(railId);
+    return _.flatMap(element.raiteet, 'tunniste').includes(railId);
 }
 
 /**
@@ -287,11 +287,7 @@ function isRailElement(railId, element) {
  */
 function isOnRail(element, trackId, raideAlku, raideLoppu) {
     const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
-    return !_.isEmpty(sijainti) &&
-        sijainti.ratakm >= raideAlku.ratakm &&
-        sijainti.etaisyys >= raideAlku.etaisyys &&
-        sijainti.ratakm <= raideLoppu.ratakm &&
-        sijainti.etaisyys <= raideLoppu.etaisyys;
+    return isBetween(raideAlku, raideLoppu, sijainti);
 }
 
 /**
@@ -299,11 +295,17 @@ function isOnRail(element, trackId, raideAlku, raideLoppu) {
  */
 function isRailSpeedChange(raideRataNr, raideAlku, raideLoppu, nopeudet) {
     const { ratanumero, alku } = nopeudet.ratakmvali;
-    return ratanumero === raideRataNr &&
-        alku.ratakm >= raideAlku.ratakm &&
-        alku.etaisyys >= raideAlku.etaisyys &&
-        alku.ratakm <= raideLoppu.ratakm &&
-        alku.etaisyys <= raideLoppu.etaisyys;
+    return ratanumero === raideRataNr && isBetween(raideAlku, raideLoppu, alku);
+}
+
+/**
+ * Tells if given position (km+distance) is within given begin/end positions.
+ */
+function isBetween(alku, loppu, sijainti) {
+    return !_.isEmpty(sijainti) &&
+        (sijainti.ratakm > alku.ratakm && sijainti.ratakm < loppu.ratakm) ||
+        ((sijainti.ratakm === alku.ratakm && sijainti.etaisyys >= alku.etaisyys) ||
+        (sijainti.ratakm === loppu.ratakm && sijainti.etaisyys <= loppu.etaisyys));
 }
 
 /**

@@ -18,7 +18,7 @@ module.exports = {
         $('signal').attr('pos', pos);
         $('signal').attr('absPos', absPos);
         $('signal').attr('dir', 'up');
-        $('signal').attr('virtual', 'false');
+        $('signal').attr('virtual', 'true');
         $('signal').append(`<milepost shownValue="${kilometri.ratakm}" switchable="false" />`)
 
         return $.xml();        

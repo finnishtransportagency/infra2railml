@@ -48,6 +48,7 @@ module.exports = {
         const $ = cheerio.load('<switch/>', config.cheerio);
         $('switch').attr('id', element.tunniste);
         $('switch').attr('name', element.nimi);
+        $('switch').attr('description', element.nimi);
         $('switch').attr('type', type);
         $('switch').attr('pos', pos);
         $('switch').attr('absPos', absPos + pos);

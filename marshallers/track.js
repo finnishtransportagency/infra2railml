@@ -166,7 +166,7 @@ function marshallRail(rail, memo) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
 
-    // TODO is electrificationChange correct railML term?
+    // TODO is electrificationChange correct railML term? what is trackCircuitBorder?
     const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, beginAbsPos, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
@@ -247,11 +247,11 @@ function findConnectionRef(railId, type, element) {
     console.log(`- ${type} ref: ${yhteys.mista} --> ${yhteys.minne}`);
 
     if (yhteys.mista === yhteys.minne) {
-        // Infra-API special case where a switch is located "in the middle" of a rail,
-        // i.e. "mista" and "minne" references are the same rail. This may not be the
-        // correct solution, but at least it avoids the self-reference / loop.
+        
+        // Infra-API special case where a switch is not located at the rail end,
+        // i.e. both "mista" and "minne" refer to a single rail.
         console.warn(`- WARN: ${type} switch ${element.tunniste} references rail ${yhteys.mista} both in and out.`);
-        return ''; //`swc_${element.tunniste}`;
+        return '';
 
     } else if (yhteys.mistaRooli === 'vasen' || yhteys.mistaRooli === 'oikea') {
         // incoming from parting direction
@@ -277,20 +277,26 @@ function findConnectionRef(railId, type, element) {
 
 
 /**
- * Tells if the given element is (anyhow) related to specified rail.
+ * Tells if the given element is anyhow related to specified rail,
+ * regardless of it's track number, position etc.
  */
 function isRailElement(railId, element) {
     return _.flatMap(element.raiteet, 'tunniste').includes(railId);
 }
 
 /**
- * Tells if the given element is between rail begin and end points, i.e. "on rail".
+ * Tells if the given element is somewhere between rail begin and
+ * end thus "on rail".
  */
 function isOnRail(element, trackId, raideAlku, raideLoppu) {
     const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
     return isBetween(raideAlku, raideLoppu, sijainti);
 }
 
+/**
+ * Tells if the given element is located exactly at the specified
+ * rail begin or end point.
+ */
 function isAtRailEnds(element, trackId, raideAlku, raideLoppu) {
     const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
     return isBeginOrEnd(raideAlku, raideLoppu, sijainti);
@@ -314,6 +320,9 @@ function isBetween(alku, loppu, sijainti) {
         (sijainti.ratakm === loppu.ratakm && sijainti.etaisyys <= loppu.etaisyys));
 }
 
+/**
+ * Tells if given begin or end match the specified position.
+ */
 function isBeginOrEnd(alku, loppu, sijainti) {
     return !_.isEmpty(alku) && !_.isEmpty(loppu) && !_.isEmpty(sijainti) &&
         ((sijainti.ratakm === alku.ratakm && sijainti.etaisyys === alku.etaisyys) ||

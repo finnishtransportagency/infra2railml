@@ -24,6 +24,8 @@ function marshallKm(km, absPos, prevTrackId) {
     const stub = `<track id="${trackId}" name="${trackName}"><trackTopology/><trackElements/><ocsElements/></track>`;
     const $ = cheerio.load(stub, config.cheerio);
 
+    console.log(`\nGenerating track ${trackId} [${trackName}]..`);
+
     const topology = $('trackTopology');
     topology.append(`<trackBegin id="tb_${km.ratakm}" pos="0.0000" absPos="${absPos}"><connection id="tbc_${km.ratakm}" ref="${prevTrackId}"/></trackBegin>`);
     topology.append(`<trackEnd id="te_${km.ratakm}" pos="${km.pituus}" absPos="${absPos + km.pituus}"><connection id="tec_${km.ratakm}" ref="tbc_${km.ratakm + 1}" />`);
@@ -52,21 +54,21 @@ function marshallKm(km, absPos, prevTrackId) {
         $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
     }
 
-    const raiteet = _.filter(_.uniqBy(_.reject(_.flatMap(km.elementit, (e) => e.raiteet), _.isUndefined), 'tunniste'), { 'tyyppi': 'linja' });
+    const raiteet = _.filter(_.uniqBy(_.reject(_.flatMap(km.elementit, 'raiteet'), _.isEmpty), 'tunniste'), { 'tyyppi': 'linja' });
     const nopeudet = _.filter(_.flatMap(raiteet, (r) => r.nopeusrajoitukset), (nr) => nr.ratakmvali.ratanumero === km.ratanumero && nr.ratakmvali.alku.ratakm === km.ratakm);
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(railId, absPos, n)));
+    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(trackId, absPos, n)));
     if (!_.isEmpty(speedChanges)) {
         $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
 
-    const electrificationChanges = _.map(elements.erotinjakso, (ej) => electrificationChange.marshall(absPos, ej));
+    const electrificationChanges = _.map(elements.erotinjakso, (ej) => electrificationChange.marshall(trackId, absPos, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
 
     return {
         element: $.xml(),
-        speeds: _.uniq(_.flatMap(nopeudet, speeds.marshall)),
+        speeds: _.uniq(_.flatMap(nopeudet, (s) => speeds.marshall(trackId, s))),
         trackRef: trackRef.marshall(km)
     };
 }

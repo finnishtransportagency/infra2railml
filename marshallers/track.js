@@ -99,10 +99,10 @@ function marshallRail(rail, memo) {
     $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}">`); 
         
     // find the incoming/outgoing elements of rail, typically a switch or buffer stop
-    const beginElement = findConnectingElement('begin', alku.ratakm, alku.etaisyys, elementsByType);
+    const beginElement = findConnectingElement('begin', alku, elementsByType);
     const beginRef = findConnectionRef(railId, 'begin', beginElement);
 
-    const endElement = findConnectingElement('end', loppu.ratakm, loppu.etaisyys, elementsByType);
+    const endElement = findConnectingElement('end', loppu, elementsByType);
     const endRef = findConnectionRef(railId, 'end', endElement);
 
     if (beginElement && beginRef && beginElement.tyyppi === 'vaihde') {
@@ -212,11 +212,11 @@ function fromRail(acc, rail) {
 /**
  * Resolve the track begin/end element, e.g. switch or stop buffer.
  */
-function findConnectingElement(type, km, etaisyys, elements) {
+function findConnectingElement(type, position, elements) {
 
-    const position = { ratakm: km, etaisyys: etaisyys };
-    const vaihde = _.find(elements.vaihde, (v) => !!_.find(v.ratakmsijainnit, position));
-    const puskin = _.find(elements.puskin, (p) => !!_.find(p.ratakmsijainnit, position));
+    const criteria = { ratakm: position.ratakm, etaisyys: position.etaisyys };
+    const vaihde = _.find(elements.vaihde, (v) => !!_.find(v.ratakmsijainnit, criteria));
+    const puskin = _.find(elements.puskin, (p) => !!_.find(p.ratakmsijainnit, criteria));
     const element = vaihde || puskin;
 
     if (element) {

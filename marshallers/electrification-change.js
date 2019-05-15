@@ -18,7 +18,7 @@ module.exports = {
         const sijainti = _.find(erotusjakso.ratakmsijainnit, { ratanumero: trackId });
 
         const id = `${erotusjakso.tunniste}`;
-        const name = `${sijainti.ratanumero} ${sijainti.ratakm}+${sijainti.etaisyys}`;
+        const name = `Erotusjakso ${sijainti.ratanumero} ${sijainti.ratakm}+${sijainti.etaisyys}`;
         const dir = DIRECTIONS[erotusjakso.suunnattu] || Direction.UP;
         const max = _.max(_.map(erotusjakso.nopeusrajoitukset, 'nopeus'));
         const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;

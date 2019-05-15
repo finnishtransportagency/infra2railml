@@ -58,7 +58,7 @@ function rails(trackId, args) {
 }
 
 function writeToFile(filename, data) {
-  console.log(`Writing ${filename} ..`);
+  console.log(`\nWriting ${filename} ..`);
   const f = fs.writeFile(filename, data, 'utf8', () => console.log("Done."));
   return data;
 }

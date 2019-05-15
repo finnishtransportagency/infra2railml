@@ -10,6 +10,8 @@ const electrificationChange = require('./electrification-change');
 const speeds = require('./speeds');
 const trackRef = require('./track-ref');
 const milepost = require('./milepost');
+const elementUtils = require('../utils/element-utils');
+const railUtils = require('../utils/rail-utils');
 
 /**
  * Convert one track kilometer to railML. Produces a simple line level model without
@@ -82,7 +84,7 @@ function marshallRail(rail, memo) {
     console.log(`\nGenerating track ${rail.tunniste} (${ratakmvali.ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
     
     // find & group all elements related to current rail
-    const elements = _.uniqBy(_.filter(index.elementit, (e) => isRailElement(rail.tunniste, e)), 'tunniste');
+    const elements = _.uniqBy(_.filter(index.elementit, (e) => railUtils.isRailElement(rail.tunniste, e)), 'tunniste');
     const elementsByType = _.groupBy(elements, 'tyyppi');
 
     // main track element
@@ -99,11 +101,11 @@ function marshallRail(rail, memo) {
     $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}">`); 
         
     // find the incoming/outgoing elements of rail, typically a switch or buffer stop
-    const beginElement = findConnectingElement('begin', alku, elementsByType);
-    const beginRef = findConnectionRef(railId, 'begin', beginElement);
+    const beginElement = elementUtils.getConnectingElement('begin', alku, elementsByType);
+    const beginRef = elementUtils.getReference(railId, 'begin', beginElement);
 
-    const endElement = findConnectingElement('end', loppu, elementsByType);
-    const endRef = findConnectionRef(railId, 'end', endElement);
+    const endElement = elementUtils.getConnectingElement('end', loppu, elementsByType);
+    const endRef = elementUtils.getReference(railId, 'end', endElement);
 
     if (beginElement && beginRef && beginElement.tyyppi === 'vaihde') {
         $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginRef}" />`);
@@ -125,12 +127,12 @@ function marshallRail(rail, memo) {
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
 
-    const vaihteet = _.filter(unmarshalledGroups.vaihde, (v) => isAtRailEnds(v, ratanumero, alku, loppu));
+    const vaihteet = _.filter(unmarshalledGroups.vaihde, (v) => railUtils.isAtRailEnds(v, ratanumero, alku, loppu));
     const risteykset = _.filter(vaihteet, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
     const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, beginAbsPos, v));
     const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, beginAbsPos, r));
     
-    $('trackTopology').append('<connections/>');    
+    $('trackTopology').append('<connections/>');
     if (!_.isEmpty(switches)) {
         $('trackTopology > connections').append(switches);
     }
@@ -142,13 +144,13 @@ function marshallRail(rail, memo) {
 
     // Find elements located between rail begin and end, as the first and last kilometers may
     // also contain elements related to previous/next rail.
-    const onRailElements = _.filter(elements, (e) => isOnRail(e, ratanumero, alku, loppu));
+    const onRailElements = _.filter(elements, (e) => railUtils.isOnRail(e, ratanumero, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
-    const railKmPosts = _.filter(index.kilometrit, (k) => isKilometerChangeOnRail(ratanumero, alku, loppu, k));
+    const onRailMileposts = _.filter(index.kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));
     
     // ocsElements
     const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o));
-    const mileposts = _.map(railKmPosts, (p) => milepost.marshall(ratanumero, railId, alku, p));
+    const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, p));
     const signalsAndPosts = _.flatten(_.concat(signals, mileposts));
     if (!_.isEmpty(signals)) {
         $('ocsElements').append(`<signals>${_.join(signalsAndPosts, '')}</signals>`);
@@ -159,7 +161,7 @@ function marshallRail(rail, memo) {
     }
 
     // trackElements
-    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => isRailSpeedChange(ratanumero, alku, loppu, nr));
+    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => railUtils.isSpeedChangeOnRail(ratanumero, alku, loppu, nr));
     const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(railId, n)));
     const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(railId, beginAbsPos, n)));
     if (!_.isEmpty(speedChanges)) {
@@ -208,135 +210,6 @@ function fromRail(acc, rail) {
 
     return acc;
 }
-
-/**
- * Resolve the track begin/end element, e.g. switch or stop buffer.
- */
-function findConnectingElement(type, position, elements) {
-
-    const criteria = { ratakm: position.ratakm, etaisyys: position.etaisyys };
-    const vaihde = _.find(elements.vaihde, (v) => !!_.find(v.ratakmsijainnit, criteria));
-    const puskin = _.find(elements.puskin, (p) => !!_.find(p.ratakmsijainnit, criteria));
-    const element = vaihde || puskin;
-
-    if (element) {
-        console.info(`- ${type} element ${element.tunniste} (${element.tyyppi})`)
-    } else {
-        console.info(`- ${type} element not found`)
-    }
-
-    return element;
-}
-
-/**
- * Resolve reference from track begin/end connection to track or switch connection. The connections
- * determined here are to follow OpenTrack generated models where only the parting switch direction is
- * referenced by tracks and the straight direction references are from track end to track beginning.
- */
-function findConnectionRef(railId, type, element) {
-
-    if (!element || !element.vaihde) return '';
-
-    const nousevat = _.filter(element.vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
-    const mista = _.find(nousevat, (y) => y.mista === railId);
-    const minne = _.find(nousevat, (y) => y.minne === railId);
-    const yhteys = mista || minne;
-
-    if (!yhteys) return '';
-
-    console.log(`- ${type} ref: ${yhteys.mista} --> ${yhteys.minne}`);
-
-    if (yhteys.mista === yhteys.minne) {
-        
-        // Infra-API special case where a switch is not located at the rail end,
-        // i.e. both "mista" and "minne" refer to a single rail.
-        console.warn(`- WARN: ${type} switch ${element.tunniste} references rail ${yhteys.mista} both in and out.`);
-        return '';
-
-    } else if (yhteys.mistaRooli === 'vasen' || yhteys.mistaRooli === 'oikea') {
-        // incoming from parting direction
-        return `swc_${element.tunniste}`;
-
-    } else if (yhteys.minneRooli === 'vasen' || yhteys.minneRooli === 'oikea') {
-        // outgoing parting direction
-        return `swc_${element.tunniste}`;
-
-    } else if (yhteys.mista === railId) {
-        // straight, incoming track referencing the next track's begin connection
-        return `tbc_${yhteys.minne}`;
-    
-    } else if (yhteys.minne === railId) {
-        // straight, outgoing track referencing the previous track's end connection
-        return `tec_${yhteys.mista}`;
-    }
-
-    console.warn(`- failed to determine ${type} connection ref for track ${railId}!`);
-
-    return '';
-}
-
-
-/**
- * Tells if the given element is anyhow related to specified rail,
- * regardless of it's track number, position etc.
- */
-function isRailElement(railId, element) {
-    return _.flatMap(element.raiteet, 'tunniste').includes(railId);
-}
-
-/**
- * Tells if the given element is somewhere between rail begin and
- * end thus "on rail".
- */
-function isOnRail(element, trackId, raideAlku, raideLoppu) {
-    const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
-    return isBetween(raideAlku, raideLoppu, sijainti);
-}
-
-/**
- * Tells if the given element is located exactly at the specified
- * rail begin or end point.
- */
-function isAtRailEnds(element, trackId, raideAlku, raideLoppu) {
-    const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
-    return isBeginOrEnd(raideAlku, raideLoppu, sijainti);
-}
-
-/**
- * Tells if the given speed change is between rail begin and end points.
- */
-function isRailSpeedChange(raideRataNr, raideAlku, raideLoppu, nopeudet) {
-    const { ratanumero, alku } = nopeudet.ratakmvali;
-    return ratanumero === raideRataNr && isBetween(raideAlku, raideLoppu, alku);
-}
-
-/**
- * Tells if given position (km+distance) is within given begin/end positions.
- */
-function isBetween(alku, loppu, sijainti) {
-    return !_.isEmpty(alku) && !_.isEmpty(loppu) && !_.isEmpty(sijainti) &&
-        (sijainti.ratakm > alku.ratakm && sijainti.ratakm < loppu.ratakm) ||
-        ((sijainti.ratakm === alku.ratakm && sijainti.etaisyys >= alku.etaisyys) ||
-        (sijainti.ratakm === loppu.ratakm && sijainti.etaisyys <= loppu.etaisyys));
-}
-
-/**
- * Tells if given begin or end match the specified position.
- */
-function isBeginOrEnd(alku, loppu, sijainti) {
-    return !_.isEmpty(alku) && !_.isEmpty(loppu) && !_.isEmpty(sijainti) &&
-        ((sijainti.ratakm === alku.ratakm && sijainti.etaisyys === alku.etaisyys) ||
-        (sijainti.ratakm === loppu.ratakm && sijainti.etaisyys === loppu.etaisyys));
-}
-
-/**
- * Tells if hte given kilometer/mileage post is within given track range.
- */
-function isKilometerChangeOnRail(ratanumero, alku, loppu, km) {
-    return km.ratanumero === ratanumero &&
-        (km.ratakm > alku.ratakm && km.ratakm <= loppu.ratakm);
-}
-
 
 module.exports = {
     fromKilometer, fromRail

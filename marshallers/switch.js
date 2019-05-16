@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
+const elementUtils = require('../utils/element-utils');
 
 // railML tSwitchType
 const SwitchType = {
@@ -37,7 +38,7 @@ module.exports = {
     marshall: (trackId, absPos, element) => {
         
         const type = SWITCH_TYPES[element.vaihde.tyyppi];
-        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId }) || _.first(element.ratakmsijainnit);
+        const sijainti = elementUtils.getPosition(trackId, element);
         const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
 
         const connections = getConnections(element);

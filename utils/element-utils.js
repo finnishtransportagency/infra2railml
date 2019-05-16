@@ -1,5 +1,14 @@
 const _ = require('lodash');
 
+
+/**
+ * Returns the element position object, primarily by given track number. If
+ * no position matches the specified track, first found position is returned.
+ */
+function getPosition(ratanumero, element) {
+    return _.find(element.ratakmsijainnit, { ratanumero }) || _.first(element.ratakmsijainnit);
+}
+
 /**
  * Resolve the track begin/end element (graph node), e.g. switch or stop buffer.
  */
@@ -68,5 +77,5 @@ function getReference(railId, type, element) {
 }
 
 module.exports = {
-    getConnectingElement, getReference
+    getPosition, getConnectingElement, getReference
 }

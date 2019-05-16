@@ -1,19 +1,20 @@
 const _ = require('lodash');
+const elementUtils = require('./element-utils');
 
 /**
  * Tells if the given element is anyhow related to specified rail,
  * regardless of it's track number, position etc.
  */
 function isRailElement(railId, element) {
-    return _.flatMap(element.raiteet, 'tunniste').includes(railId);
+    return _.map(element.raiteet, 'tunniste').includes(railId);
 }
 
 /**
  * Ensures the given element is somewhere between rail begin and
  * end positions, thus "on rail".
  */
-function isOnRail(element, trackId, raideAlku, raideLoppu) {
-    const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
+function isOnRail(element, ratanumero, raideAlku, raideLoppu) {
+    const sijainti = elementUtils.getPosition(ratanumero, element);
     return isBetween(raideAlku, raideLoppu, sijainti);
 }
 
@@ -37,8 +38,8 @@ function isMilepostOnRail(ratanumero, alku, loppu, km) {
  * Tells if the given element is located exactly at the specified
  * rail begin or end point.
  */
-function isAtRailEnds(element, trackId, raideAlku, raideLoppu) {
-    const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
+function isAtRailEnds(element, ratanumero, raideAlku, raideLoppu) {
+    const sijainti = elementUtils.getPosition(ratanumero, element);
     return isBeginOrEnd(raideAlku, raideLoppu, sijainti);
 }
 
@@ -47,8 +48,8 @@ function isAtRailEnds(element, trackId, raideAlku, raideLoppu) {
  */
 function isBetween(alku, loppu, sijainti) {
     return !_.isEmpty(alku) && !_.isEmpty(loppu) && !_.isEmpty(sijainti) &&
-        (sijainti.ratakm > alku.ratakm && sijainti.ratakm < loppu.ratakm) ||
-        ((sijainti.ratakm === alku.ratakm && sijainti.etaisyys >= alku.etaisyys) ||
+        ((sijainti.ratakm > alku.ratakm && sijainti.ratakm < loppu.ratakm) ||
+        (sijainti.ratakm === alku.ratakm && sijainti.etaisyys >= alku.etaisyys) ||
         (sijainti.ratakm === loppu.ratakm && sijainti.etaisyys <= loppu.etaisyys));
 }
 

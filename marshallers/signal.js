@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
+const elementUtils = require('../utils/element-utils');
 
 // railML tSignalType
 const SignalType = {
@@ -45,9 +46,9 @@ const SIGNAL_TYPES = {
 
 module.exports = {
     marshall: (trackId, absPos, element) => {
-
+        
         const dir = element.opastin.suunta == 'nouseva' ? 'up' : 'down';
-        const sijainti = _.find(element.ratakmsijainnit, { ratanumero: trackId });
+        const sijainti = elementUtils.getPosition(trackId, element);
         const type = SIGNAL_TYPES[element.opastin.tyyppi];
 
         const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;

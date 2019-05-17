@@ -38,14 +38,23 @@ function getReference(railId, type, element) {
 
     if (!element || !element.vaihde) return '';
 
-    const nousevat = _.filter(element.vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
-    const mista = _.find(nousevat, (y) => y.mista === railId);
-    const minne = _.find(nousevat, (y) => y.minne === railId);
-    const yhteys = mista || minne;
+    const nousevat = _.filter(element.vaihde.raideyhteydet, (y) =>
+        y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva' && (y.mista === railId || y.minne === railId)
+    );
+
+    const etuTaka = _.find(nousevat, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'taka');
+    const takaEtu = _.find(nousevat, (y) => y.mistaRooli === 'taka' && y.minneRooli === 'etu');
+    const etuVasen = _.find(nousevat, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'vasen');
+    const vasenEtu = _.find(nousevat, (y) => y.mistaRooli === 'vasen' && y.minneRooli === 'etu');
+    const etuOikea = _.find(nousevat, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'oikea');
+    const oikeaEtu = _.find(nousevat, (y) => y.mistaRooli === 'oikea' && y.minneRooli === 'etu');
+
+    // straight is primary, left/right only on side-tracks
+    const yhteys = etuTaka || takaEtu || etuVasen || vasenEtu || etuOikea || oikeaEtu;
 
     if (!yhteys) return '';
 
-    console.log(`- ${type} ref: ${yhteys.mista} --> ${yhteys.minne}`);
+    console.log(`- ${type} conn: ${yhteys.mistaRooli} ${yhteys.mista} --> ${yhteys.minneRooli} ${yhteys.minne}`);
 
     if (yhteys.mista === yhteys.minne) {
         
@@ -63,6 +72,7 @@ function getReference(railId, type, element) {
         return `swc_${element.tunniste}`;
 
     } else if (yhteys.mista === railId) {
+        
         // straight, incoming track referencing the next track's begin connection
         return `tbc_${yhteys.minne}`;
     

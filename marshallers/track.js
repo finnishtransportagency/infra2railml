@@ -129,7 +129,7 @@ function marshallRail(rail, memo) {
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
 
-    const vaihteet = _.filter(unmarshalledGroups.vaihde, (v) => railUtils.isAtRailEnds(v, ratanumero, alku, loppu));
+    const vaihteet = _.filter(unmarshalledGroups.vaihde, (v) => railUtils.isOnRail(v, ratanumero, alku, loppu));
     const risteykset = _.filter(vaihteet, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
     const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, beginAbsPos, v));
     const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, beginAbsPos, r));

@@ -34,6 +34,13 @@ const REF_PREFIX = {
     outgoing: 'tbc'
 };
 
+// Left/right logic according to orientation, mirrored when "incoming" due
+// to always using the upward directiong when determining the connections.
+const COURSE = {
+    outgoing: { right: 'right', left: 'left' },
+    incoming: { right: 'left', left: 'right' }
+};
+
 module.exports = {
     marshall: (trackId, absPos, element) => {
         
@@ -81,8 +88,9 @@ function getConnections(element) {
     }
 
     const ref = parting.mistaRooli === 'etu' ? parting.minne : parting.mista;
-    const course = parting.mistaRooli === 'oikea' || parting.minneRooli === 'oikea' ? 'right' : 'left';
-    const orientation = parting.mistaRooli === 'etu' ? 'outgoing' : 'incoming';    
+    const side = parting.mistaRooli === 'oikea' || parting.minneRooli === 'oikea' ? 'right' : 'left';
+    const orientation = parting.mistaRooli === 'etu' ? 'outgoing' : 'incoming';
+    const course = COURSE[orientation][side];
 
     // Max. 3 connections, single connection style following the OpenTrack generated models
     // where only the parting direction is referenced by side tracks and straight direction

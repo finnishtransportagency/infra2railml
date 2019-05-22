@@ -47,13 +47,11 @@ function getSpeedChange(railId, absPos, nopeudet, dir) {
 
     const id = getSpeedChangeId(railId, sijainti, dir);
     const profileRef = getSpeedProfileId(railId, sijainti, dir);
-    const name = `Nopeusrajoitus ${ratanumero} ${sijainti.ratakm}+${sijainti.etaisyys}`;
     const max = _.max(_.map(nopeudet.nopeusrajoitukset, 'nopeus'));
     const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
 
     const $ = cheerio.load('<speedChange/>', config.cheerio);
     $('speedChange').attr('id', id);
-    $('speedChange').attr('name', name);
     $('speedChange').attr('pos', pos);
     $('speedChange').attr('absPos', absPos + pos);
     $('speedChange').attr('dir', dir);

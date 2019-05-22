@@ -13,6 +13,14 @@ const SignalType = {
     OTHER: (tyyppi) => `other:${tyyppi}`
 };
 
+// tSignalFunction: exit|home|blocking|intermediate
+const SignalFunction = {
+    EXIT: 'exit',
+    HOME: 'home',
+    BLOCKING: 'blocking',
+    INTERMEDIATE: 'intermediate'
+};
+
 const SIGNAL_TYPES = {
     "es": SignalType.DISTANT,
     "jo": SignalType.SHUNTING,
@@ -62,8 +70,12 @@ module.exports = {
         $('signal').attr('dir', dir);
         $('signal').attr('virtual', 'false');
 
-        // TODO element.opastin.puoli (vas/oik), railML term?
-        // TODO aSignal attribute "function" (tSignalFunction: exit|home|blocking|intermediate)
+        // TODO how to determine other functions, e.g. home/exit?
+        if (element.liikennepaikka === null) {
+            $('signal').attr('function', SignalFunction.BLOCKING);
+        }
+
+        // TODO element.opastin.puoli (vasen/oikea): corresponding railML term?
 
         return $.xml();        
     }

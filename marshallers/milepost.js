@@ -13,7 +13,7 @@ module.exports = {
 
         const $ = cheerio.load('<signal/>', config.cheerio);
         $('signal').attr('id', id);
-        $('signal').attr('type', 'main');
+        $('signal').attr('type', 'other:kmpaalu');
         $('signal').attr('name', name);
         $('signal').attr('pos', pos);
         $('signal').attr('absPos', absPos);

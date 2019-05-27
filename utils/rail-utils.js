@@ -37,6 +37,8 @@ function isMilepostOnRail(ratanumero, alku, loppu, km) {
 /**
  * Tells if the given element is located exactly at the specified
  * rail begin or end point.
+ * 
+ * @Deprecated
  */
 function isAtRailEnds(element, ratanumero, raideAlku, raideLoppu) {
     const sijainti = elementUtils.getPosition(ratanumero, element);
@@ -54,7 +56,9 @@ function isBetween(alku, loppu, sijainti) {
 }
 
 /**
- * Tells if given begin or end match the specified position.
+ * Tells if given begin or end match the specified position
+ * 
+ * @Deprecated * .
  */
 function isBeginOrEnd(alku, loppu, sijainti) {
     return !_.isEmpty(alku) && !_.isEmpty(loppu) && !_.isEmpty(sijainti) &&
@@ -62,7 +66,15 @@ function isBeginOrEnd(alku, loppu, sijainti) {
         (sijainti.ratakm === loppu.ratakm && sijainti.etaisyys === loppu.etaisyys));
 }
 
+/**
+ * Tells if the given switch is referred by the track begin or end.
+ */
+function isReferredSwitch(vaihde, beginRef, endRef) {
+    const switchRef = `swc_${vaihde.tunniste}`;
+    return beginRef === switchRef || endRef === switchRef;
+}
+
 
 module.exports = {
-   isRailElement, isOnRail, isAtRailEnds, isSpeedChangeOnRail, isMilepostOnRail
+   isRailElement, isOnRail, isAtRailEnds, isSpeedChangeOnRail, isMilepostOnRail, isReferredSwitch
 };

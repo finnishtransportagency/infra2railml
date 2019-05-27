@@ -125,11 +125,16 @@ function marshallRail(rail, memo) {
         $('trackEnd').append(`<openEnd id="teoe_${railId}" name="${rail.tunniste}" />`);
     }
 
-    // avoid duplicate switch elements by rejecting the already processed ones
+    // Find graph/topology related elements; each switch is marshalled only once and must be
+    // nested under the main tracks. Otherwise, the connection between main and side tracks
+    // is not resolvable due to switches are only referring the side tracks.
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
 
-    const vaihteet = _.filter(unmarshalledGroups.vaihde, (v) => railUtils.isOnRail(v, ratanumero, alku, loppu));
+    // find switches to be nested under this track element
+    const vaihteet = _.filter(unmarshalledGroups.vaihde, (v) =>
+        railUtils.isOnRail(v, ratanumero, alku, loppu) && !railUtils.isReferredSwitch(v, beginRef, endRef));
+
     const risteykset = _.filter(vaihteet, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
     const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, beginAbsPos, v));
     const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, beginAbsPos, r));
@@ -144,8 +149,9 @@ function marshallRail(rail, memo) {
 
     memo.marshalled = _.concat(memo.marshalled, _.map(vaihteet, 'tunniste'));
 
-    // Find elements located between rail begin and end, as the first and last kilometers may
-    // also contain elements related to previous/next rail.
+    // Find "normal" elements located between rail begin and end. Notice that the first and last
+    // kilometers may also contain elements related to previous/next rail, because the rails don't
+    // usally begin/end at the mileposts.
     const onRailElements = _.filter(elements, (e) => railUtils.isOnRail(e, ratanumero, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
     const onRailMileposts = _.filter(index.kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));

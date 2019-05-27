@@ -7,11 +7,9 @@ module.exports = {
 
         if (km.pituus === 1000) return undefined;
 
-        // TODO fix math!
-
         const absPos = km.ratakm * 1000;
         const pos = absPos - ((alku.ratakm * 1000) + alku.etaisyys);
-        const absPosIn = absPos + km.pituus;
+        const absPosIn = absPos + km.pituus - 1000;
         const type = km.pituus > 1000 ? 'overlapping' : 'missing';
         const id = `mc_${railId}_${pos}`;
 

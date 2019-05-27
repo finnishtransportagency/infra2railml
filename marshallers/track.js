@@ -10,6 +10,7 @@ const electrificationChange = require('./electrification-change');
 const speeds = require('./speeds');
 const trackRef = require('./track-ref');
 const milepost = require('./milepost');
+const mileageChange = require('./mileage-change');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
 
@@ -156,6 +157,13 @@ function marshallRail(rail, memo) {
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
     const onRailMileposts = _.filter(index.kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));
     
+    // mileage changes, i.e. absPos corrections due to track kilometers not always being exactly 1000 meters
+    const mileageChanges = _.map(onRailMileposts, (k) => mileageChange.marshall(railId, alku, k));
+    if (!_.isEmpty(mileageChanges)) {
+        $('trackTopology').append('<mileageChanges/>');
+        $('trackTopology > mileageChanges').append(mileageChanges);    
+    }
+
     // ocsElements
     const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o));
     const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, p));

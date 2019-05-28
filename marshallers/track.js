@@ -158,6 +158,7 @@ function marshallRail(rail, memo) {
     const onRailMileposts = _.filter(index.kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));
     
     // mileage changes, i.e. absPos corrections due to track kilometers not always being exactly 1000 meters
+    // TODO preceeding kilometer has to be included!
     const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(railId, alku, k)), _.isEmpty);
     if (!_.isEmpty(mileageChanges)) {
         $('trackTopology').append('<mileageChanges/>');

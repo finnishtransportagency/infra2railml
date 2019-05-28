@@ -21,6 +21,8 @@ module.exports = {
         $('signal').attr('virtual', 'true');
         $('signal').append(`<milepost shownValue="${kilometri.ratakm}" switchable="false" />`)
 
+        // TODO should have reference to mileageChange?
+
         return $.xml();        
     }
 };

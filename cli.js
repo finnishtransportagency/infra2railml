@@ -28,37 +28,32 @@ module.exports = () => {
  * @param {*} args Command line args for the "track" command.
  */
 function track(trackId, args) {
-
   const { from } = args;
   const length = !!args.to ? args.to - args.from + 1 : (args.length || 1);
-  const filename = `./Track-${trackId}_${from}-${from + length - 1}`;
-
-  app.getTrack(trackId, from, length)
-    .then((kms) => app.createIndex(trackId, kms))
-    .then(app.kilometersToRailML)
-    .then((railml) => writeToFile(`${filename}.railml.xml`, railml))
-    .catch((err) => console.error(`Fatal Error: ${err.message}`));
+  const filename = `./Track-${trackId}_${from}-${from + length - 1}.railml.xml`;
+  convertTrack(trackId, from, length, app.kilometersToRailML, filename)
 };
 
 /**
  * "rails" command controller.
  */
 function rails(trackId, args) {
-
   const { from } = args;
   const length = !!args.to ? args.to - args.from + 1 : (args.length || 1);
   const filename = `./Rails-${trackId}_${from}-${from + length - 1}.railml.xml`;
+  convertTrack(trackId, from, length, app.railsToRailML, filename);
+}
 
+function convertTrack(trackId, from, length, converter, filename) {
   app.getTrack(trackId, from, length)
     .then((kms) => app.createIndex(trackId, kms))
-    .then(app.railsToRailML)
+    .then(converter)
     .then((railml) => writeToFile(filename, railml))
     .catch((err) => console.error(`Fatal Error: ${err.message}`));
-
 }
 
 function writeToFile(filename, data) {
   console.log(`\nWriting ${filename} ..`);
-  const f = fs.writeFile(filename, data, 'utf8', () => console.log("Done."));
+  fs.writeFile(filename, data, 'utf8', () => console.log("Done."));
   return data;
 }

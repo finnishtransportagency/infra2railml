@@ -58,8 +58,9 @@ module.exports = {
         const dir = element.opastin.suunta == 'nouseva' ? 'up' : 'down';
         const sijainti = elementUtils.getPosition(trackId, element);
         const type = SIGNAL_TYPES[element.opastin.tyyppi];
-
         const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
+
+        // TODO element.opastin.puoli (vasen/oikea): corresponding railML term?
 
         const $ = cheerio.load('<signal/>', config.cheerio);
         $('signal').attr('id', element.tunniste);
@@ -70,12 +71,10 @@ module.exports = {
         $('signal').attr('dir', dir);
         $('signal').attr('virtual', 'false');
 
-        // TODO how to determine other functions, e.g. home/exit?
+        // TODO home/exit not provided by Trakedia ATM
         if (element.liikennepaikka === null) {
             $('signal').attr('function', SignalFunction.BLOCKING);
         }
-
-        // TODO element.opastin.puoli (vasen/oikea): corresponding railML term?
 
         return $.xml();        
     }

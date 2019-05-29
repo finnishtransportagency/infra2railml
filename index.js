@@ -13,7 +13,7 @@ module.exports = {
   },
 
   /**
-   * Convert track kilometers to railML.
+   * Convert track kilometers to simple line/track railML.
    */
   kilometersToRailML: (index) => {
     console.info('Generating railML based on kilometers..');
@@ -21,7 +21,7 @@ module.exports = {
   },
 
   /**
-   * Convert indexed rail objects to railML.
+   * Convert rails to railML infrastructure.
    */
   railsToRailML: (index) => {
     console.info('Generating railML based on rails..');
@@ -29,7 +29,7 @@ module.exports = {
   },
 
   /**
-   * Convert kilometers to object index.
+   * Convert kilometers list to object index.
    */
   createIndex: (trackId, kilometrit) => {
 

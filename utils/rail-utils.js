@@ -88,9 +88,6 @@ function isReferredSwitch(vaihde, beginRef, endRef) {
  * to historical reasons (e.g. changes in track route and infra).
  */
 function getExactPos(raideAlku, sijainti, kilometrit) {
-    
-    console.log("raideAlku:", JSON.stringify(raideAlku));
-    console.log("sijainti :", JSON.stringify(sijainti));
 
     // rail begin and position within the same kilometer
     if (raideAlku.ratakm === sijainti.ratakm) {
@@ -101,9 +98,6 @@ function getExactPos(raideAlku, sijainti, kilometrit) {
     const kms = _.filter(kilometrit, (km) => km.ratakm < sijainti.ratakm);
     const length = _.sumBy(kms, 'pituus');
     
-    console.log("kms", JSON.stringify(_.map(kms, 'ratakm')));
-    console.log(`-> length: ${length}`);
-
     return length - raideAlku.etaisyys + sijainti.etaisyys;
 }
 

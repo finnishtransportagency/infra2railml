@@ -128,7 +128,9 @@ function marshallRail(rail, memo) {
 
     // Find graph/topology related elements; each switch is marshalled only once and must be
     // nested under the main tracks. Otherwise, the connection between main and side tracks
-    // is not resolvable due to switches are only referring the side tracks.
+    // is not resolvable because switches only refer to side tracks.
+    const kilometersAndExtra = _.concat(index.kilometrit, index.extraKilometrit);
+    const railKms = _.filter(kilometersAndExtra, (km) => railUtils.isOverlapping(ratanumero, alku, loppu, km));
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
 
@@ -137,7 +139,7 @@ function marshallRail(rail, memo) {
         railUtils.isOnRail(v, ratanumero, alku, loppu) && !railUtils.isReferredSwitch(v, beginRef, endRef));
 
     const risteykset = _.filter(vaihteet, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
-    const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, beginAbsPos, v));
+    const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, beginAbsPos, alku, railKms, v));
     const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, beginAbsPos, r));
     
     $('trackTopology').append('<connections/>');
@@ -166,7 +168,7 @@ function marshallRail(rail, memo) {
     }
     
     // ocsElements
-    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o));
+    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o, ));
     const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, p));
     const signalsAndPosts = _.flatten(_.concat(signals, mileposts));
     if (!_.isEmpty(signals)) {

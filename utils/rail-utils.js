@@ -27,11 +27,19 @@ function isSpeedChangeOnRail(raideRataNr, raideAlku, raideLoppu, nopeudet) {
 }
 
 /**
- * Tells if hte given kilometer/mileage post is within given track range.
+ * Tells if the given given track kilometer overlaps with specified track range.
+ */
+function isOverlapping(ratanumero, alku, loppu, km) {    
+    return km.ratanumero === ratanumero &&
+        km.ratakm >= alku.ratakm && km.ratakm <= loppu.ratakm;
+}
+
+
+/**
+ * Tells if the beginning of given kilometer is within specified track range.
  */
 function isMilepostOnRail(ratanumero, alku, loppu, km) {
-    return km.ratanumero === ratanumero &&
-        (km.ratakm > alku.ratakm && km.ratakm <= loppu.ratakm);
+    return isOverlapping(ratanumero, alku, loppu, km) && km.ratakm > alku.ratakm;
 }
 
 /**
@@ -74,7 +82,31 @@ function isReferredSwitch(vaihde, beginRef, endRef) {
     return beginRef === switchRef || endRef === switchRef;
 }
 
+/**
+ * Calculates the precise position on rail, based on actual length of
+ * given track kilometers, which may not always be exactly 1000 meters due
+ * to historical reasons (e.g. changes in track route and infra).
+ */
+function getExactPos(raideAlku, sijainti, kilometrit) {
+    
+    console.log("raideAlku:", JSON.stringify(raideAlku));
+    console.log("sijainti :", JSON.stringify(sijainti));
+
+    // rail begin and position within the same kilometer
+    if (raideAlku.ratakm === sijainti.ratakm) {
+        return sijainti.etaisyys - raideAlku.etaisyys;
+    }
+
+    // sum the length of leading kilometers and add/subtract distances
+    const kms = _.filter(kilometrit, (km) => km.ratakm < sijainti.ratakm);
+    const length = _.sumBy(kms, 'pituus');
+    
+    console.log("kms", JSON.stringify(_.map(kms, 'ratakm')));
+    console.log(`-> length: ${length}`);
+
+    return length - raideAlku.etaisyys + sijainti.etaisyys;
+}
 
 module.exports = {
-   isRailElement, isOnRail, isAtRailEnds, isSpeedChangeOnRail, isMilepostOnRail, isReferredSwitch
+   isRailElement, isOnRail, isSpeedChangeOnRail, isMilepostOnRail, isReferredSwitch, getPos: getExactPos, isOverlapping
 };

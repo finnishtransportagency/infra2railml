@@ -170,7 +170,7 @@ function marshallRail(rail, memo) {
     }
     
     // ocsElements
-    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o, ));
+    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, alku, railKms, o));
     const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, railKms, p));
     const signalsAndPosts = _.flatten(_.concat(signals, mileposts));
     if (!_.isEmpty(signals)) {

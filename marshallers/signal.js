@@ -2,6 +2,7 @@ const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 const elementUtils = require('../utils/element-utils');
+const positionUtils = require('../utils/position-utils');
 
 // railML tSignalType
 const SignalType = {
@@ -53,12 +54,13 @@ const SIGNAL_TYPES = {
 };
 
 module.exports = {
-    marshall: (trackId, absPos, element) => {
+    marshall: (trackId, raideAlku, kilometrit, element) => {
         
         const dir = element.opastin.suunta == 'nouseva' ? 'up' : 'down';
         const sijainti = elementUtils.getPosition(trackId, element);
         const type = SIGNAL_TYPES[element.opastin.tyyppi];
-        const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
+        const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
+        const absPos = positionUtils.getAbsolutePosition(sijainti);
 
         // TODO element.opastin.puoli (vasen/oikea): corresponding railML term?
 
@@ -67,7 +69,7 @@ module.exports = {
         $('signal').attr('type', type);
         $('signal').attr('name', element.nimi);
         $('signal').attr('pos', pos);
-        $('signal').attr('absPos', absPos + pos);
+        $('signal').attr('absPos', absPos);
         $('signal').attr('dir', dir);
         $('signal').attr('virtual', 'false');
 

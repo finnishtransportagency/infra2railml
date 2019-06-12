@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
+const positionUtils = require('../utils/position-utils');
 
 const Direction = {
     UP: 'up',
@@ -21,39 +22,41 @@ const DIRECTIONS = {
  * If the speed limits are not directed, assumes equal limits for both directions,
  * thus returning two elements for the range specified by the speed limit object.
  */
-function marshall(railId, absPos, nopeudet) {
+function marshall(railId, raideAlku, kilometrit, nopeudet) {
 
     if (nopeudet.suunnattu) {
         const dir = DIRECTIONS[nopeudet.suunnattu] || Direction.UP;
         return [
-            getSpeedChange(railId, absPos, nopeudet, dir)
+            getSpeedChange(railId, raideAlku, kilometrit, nopeudet, dir)
         ];
     }
     
     // if direction is unspecified, assume the same in both directions
     return [
-        getSpeedChange(railId, absPos, nopeudet, Direction.UP),
-        getSpeedChange(railId, absPos, nopeudet, Direction.DOWN)
+        getSpeedChange(railId, raideAlku, kilometrit, nopeudet, Direction.UP),
+        getSpeedChange(railId, raideAlku, kilometrit, nopeudet, Direction.DOWN)
     ];
 }
 
 /**
  * Renders a speedChange element.
  */
-function getSpeedChange(railId, absPos, nopeudet, dir) {
+function getSpeedChange(railId, raideAlku, kilometrit, nopeudet, dir) {
 
-    const { ratanumero, alku, loppu } = nopeudet.ratakmvali;
+    const { alku, loppu } = nopeudet.ratakmvali;
     const sijainti = dir === Direction.UP ? alku : loppu;
 
     const id = getSpeedChangeId(railId, sijainti, dir);
     const profileRef = getSpeedProfileId(railId, sijainti, dir);
     const max = _.max(_.map(nopeudet.nopeusrajoitukset, 'nopeus'));
-    const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
+
+    const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
+    const absPos = positionUtils.getAbsolutePosition(sijainti);
 
     const $ = cheerio.load('<speedChange/>', config.cheerio);
     $('speedChange').attr('id', id);
     $('speedChange').attr('pos', pos);
-    $('speedChange').attr('absPos', absPos + pos);
+    $('speedChange').attr('absPos', absPos);
     $('speedChange').attr('dir', dir);
     $('speedChange').attr('profileRef', profileRef);
     $('speedChange').attr('vMax', max);

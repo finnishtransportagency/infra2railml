@@ -140,7 +140,7 @@ function marshallRail(rail, memo) {
 
     const risteykset = _.filter(vaihteet, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
     const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, alku, railKms, v));
-    const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, beginAbsPos, r));
+    const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, alku, railKms, r));
     
     $('trackTopology').append('<connections/>');
     if (!_.isEmpty(switches)) {
@@ -159,6 +159,8 @@ function marshallRail(rail, memo) {
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
     const onRailMileposts = _.filter(index.kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));
     
+    // TODO include extra kilometers in above!
+
     // mileage changes, i.e. absPos corrections due to track kilometers not always being exactly 1000 meters
     // TODO preceeding kilometer has to be included!
     const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(railId, alku, k)), _.isEmpty);

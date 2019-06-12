@@ -61,50 +61,6 @@ function isReferredSwitch(vaihde, beginRef, endRef) {
     return beginRef === switchRef || endRef === switchRef;
 }
 
-/**
- * The track kilometers may not always be exactly 1000 meters due to historical
- * reasons, e.g. changes in track infra or route, which may affect greatly in the
- * rail element positioning.
- * 
- * In railML this is handled by calculating the pos attribute values with actual
- * kilometer lengths taken into account and by nesting mileageChange elements in
- * track elements that span over kilometers with varying lengths.
- * 
- * This function calculates the precise pos attribute value, based on specified
- * rail begin position, position on rail and true length of corresponding track
- * kilometers. For example, given with positions in format "milepost + distance
- * in meters",
- * 
- *  M1         M2         M3          M4     (mileposts, i.e. track kilometers)
- *  |  1000    |   925    |   1000    |      (actual length between mileposts)
- * 
- *       A------------------P------B         (position P on rail A-B) 
- *     1+500              3+100  3+500
- * 
- * For P, pos = sum(M1.length, M2.length, M3.length) - A.distance + P.distance
- * 
- * With above values,
- * 
- * (1000 + 925 + 1000) - 500 + 100 = 2525 m
- * 
- * While without correction,
- *  
- * ((3 * 1000) + 100) - 500 = 2600 m
- */
-function getPrecisePos(raideAlku, sijainti, kilometrit) {
-
-    // rail begin and position within the same kilometer
-    if (raideAlku.ratakm === sijainti.ratakm) {
-        return sijainti.etaisyys - raideAlku.etaisyys;
-    }
-
-    // calculate the actual length of leading kilometers
-    const kms = _.filter(kilometrit, (km) => km.ratakm < sijainti.ratakm);
-    const length = _.sumBy(kms, 'pituus');
-    
-    return length - raideAlku.etaisyys + sijainti.etaisyys;
-}
-
 module.exports = {
-   isRailElement, isOnRail, isSpeedChangeOnRail, isMilepostOnRail, isReferredSwitch, getPos: getPrecisePos, isOverlapping
+   isRailElement, isOnRail, isOverlapping, isSpeedChangeOnRail, isMilepostOnRail, isReferredSwitch
 };

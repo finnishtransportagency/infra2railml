@@ -29,7 +29,8 @@ module.exports = {
   },
 
   /**
-   * Convert kilometers list to object index.
+   * Convert kilometers list to object index. Also, loads the extra kilometers
+   * for those rails that span over the initially requested track kilometers.
    */
   createIndex: (trackId, kilometrit) => {
 
@@ -47,23 +48,34 @@ module.exports = {
       const elementit = _.uniqBy(_.reject(_.flatMap(kilometrit, 'elementit'), _.isEmpty), 'tunniste');
       const raiteet = _.uniqBy(_.reject(_.flatMap(elementit, 'raiteet'), _.isEmpty), 'tunniste');
 
-      // resolve leading/trailing extra kilometers for rails
-      // that don't fully fit in the requested scope of kilometers
+      // resolve the loaded kilometers and rail ranges
       const loadedKms = _.map(kilometrit, 'ratakm');
       const ratakmvalit = _.flatMap(raiteet, 'ratakmvalit');
 
+      // map all rail ranges into { trackNumber: [km, ...] } object to find the
+      // track kilometers where each rail begins and ends
       const valienKilometrit = _.transform(ratakmvalit, (res, v) => {
-        res[v.ratanumero] = _.uniq(_.concat(res[v.ratanumero] || [], [v.alku.ratakm, v.loppu.ratakm]));
+        const track = res[v.ratanumero] || [];
+        res[v.ratanumero] = _.uniq(_.concat(track, [v.alku.ratakm, v.loppu.ratakm]));
         return res;
       }, {});
-      
+
+      // resolve track kilometers that have not been loaded
       const nonLoadedKms = _.transform(valienKilometrit, (res, kms, ratanumero) => {
-        res[ratanumero] = _.difference(kms, loadedKms);
+        const kilometersToLoad = [];
+        const diff = _.difference(kms, loadedKms);
+        // fill in the blanks between diff and loaded
+        for (var i = _.min(diff); i < _.max(diff); i++) {
+          if (i < _.min(loadedKms) || i > _.max(loadedKms)) {
+            kilometersToLoad.push(i);
+          }
+        }
+        res[ratanumero] = kilometersToLoad;
         return res;
       }, {});
 
       // load extra kilometers and compose the index object
-      console.info(`Loading additional leading/trailing kilometers.. ${nonLoadedKms}`);
+      console.info(`\nLoading additional track kilometers.. ${JSON.stringify(nonLoadedKms)}`);
       Promise.all(_.flatMap(nonLoadedKms, (kms, ratanumero) =>
         _.flatMap(kms, (km) => trackService.getKilometer(ratanumero, km))
       ))

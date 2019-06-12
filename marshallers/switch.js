@@ -2,7 +2,7 @@ const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 const elementUtils = require('../utils/element-utils');
-const railUtils = require('../utils/rail-utils');
+const positionUtils = require('../utils/position-utils');
 
 // railML tSwitchType
 const SwitchType = {
@@ -48,8 +48,8 @@ module.exports = {
         const type = SWITCH_TYPES[element.vaihde.tyyppi];
         const sijainti = elementUtils.getPosition(trackId, element);
 
-        const pos = railUtils.getPos(raideAlku, sijainti, kilometrit);
-        const absPos = ((sijainti.ratakm * 1000) + sijainti.etaisyys);
+        const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
+        const absPos = positionUtils.getAbsolutePosition(sijainti);
         const connections = getConnections(element);
 
         if (_.isEmpty(connections)) {

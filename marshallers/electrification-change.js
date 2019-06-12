@@ -2,7 +2,7 @@ const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 const elementUtils = require('../utils/element-utils');
-
+const positionUtils = require('../utils/position-utils');
 
 const Direction = {
     UP: 'up',
@@ -15,7 +15,7 @@ const DIRECTIONS = {
 };
 
 module.exports = {
-    marshall: (trackId, absPos, erotusjakso) => {
+    marshall: (trackId, raideAlku, kilometrit, erotusjakso) => {
 
         const sijainti = elementUtils.getPosition(trackId, erotusjakso);
 
@@ -23,16 +23,17 @@ module.exports = {
         const name = `Erotusjakso ${sijainti.ratanumero} ${sijainti.ratakm}+${sijainti.etaisyys}`;
         const dir = DIRECTIONS[erotusjakso.suunnattu] || Direction.UP;
         const max = _.max(_.map(erotusjakso.nopeusrajoitukset, 'nopeus'));
-        const pos = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
+        const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
+        const absPos = positionUtils.getAbsolutePosition(sijainti);
 
-        const a = cheerio.load('<electrificationChange/>', config.cheerio);
-        a('electrificationChange').attr('id', id);
-        a('electrificationChange').attr('name', name);
-        a('electrificationChange').attr('pos', pos);
-        a('electrificationChange').attr('absPos', absPos + pos);
-        a('electrificationChange').attr('dir', dir);
-        a('electrificationChange').attr('vMax', max);
+        const $ = cheerio.load('<electrificationChange/>', config.cheerio);
+        $('electrificationChange').attr('id', id);
+        $('electrificationChange').attr('name', name);
+        $('electrificationChange').attr('pos', pos);
+        $('electrificationChange').attr('absPos', absPos);
+        $('electrificationChange').attr('dir', dir);
+        $('electrificationChange').attr('vMax', max);
 
-        return a.xml();
+        return $.xml();
     }
 };

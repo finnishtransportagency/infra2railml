@@ -190,7 +190,7 @@ function marshallRail(rail, memo) {
     }
 
     // TODO is electrificationChange correct railML term? what is trackCircuitBorder?
-    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, beginAbsPos, ej));
+    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, alku, railKms, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }

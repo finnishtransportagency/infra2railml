@@ -1,15 +1,19 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
+const positionUtils = require('../utils/position-utils');
 
 // Milepost is a special kind of signal
 module.exports = {
-    marshall: (trackId, railId, alku, kilometri) => {
+    marshall: (trackId, railId, alku, kilometrit, kilometri) => {
 
         const id = `${railId}_${trackId}km${kilometri.ratakm}`;
-        const absPos = kilometri.ratakm * 1000;
-        const pos = absPos - ((alku.ratakm * 1000) + alku.etaisyys);
+        
+        const { ratanumero, ratakm } = kilometri;
+        const sijainti = { ratanumero, ratakm, etaisyys: 0 };
         const name = `Rata ${trackId} km ${kilometri.ratakm}`;
+        const pos = positionUtils.getPosition(alku, sijainti, kilometrit);
+        const absPos = positionUtils.getAbsolutePosition(sijainti);
 
         const $ = cheerio.load('<signal/>', config.cheerio);
         $('signal').attr('id', id);

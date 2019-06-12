@@ -171,7 +171,7 @@ function marshallRail(rail, memo) {
     
     // ocsElements
     const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, beginAbsPos, o, ));
-    const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, p));
+    const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, railKms, p));
     const signalsAndPosts = _.flatten(_.concat(signals, mileposts));
     if (!_.isEmpty(signals)) {
         $('ocsElements').append(`<signals>${_.join(signalsAndPosts, '')}</signals>`);

@@ -159,13 +159,11 @@ function marshallRail(rail, memo) {
     // usally begin/end at the mileposts.
     const onRailElements = _.filter(elements, (e) => railUtils.isOnRail(e, ratanumero, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
-    const onRailMileposts = _.filter(index.kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));
+    const onRailMileposts = _.filter(kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));
     
-    // TODO include extra kilometers in above!
-
     // mileage changes, i.e. absPos corrections due to track kilometers not always being exactly 1000 meters
     // TODO preceeding kilometer has to be included!
-    const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(railId, alku, k)), _.isEmpty);
+    const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(railId, alku, kilometrit, k)), _.isEmpty);
     if (!_.isEmpty(mileageChanges)) {
         $('trackTopology').append('<mileageChanges/>');
         $('trackTopology > mileageChanges').append(mileageChanges);

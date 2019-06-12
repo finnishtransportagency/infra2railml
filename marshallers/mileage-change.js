@@ -1,17 +1,26 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
+const positionUtils = require('../utils/position-utils');
 
 module.exports = {
-    marshall: (railId, alku, km) => {
+    marshall: (railId, raideAlku, kilometrit, km) => {
 
         // TODO return undef if milepost not between rail begin/end
 
         if (km.pituus === 1000) return undefined;
 
+        //const absPos = 1000 + km.ratakm * 1000;
+        //const absPosIn = km.pituus + km.ratakm * 1000;
+        //const pos = absPos - ((alku.ratakm * 1000) + alku.etaisyys);
+        
+        const sijainti = { ratakm: km.ratakm, etaisyys: km.pituus };
+        const alkuAbsPos = positionUtils.getAbsolutePosition(raideAlku);
+        
+        const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
         const absPos = 1000 + km.ratakm * 1000;
-        const absPosIn = km.pituus + km.ratakm * 1000;
-        const pos = absPos - ((alku.ratakm * 1000) + alku.etaisyys);
+        const absPosIn = alkuAbsPos + pos;
+
         const type = km.pituus > 1000 ? 'overlapping' : 'missing';
         const id = `mc_${railId}_${pos}`;
 

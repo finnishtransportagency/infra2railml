@@ -174,7 +174,7 @@ function marshallRail(rail, memo) {
     if (!_.isEmpty(signals)) {
         $('ocsElements').append(`<signals>${_.join(signalsAndPosts, '')}</signals>`);
     }
-    const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(ratanumero, beginAbsPos, b));
+    const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(ratanumero, alku, railKms, b));
     if (!_.isEmpty(balises)) {
         $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
     }

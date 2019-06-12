@@ -139,7 +139,7 @@ function marshallRail(rail, memo) {
         railUtils.isOnRail(v, ratanumero, alku, loppu) && !railUtils.isReferredSwitch(v, beginRef, endRef));
 
     const risteykset = _.filter(vaihteet, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
-    const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, beginAbsPos, alku, railKms, v));
+    const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, alku, railKms, v));
     const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, beginAbsPos, r));
     
     $('trackTopology').append('<connections/>');

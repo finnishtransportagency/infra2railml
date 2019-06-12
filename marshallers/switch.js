@@ -43,18 +43,17 @@ const COURSE = {
 };
 
 module.exports = {
-    marshall: (trackId, absPos, raideAlku, kilometrit, element) => {
+    marshall: (trackId, raideAlku, kilometrit, element) => {
         
         const type = SWITCH_TYPES[element.vaihde.tyyppi];
         const sijainti = elementUtils.getPosition(trackId, element);
-        const posd = ((sijainti.ratakm * 1000) + sijainti.etaisyys) - absPos;
+
         const pos = railUtils.getPos(raideAlku, sijainti, kilometrit);
-
-        console.log(`sijainti: ${sijainti.ratakm}+${sijainti.etaisyys} -> exact pos: ${pos} (${posd})`);
-
+        const absPos = ((sijainti.ratakm * 1000) + sijainti.etaisyys);
         const connections = getConnections(element);
+
         if (_.isEmpty(connections)) {
-            return '';
+            return undefined;
         }
 
         const $ = cheerio.load('<switch/>', config.cheerio);
@@ -63,13 +62,16 @@ module.exports = {
         $('switch').attr('description', element.nimi);
         $('switch').attr('type', type);
         $('switch').attr('pos', pos);
-        $('switch').attr('absPos', absPos + pos);
+        $('switch').attr('absPos', absPos);
         $('switch').append(connections);
 
         return $.xml();
     }
 };
 
+/**
+ * Resolves and renders the switch connection elements.
+ */
 function getConnections(element) {
 
     const { vaihde } = element;
@@ -97,7 +99,7 @@ function getConnections(element) {
     const course = COURSE[orientation][side];
 
     // Max. 3 connections, single connection style following the OpenTrack generated models
-    // where only the parting direction is referenced by side tracks and straight direction
+    // where only the parting direction track is referred by the switch and straight direction
     // tracks reference each others directly.
     return [
         `<connection id="swc_${element.tunniste}" ref="${REF_PREFIX[orientation]}_${ref}" course="${course}" orientation="${orientation}" />`

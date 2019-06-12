@@ -77,6 +77,7 @@ function getReference(railId, type, element) {
         return `tbc_${yhteys.minne}`;
     
     } else if (yhteys.minne === railId) {
+        
         // straight, outgoing track referencing the previous track's end connection
         return `tec_${yhteys.mista}`;
     }

@@ -13,7 +13,7 @@ const milepost = require('./milepost');
 const mileageChange = require('./mileage-change');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
-
+const positionUtils = require('../utils/position-utils');
 /**
  * Convert one track kilometer to railML. Produces a simple line level model without
  * individual rails.
@@ -90,6 +90,10 @@ function marshallRail(rail, memo) {
     const elements = _.uniqBy(_.filter(index.elementit, (e) => railUtils.isRailElement(rail.tunniste, e)), 'tunniste');
     const elementsByType = _.groupBy(elements, 'tyyppi');
 
+    // all track kilometers along this rail
+    const allKilometers = _.concat(index.kilometrit, index.extraKilometrit);
+    const kilometrit = _.filter(allKilometers, (km) => railUtils.isOverlapping(ratanumero, alku, loppu, km));
+
     // main track element
     const railId = rail.tunniste;
     const name = `Raide ${ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
@@ -97,9 +101,9 @@ function marshallRail(rail, memo) {
     const $ = cheerio.load(stub, config.cheerio);
 
     // track begin/end elements
-    const beginAbsPos = alku.ratakm * 1000 + alku.etaisyys;
-    const endAbsPos = loppu.ratakm * 1000 + loppu.etaisyys;
-    const endPos = endAbsPos - beginAbsPos;
+    const beginAbsPos = positionUtils.getAbsolutePosition(alku);
+    const endAbsPos = positionUtils.getAbsolutePosition(loppu);
+    const endPos = positionUtils.getPosition(alku, loppu, kilometrit);
     $('trackTopology').append(`<trackBegin id="tb_${railId}" pos="0.0000" absPos="${beginAbsPos}">`);
     $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}">`); 
         
@@ -129,8 +133,6 @@ function marshallRail(rail, memo) {
     // Find graph/topology related elements; each switch is marshalled only once and must be
     // nested under the main tracks. Otherwise, the connection between main and side tracks
     // is not resolvable because switches only refer to side tracks.
-    const kilometersAndExtra = _.concat(index.kilometrit, index.extraKilometrit);
-    const railKms = _.filter(kilometersAndExtra, (km) => railUtils.isOverlapping(ratanumero, alku, loppu, km));
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
 
@@ -139,8 +141,8 @@ function marshallRail(rail, memo) {
         railUtils.isOnRail(v, ratanumero, alku, loppu) && !railUtils.isReferredSwitch(v, beginRef, endRef));
 
     const risteykset = _.filter(vaihteet, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
-    const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, alku, railKms, v));
-    const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, alku, railKms, r));
+    const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, alku, kilometrit, v));
+    const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, alku, kilometrit, r));
     
     $('trackTopology').append('<connections/>');
     if (!_.isEmpty(switches)) {
@@ -170,13 +172,13 @@ function marshallRail(rail, memo) {
     }
     
     // ocsElements
-    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, alku, railKms, o));
-    const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, railKms, p));
+    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, alku, kilometrit, o));
+    const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, kilometrit, p));
     const signalsAndPosts = _.flatten(_.concat(signals, mileposts));
     if (!_.isEmpty(signals)) {
         $('ocsElements').append(`<signals>${_.join(signalsAndPosts, '')}</signals>`);
     }
-    const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(ratanumero, alku, railKms, b));
+    const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(ratanumero, alku, kilometrit, b));
     if (!_.isEmpty(balises)) {
         $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
     }
@@ -184,13 +186,13 @@ function marshallRail(rail, memo) {
     // trackElements
     const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => railUtils.isSpeedChangeOnRail(ratanumero, alku, loppu, nr));
     const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(railId, n)));
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(railId, alku, railKms, n)));
+    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(railId, alku, kilometrit, n)));
     if (!_.isEmpty(speedChanges)) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
 
     // TODO is electrificationChange correct railML term? what is trackCircuitBorder?
-    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, alku, railKms, ej));
+    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, alku, kilometrit, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }

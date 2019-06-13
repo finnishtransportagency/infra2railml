@@ -73,9 +73,11 @@ module.exports = {
         $('signal').attr('dir', dir);
         $('signal').attr('virtual', 'false');
 
-        // TODO home/exit not provided by Trakedia ATM
         if (element.liikennepaikka === null) {
             $('signal').attr('function', SignalFunction.BLOCKING);
+        } else {
+            // NOTICE: home/exit not provided by the API, end-user must fix home signals!
+            $('signal').attr('function', SignalFunction.EXIT);
         }
 
         return $.xml();        

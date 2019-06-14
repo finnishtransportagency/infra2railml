@@ -10,10 +10,6 @@ module.exports = {
 
         if (km.pituus === 1000) return undefined;
 
-        //const absPos = 1000 + km.ratakm * 1000;
-        //const absPosIn = km.pituus + km.ratakm * 1000;
-        //const pos = absPos - ((alku.ratakm * 1000) + alku.etaisyys);
-        
         const sijainti = { ratakm: km.ratakm, etaisyys: km.pituus };
         const alkuAbsPos = positionUtils.getAbsolutePosition(raideAlku);
         

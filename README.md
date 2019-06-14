@@ -65,13 +65,13 @@ The API identifies objects with unique identifiers given in the field `tunniste`
 
 |Object/Child                   |Infra-API object ID            |Corresponding railML ID
 |---                            |---                            |---
-|track                          |x.x.xxx.LIVI.INFRA.44.117326   |
-|track/trackBegin               |-                              | tb_x.x.xxx.LIVI.INFRA.44.117326
-|track/trackBegin/connection    |-                              | tbc_x.x.xxx.LIVI.INFRA.44.117326
-|track/trackEnd                 |-                              | te_x.x.xxx.LIVI.INFRA.44.117326
-|track/trackEnd/connection      |-                              | tec_x.x.xxx.LIVI.INFRA.44.117326
-|switch                         |x.x.xxx.LIVI.INFRA.24.102936   | x.x.xxx.LIVI.INFRA.24.102936
-|switch/connection              |-                              | swc_x.x.xxx.LIVI.INFRA.24.102936
+|track                          |x.x.xxx.LIVI.INFRA.44.117326   |x.x.xxx.LIVI.INFRA.44.117326	
+|track/trackBegin               |-                              |tb_x.x.xxx.LIVI.INFRA.44.117326
+|track/trackBegin/connection    |-                              |tbc_x.x.xxx.LIVI.INFRA.44.117326
+|track/trackEnd                 |-                              |te_x.x.xxx.LIVI.INFRA.44.117326
+|track/trackEnd/connection      |-                              |tec_x.x.xxx.LIVI.INFRA.44.117326
+|switch                         |x.x.xxx.LIVI.INFRA.24.102936   |x.x.xxx.LIVI.INFRA.24.102936
+|switch/connection              |-                              |swc_x.x.xxx.LIVI.INFRA.24.102936
 
 The above is only to give the general idea more concretely, in practice there are many more.
 

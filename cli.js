@@ -1,59 +1,37 @@
-const fs = require('fs');
 const cmd = require('commander');
 const app = require('./index');
 const { version } = require('./package.json');
 
 module.exports = () => {
   
-  cmd.version(version)
-    .command('track <trackNumber>')
-    .option('-f, --from [km]', 'First track kilometer', parseInt, 0)
-    .option('-t, --to [km]', 'Last track kilometer', parseInt, 0)
-    .option('-l, --length [km]', 'Total number of kilometers', parseInt, 0)
-    .action(track)
-    
-  cmd.command('rails <trackNumber>')
-    .option('-f, --from [km]', 'First track kilometer', parseInt, 0)
-    .option('-t, --to [km]', 'Last track kilometer', parseInt, 0)
-    .option('-l, --length [km]', 'Total number of kilometers', parseInt, 0)
-    .action(rails)
+  cmd.arguments('<trackNumber>')
+    .option('-f, --from <km>', 'First track kilometer', parseInt)
+    .option('-t, --to <km>', 'Last track kilometer', parseInt)
+    .option('-l, --length <n>', 'Total number of kilometers', parseInt)
+    .action(rails);
 
+  cmd.version(version);
   cmd.parse(process.argv);
 };
 
 /**
- * "track" command controller
- * 
- * @param {*} trackId ID/number of the track to fetch.
- * @param {*} args Command line args for the "track" command.
+ * Track command controller.
  */
-function track(trackId, args) {
-  const { from } = args;
-  const length = !!args.to ? args.to - args.from + 1 : (args.length || 1);
-  const filename = `./Track-${trackId}_${from}-${from + length - 1}.railml.xml`;
-  convertTrack(trackId, from, length, app.kilometersToRailML, filename)
-};
+function rails(trackNumber, args) {
 
-/**
- * "rails" command controller.
- */
-function rails(trackId, args) {
-  const { from } = args;
-  const length = !!args.to ? args.to - args.from + 1 : (args.length || 1);
-  const filename = `./Rails-${trackId}_${from}-${from + length - 1}.railml.xml`;
-  convertTrack(trackId, from, length, app.railsToRailML, filename);
-}
-
-function convertTrack(trackId, from, length, converter, filename) {
-  app.getTrack(trackId, from, length)
-    .then((kms) => app.createIndex(trackId, kms))
-    .then(converter)
-    .then((railml) => writeToFile(filename, railml))
-    .catch((err) => console.error(`Fatal Error: ${err.message}`));
-}
-
-function writeToFile(filename, data) {
-  console.log(`\nWriting ${filename} ..`);
-  fs.writeFile(filename, data, 'utf8', () => console.log("Done."));
-  return data;
+  const { from, to, length } = args;
+  
+  if (!trackNumber || trackNumber.length === 0 || !from || from > to) {
+    cmd.outputHelp();
+  } else {
+    
+    const count = !!to ? to - from + 1 : (length || 1);
+    const filename = `./Rails-${trackNumber}_${from}-${from + count - 1}.railml.xml`;
+    
+    app.getTrack(trackNumber, from, count)
+      .then((kms) => app.createIndex(trackNumber, kms))
+      .then(app.railsToRailML)
+      .then((railml) => app.writeToFile(filename, railml))
+      .catch((err) => console.error(err));
+  }
 }

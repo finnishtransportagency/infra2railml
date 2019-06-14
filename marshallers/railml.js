@@ -17,16 +17,14 @@ const RAILML_STUB = '<?xml version="1.0" encoding="UTF-8"?><railml/>';
  * Infra-API base types from which the railML track elements are created.
  */
 const BaseType = {
-    RAILS: 'raiteet',
-    KILOMETERS: 'kilometrit'
+    RAILS: 'raiteet'
 };
 
 /**
  * Track element marshallers for base types.
  */
-const TRACK_MARSHALLERS = {
-    kilometrit: track.fromKilometer,
-    raiteet: track.fromRail
+const RAILML_MARSHALLERS = {
+    raiteet: track.marshall
 };
 
 /**
@@ -35,7 +33,7 @@ const TRACK_MARSHALLERS = {
 function marshall(baseType, index) {
 
     const objects = index[baseType];
-    const transformer = TRACK_MARSHALLERS[baseType];
+    const transformer = RAILML_MARSHALLERS[baseType];
 
     return new Promise((resolve, reject) => {
     
@@ -43,8 +41,7 @@ function marshall(baseType, index) {
             reject(new Error(`Invalid base type '${baseType}'.`));
         }
 
-        const absPos = index.from * 1000; // FIXME assumes each track kilometer being exactly 1000m
-        const memo = { index, absPos, tracks: [], speeds: [], trackRefs: [], marshalled: [], previousTrack: '' };
+        const memo = { index, tracks: [], speeds: [], trackRefs: [], marshalled: [] };
         const results = _.transform(objects, transformer, memo);
 
         const $ = cheerio.load(RAILML_STUB, config.cheerio);

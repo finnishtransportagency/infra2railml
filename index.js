@@ -1,3 +1,4 @@
+const fs = require('fs');
 const _ = require('lodash');
 const trackService = require('./services/tracks');
 const railml = require('./marshallers/railml');
@@ -13,14 +14,6 @@ module.exports = {
   },
 
   /**
-   * Convert track kilometers to simple line/track railML.
-   */
-  kilometersToRailML: (index) => {
-    console.info('Generating railML based on kilometers..');
-    return railml.marshall(BaseType.KILOMETERS, index);
-  },
-
-  /**
    * Convert rails to railML infrastructure.
    */
   railsToRailML: (index) => {
@@ -29,7 +22,7 @@ module.exports = {
   },
 
   /**
-   * Convert kilometers list to object index. Also, loads the extra kilometers
+   * Convert kilometer list to index object. Also, loads the extra kilometers
    * for those rails that span over the initially requested track kilometers.
    */
   createIndex: (trackId, kilometrit) => {
@@ -84,6 +77,12 @@ module.exports = {
       })
       .then(resolve);
     });
+  },
+
+  writeToFile: (filename, data) => {
+    console.log(`\nWriting ${filename} ..`);
+    fs.writeFile(filename, data, 'utf8', () => console.log("Done."));
+    return data;
   }
 
 };

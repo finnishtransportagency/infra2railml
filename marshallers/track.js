@@ -14,70 +14,11 @@ const mileageChange = require('./mileage-change');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
 const positionUtils = require('../utils/position-utils');
-/**
- * Convert one track kilometer to railML. Produces a simple line level model without
- * individual rails.
- */
-function marshallKm(km, absPos, prevTrackId) {
-    
-    const trackId = km.kilometrimerkki.tunniste;
-    const trackName = `${km.ratanumero} - ${km.ratakm}`;
-    const stub = `<track id="${trackId}" name="${trackName}"><trackTopology/><trackElements/><ocsElements/></track>`;
-    const $ = cheerio.load(stub, config.cheerio);
-
-    console.log(`\nGenerating track ${trackId} [${trackName}]..`);
-
-    const topology = $('trackTopology');
-    topology.append(`<trackBegin id="tb_${km.ratakm}" pos="0.0000" absPos="${absPos}"><connection id="tbc_${km.ratakm}" ref="${prevTrackId}"/></trackBegin>`);
-    topology.append(`<trackEnd id="te_${km.ratakm}" pos="${km.pituus}" absPos="${absPos + km.pituus}"><connection id="tec_${km.ratakm}" ref="tbc_${km.ratakm + 1}" />`);
-    topology.append('<connections/>');
-
-    const elements = _.groupBy(km.elementit, 'tyyppi');
-
-    const switches = _.map(elements.vaihde, (v) => _switch.marshall(km.ratanumero, absPos, v));
-    if (!_.isEmpty(switches)) {
-        $('trackTopology > connections').append(switches);
-    }
-
-    const risteykset = _.filter(elements.vaihde, (e) => e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
-    const crossings = _.map(risteykset, (r) => crossing.marshall(km.ratanumero, absPos, r));
-    if (!_.isEmpty(crossings)) {
-        $('trackTopology > connections').append(crossings);
-    }
-
-    const signals = _.map(elements.opastin, (o) => signal.marshall(km.ratanumero, absPos, o));    
-    if (!_.isEmpty(signals)) {
-        $('ocsElements').append(`<signals>${_.join(signals, '')}</signals>`);
-    }
-
-    const balises = _.map(elements.baliisi, (b) => balise.marshall(km.ratanumero, absPos, b));
-    if (!_.isEmpty(balises)) {
-        $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
-    }
-
-    const raiteet = _.filter(_.uniqBy(_.reject(_.flatMap(km.elementit, 'raiteet'), _.isEmpty), 'tunniste'), { 'tyyppi': 'linja' });
-    const nopeudet = _.filter(_.flatMap(raiteet, (r) => r.nopeusrajoitukset), (nr) => nr.ratakmvali.ratanumero === km.ratanumero && nr.ratakmvali.alku.ratakm === km.ratakm);
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(trackId, absPos, n)));
-    if (!_.isEmpty(speedChanges)) {
-        $('track > trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
-    }
-
-    const electrificationChanges = _.map(elements.erotinjakso, (ej) => electrificationChange.marshall(trackId, absPos, ej));
-    if (!_.isEmpty(electrificationChanges)) {
-        $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
-    }
-
-    return {
-        element: $.xml(),
-        speeds: _.uniq(_.flatMap(nopeudet, (s) => speeds.marshall(trackId, s))),
-        trackRef: trackRef.marshall(km)
-    };
-}
 
 /**
- * Rail marshaller.
+ * Rail/track marshaller function.
  */
-function marshallRail(rail, memo) {
+function marshallTrack(rail, memo) {
 
     const { index, marshalled } = memo;
 
@@ -204,27 +145,11 @@ function marshallRail(rail, memo) {
 }
 
 /**
- * Kilometer transformer function.
+ * Rail/track transformer function.
  */
-function fromKilometer(acc, km) {
-
-    const track = marshallKm(km, acc.absPos, acc.previousTrack);
+function marshall(acc, rail) {
     
-    acc.tracks = _.concat(acc.tracks, track.element);
-    acc.speeds = _.concat(acc.speeds, track.speeds);
-    acc.trackRefs = _.concat(acc.trackRefs, track.trackRef);
-    acc.absPos += (km.pituus || 1000);
-    acc.previousTrack = km.kilometrimerkki.tunniste || '';
-    
-    return acc;
-}
-
-/**
- * Rail transformer function.
- */
-function fromRail(acc, rail) {
-    
-    const track = marshallRail(rail, acc);
+    const track = marshallTrack(rail, acc);
     acc.tracks = _.concat(acc.tracks, track.element);
     acc.speeds = _.concat(acc.speeds, track.speeds);
     acc.trackRefs = _.concat(acc.trackRefs, track.trackRef);
@@ -233,5 +158,5 @@ function fromRail(acc, rail) {
 }
 
 module.exports = {
-    fromKilometer, fromRail
+    marshall
 };

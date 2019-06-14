@@ -62,6 +62,9 @@ module.exports = {
         const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
         const absPos = positionUtils.getAbsolutePosition(sijainti);
 
+        // Notice: home/exit signal typing not provided by the API, end-user should fix all home signals!
+        const func = element.liikennepaikka === null ? SignalFunction.BLOCKING : SignalFunction.EXIT;
+
         // TODO element.opastin.puoli (vasen/oikea): corresponding railML term?
 
         const $ = cheerio.load('<signal/>', config.cheerio);
@@ -72,13 +75,7 @@ module.exports = {
         $('signal').attr('absPos', absPos);
         $('signal').attr('dir', dir);
         $('signal').attr('virtual', 'false');
-
-        if (element.liikennepaikka === null) {
-            $('signal').attr('function', SignalFunction.BLOCKING);
-        } else {
-            // NOTICE: home/exit not provided by the API, end-user must fix home signals!
-            $('signal').attr('function', SignalFunction.EXIT);
-        }
+        $('signal').attr('function', func);
 
         return $.xml();        
     }

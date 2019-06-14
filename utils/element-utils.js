@@ -49,8 +49,11 @@ function getReference(railId, type, element) {
     const etuOikea = _.find(nousevat, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'oikea');
     const oikeaEtu = _.find(nousevat, (y) => y.mistaRooli === 'oikea' && y.minneRooli === 'etu');
 
-    // straight is primary, left/right only on side-tracks
-    const yhteys = etuTaka || takaEtu || etuVasen || vasenEtu || etuOikea || oikeaEtu;
+    const bc = _.find(nousevat, (y) => y.mistaRooli === 'b' && y.minneRooli === 'c');
+    const cb = _.find(nousevat, (y) => y.mistaRooli === 'c' && y.minneRooli === 'b');
+
+    // Straight is primary, left/right for side-tracks. BC/CB for non-continuous line of crossings.
+    const yhteys = etuTaka || takaEtu || etuVasen || vasenEtu || etuOikea || oikeaEtu || bc || cb;
 
     if (!yhteys) return '';
 
@@ -64,12 +67,24 @@ function getReference(railId, type, element) {
         return '';
 
     } else if (yhteys.mistaRooli === 'vasen' || yhteys.mistaRooli === 'oikea') {
+        
         // incoming from parting direction
         return `swc_${element.tunniste}`;
 
     } else if (yhteys.minneRooli === 'vasen' || yhteys.minneRooli === 'oikea') {
+        
         // outgoing parting direction
         return `swc_${element.tunniste}`;
+
+    } else if (yhteys.mista === railId && (yhteys.mistaRooli === 'b' || yhteys.mistaRooli === 'c')) {
+
+        // incoming connection from crossing
+        return `crci_${element.tunniste}`;
+
+    } else if (yhteys.minne === railId && (yhteys.minneRooli === 'b' || yhteys.minneRooli === 'c')) {
+
+        // outgoing connection to crossing
+        return `crco_${element.tunniste}`
 
     } else if (yhteys.mista === railId) {
         

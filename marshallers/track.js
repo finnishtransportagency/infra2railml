@@ -11,6 +11,7 @@ const speeds = require('./speeds');
 const trackRef = require('./track-ref');
 const milepost = require('./milepost');
 const mileageChange = require('./mileage-change');
+const trainDetector = require('./train-detector');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
 const positionUtils = require('../utils/position-utils');
@@ -135,6 +136,13 @@ function marshallTrack(rail, memo) {
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
+
+    const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
+    if (!_.isEmpty(trainDetectors)) {
+        $('ocsElements').append(`<trainDetectionElements>${_.join(trainDetectors, '')}</trainDetectionElements>`)
+    }
+
+    
 
     return {
         element: $.xml(),

@@ -12,6 +12,7 @@ const trackRef = require('./track-ref');
 const milepost = require('./milepost');
 const mileageChange = require('./mileage-change');
 const trainDetector = require('./train-detector');
+const trackCircuitBorder = require('./track-circuit-border');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
 const positionUtils = require('../utils/position-utils');
@@ -131,18 +132,19 @@ function marshallTrack(rail, memo) {
         $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
     }
 
-    // TODO is electrificationChange correct railML term? what is trackCircuitBorder?
+    // TODO is electrificationChange correct railML term?
     const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, alku, kilometrit, ej));
     if (!_.isEmpty(electrificationChanges)) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
 
-    const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
-    if (!_.isEmpty(trainDetectors)) {
-        $('ocsElements').append(`<trainDetectionElements>${_.join(trainDetectors, '')}</trainDetectionElements>`)
-    }
+    $('ocsElements').append('<trainDetectionElements/>')
 
-    
+    const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
+    $('ocsElements > trainDetectionElements').append(trainDetectors);
+
+    const trackCircuitBorders = _.map(onRailElementGroups.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
+    $('ocsElements > trainDetectionElements').append(trackCircuitBorders);
 
     return {
         element: $.xml(),

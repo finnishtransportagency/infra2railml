@@ -81,7 +81,7 @@ module.exports = {
 
   writeToFile: (filename, data) => {
     console.log(`\nWriting ${filename} ..`);
-    fs.writeFile(filename, data, 'utf8', () => console.log("Done."));
+    fs.writeFile(filename, data, 'utf8', (r) => r);
     return data;
   }
 

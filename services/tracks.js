@@ -4,7 +4,7 @@ const c = require('../config.js');
 const kilometers = require('./kilometers');
 const elements = require('./elements');
 const rails = require('./rails');
-
+const http = require('./http-client');
 
 /**
  * Fetch plain track kilometer object.
@@ -18,7 +18,7 @@ function fetchKilometer(trackId, km) {
         transformResponse: (body) => _.first(JSON.parse(body))
     };
 
-    return axios.get(url, options)
+    return http.get(url, options)
       .then((res) => {
           console.info(`${res.status}: ${url}`);
           return res.data;

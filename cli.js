@@ -24,7 +24,8 @@ function rails(trackNumber, args) {
   if (!trackNumber || trackNumber.length === 0 || !from || from > to) {
     cmd.outputHelp();
   } else {
-    
+
+    const start = new Date().getTime();    
     const count = !!to ? to - from + 1 : (length || 1);
     const filename = `./Rails-${trackNumber}_${from}-${from + count - 1}.railml.xml`;
     
@@ -32,6 +33,7 @@ function rails(trackNumber, args) {
       .then((kms) => app.createIndex(trackNumber, kms))
       .then(app.railsToRailML)
       .then((railml) => app.writeToFile(filename, railml))
+      .then(() => console.info(`Done! (${new Date().getTime() - start} ms)`))
       .catch((err) => console.error(err));
   }
 }

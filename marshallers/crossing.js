@@ -28,6 +28,8 @@ module.exports = {
         $('crossing').attr('type', type);
         $('crossing').attr('pos', pos);
         $('crossing').attr('absPos', absPos);
+        $('crossing').attr('ocpStationRef', element.liikennepaikka);
+
 
         return $.xml();
     }

@@ -75,6 +75,7 @@ module.exports = {
         $('signal').attr('dir', dir);
         $('signal').attr('virtual', 'false');
         $('signal').attr('function', func);
+        $('switch').attr('ocpStationRef', element.liikennepaikka);
 
         return $.xml();        
     }

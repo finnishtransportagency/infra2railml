@@ -29,6 +29,7 @@ module.exports = {
         $('trainDetector').attr('absPos', absPos);
         $('trainDetector').attr('detectionObject', DetectionObject.AXLE);
         $('trainDetector').attr('axleCounting', true);
+        $('trainDetector').attr('ocpStationRef', element.liikennepaikka);
 
         // TODO direction, medium, posInTrack not available in API?
 

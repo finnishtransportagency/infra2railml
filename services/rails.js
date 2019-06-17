@@ -25,6 +25,7 @@ function findById(id) {
                     return stations.findById(rail.liikennepaikanRaide.liikennepaikka)
                         .then((station) => {
                             rail.liikennepaikanRaide.liikennepaikka = station;
+                            return rail;
                         })
                         .then(resolve)
                         .catch(reject);

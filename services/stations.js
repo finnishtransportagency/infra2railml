@@ -19,8 +19,7 @@ function findById(id) {
             return res.data;
         })
         .catch((err) => {
-            console.log(err);
-            //console.error(`${err.message}: ${url}`);
+            console.error(`${err.message}: ${url}`);
             return {};
         });
 }

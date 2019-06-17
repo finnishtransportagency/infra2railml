@@ -13,6 +13,8 @@ const milepost = require('./milepost');
 const mileageChange = require('./mileage-change');
 const trainDetector = require('./train-detector');
 const trackCircuitBorder = require('./track-circuit-border');
+const platformEdge = require('./platform-edge');
+const stopPost = require('./stop-post');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
 const positionUtils = require('../utils/position-utils');
@@ -138,13 +140,23 @@ function marshallTrack(rail, memo) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
 
-    $('ocsElements').append('<trainDetectionElements/>')
+    $('ocsElements').append('<trainDetectionElements/>');
 
     const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
     $('ocsElements > trainDetectionElements').append(trainDetectors);
 
     const trackCircuitBorders = _.map(onRailElementGroups.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
     $('ocsElements > trainDetectionElements').append(trackCircuitBorders);
+
+    const platform = platformEdge.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
+    if (!_.isEmpty(platform)) {
+        $('trackElements').append(`<platformEdges>${platform}</platformEdges>`);
+    }
+
+    const stop = stopPost.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
+    if (!_.isEmpty(stop)) {    
+        $('ocsElements').append(`<stopPosts>${stop}</stopPosts>`);
+    }
 
     return {
         element: $.xml(),

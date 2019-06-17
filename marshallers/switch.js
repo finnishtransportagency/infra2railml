@@ -63,6 +63,7 @@ module.exports = {
         $('switch').attr('type', type);
         $('switch').attr('pos', pos);
         $('switch').attr('absPos', absPos);
+        $('switch').attr('ocpStationRef', element.liikennepaikka);
         $('switch').append(connections);
 
         return $.xml();

@@ -22,6 +22,7 @@ module.exports = {
         $('signal').attr('absPos', absPos);
         $('signal').attr('dir', 'up');
         $('signal').attr('virtual', 'true');
+        $('switch').attr('ocpStationRef', element.liikennepaikka);
         $('signal').append(`<milepost shownValue="${kilometri.ratakm}" switchable="false" />`)
 
         // TODO should have reference to mileageChange?

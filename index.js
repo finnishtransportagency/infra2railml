@@ -40,6 +40,7 @@ module.exports = {
 
       const elementit = _.uniqBy(_.reject(_.flatMap(kilometrit, 'elementit'), _.isEmpty), 'tunniste');
       const raiteet = _.uniqBy(_.reject(_.flatMap(elementit, 'raiteet'), _.isEmpty), 'tunniste');
+      const liikennepaikat = _.uniqBy(_.reject(_.flatMap(raiteet, 'liikennepaikanRaide'), _.isEmpty), 'liikennepaikka');
 
       // resolve the loaded kilometers and rail ranges
       const loadedKms = _.map(kilometrit, 'ratakm');
@@ -73,7 +74,7 @@ module.exports = {
         _.flatMap(kms, (km) => trackService.getKilometer(ratanumero, km))
       ))
       .then((extraKilometrit) => {
-        return { trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit };
+        return { trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit, liikennepaikat };
       })
       .then(resolve);
     });

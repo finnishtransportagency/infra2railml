@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const axios = require('axios');
 const c = require('../config');
 const http = require('./http-client');
 

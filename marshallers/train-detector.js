@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 const elementUtils = require('../utils/element-utils');

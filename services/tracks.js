@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const axios = require('axios');
 const c = require('../config.js');
 const kilometers = require('./kilometers');
 const elements = require('./elements');

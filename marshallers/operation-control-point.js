@@ -14,6 +14,10 @@ const OcpType = {
 module.exports = {
     marshall: (liikennepaikanRaide) => {
 
+        if (!liikennepaikanRaide || _.isEmpty(liikennepaikanRaide.liikennepaikka)) {
+            return undefined;
+        }
+
         // TODO is it possible to have multiple liikennepaikka?
         const liikennepaikka = _.first(liikennepaikanRaide.liikennepaikka);
 

@@ -161,7 +161,7 @@ function marshallTrack(rail, memo) {
     return {
         element: $.xml(),
         speeds: speedAttrs,
-        trackRef: trackRef.marshall(rail),
+        trackRef: trackRef.marshall(rail), // TODO group by track/line number
         length: endPos
     };
 }

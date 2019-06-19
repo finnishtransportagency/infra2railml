@@ -17,7 +17,7 @@ module.exports = {
         $('trackCircuitBorder').attr('name', element.nimi);
         $('trackCircuitBorder').attr('pos', pos);
         $('trackCircuitBorder').attr('absPos', absPos);
-        $('trackCircuitBorder').attr('ocpRef', element.liikennepaikka);
+        $('trackCircuitBorder').attr('ocpStationRef', element.liikennepaikka);
 
         return $.xml();        
     }

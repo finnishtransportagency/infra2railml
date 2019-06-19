@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
-const elementUtils = require('../utils/element-utils');
 const positionUtils = require('../utils/position-utils');
 
 module.exports = {
@@ -24,6 +23,7 @@ module.exports = {
         $('platformEdge').attr('description', `${tunnus} - ${nimi}`)
         $('platformEdge').attr('pos', pos);
         $('platformEdge').attr('absPos', absPos);
+        $('platformEdge').attr('dir', 'both');
         $('platformEdge').attr('ocpRef', tunniste);
 
         return $.xml();        

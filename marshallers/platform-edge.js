@@ -23,7 +23,6 @@ module.exports = {
         $('platformEdge').attr('description', `${tunnus} - ${nimi}`)
         $('platformEdge').attr('pos', pos);
         $('platformEdge').attr('absPos', absPos);
-        $('platformEdge').attr('dir', 'both');
         $('platformEdge').attr('ocpRef', tunniste);
 
         return $.xml();        

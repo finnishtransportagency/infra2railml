@@ -18,12 +18,12 @@ module.exports = {
             return undefined;
         }
 
-        // TODO is it possible to have multiple liikennepaikka?
+        // TODO rid unnecessary array in services/station.js
         const liikennepaikka = _.first(liikennepaikanRaide.liikennepaikka);
 
         const $ = cheerio.load('<ocp/>', config.cheerio);
         $('ocp').attr('id', liikennepaikka.tunniste);
-        $('ocp').attr('code', liikennepaikka.uicKoodi);
+        $('ocp').attr('code', liikennepaikka.lyhenne);
         $('ocp').attr('name', liikennepaikka.kuljettajaAikatauluNimi);
         $('ocp').attr('abbrevation', liikennepaikka.lyhenne);
         $('ocp').attr('type', OcpType.OPERATIONAL_NAME);

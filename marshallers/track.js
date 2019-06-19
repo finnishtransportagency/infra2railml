@@ -153,9 +153,9 @@ function marshallTrack(rail, memo) {
         $('trackElements').append(`<platformEdges>${platform}</platformEdges>`);
     }
 
-    const stop = stopPost.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
-    if (!_.isEmpty(stop)) {    
-        $('ocsElements').append(`<stopPosts>${stop}</stopPosts>`);
+    const stops = stopPost.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
+    if (!_.isEmpty(stops)) { 
+        $('ocsElements').append(`<stopPosts>${_.join(stops, '')}</stopPosts>`);
     }
 
     return {

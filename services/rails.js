@@ -19,7 +19,7 @@ function findById(id) {
         })
         .then((rail) => {
             return new Promise((resolve, reject) => {
-                if (!rail.liikennepaikanRaide) {
+                if (!rail.liikennepaikanRaide || _.isObject(rail.liikennepaikanRaide.liikennepaikka)) {
                     resolve(rail);
                 } else {
                     return stations.findById(rail.liikennepaikanRaide.liikennepaikka)

@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
+const speeds = require('./speeds');
 const operationControlPoint = require('./operation-control-point');
 
 module.exports = {
@@ -21,9 +22,10 @@ module.exports = {
         $('infrastructure').attr('name', name);
         $('infrastructure').attr('version', '2.2');
         
-        if (!_.isEmpty(model.speeds)) {
+        const speedAttrs = _.uniq(_.flatMap(index.raiteet, (r) => _.flatMap(r.nopeusrajoitukset, (n) => speeds.marshall(r.tunniste, n))));
+        if (!_.isEmpty(speedAttrs)) {
             $('infrastructure').append('<infraAttrGroups/>');
-            $('infrastructure > infraAttrGroups').append(model.speeds);
+            $('infrastructure > infraAttrGroups').append(speedAttrs);
         }
 
         if (!_.isEmpty(model.tracks)) {

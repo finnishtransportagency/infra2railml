@@ -110,13 +110,8 @@ function marshallTrack(raide, memo) {
     $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
-    // speed attributes, should be moved in infrastructrure marshaller
-    const nopeudet = railUtils.getSpeedLimits(raide, ratanumero, alku, loppu);
-    const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(raideId, n)));
-
     return {
         element: $.xml(),
-        speeds: speedAttrs,
         trackRef: trackRef.marshall(raide), // TODO group by track/line number
         length: endPos
     };

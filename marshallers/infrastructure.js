@@ -18,7 +18,8 @@ module.exports = {
             `Rata ${index.trackId} km ${index.from}-${index.to} (${now.toISOString()})` : `Liikennepaikat ${now.toISOString()}`;         
 
         $('infrastructure').attr('id', infraId);         
-        $('infrastructure').attr('name', name)
+        $('infrastructure').attr('name', name);
+        $('infrastructure').attr('version', '2.2');
         
         if (!_.isEmpty(model.speeds)) {
             $('infrastructure').append('<infraAttrGroups/>');

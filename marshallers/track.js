@@ -126,6 +126,19 @@ function marshallTrack(rail, memo) {
         $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
     }
 
+    $('ocsElements').append('<trainDetectionElements/>');
+
+    const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
+    $('ocsElements > trainDetectionElements').append(trainDetectors);
+
+    const trackCircuitBorders = _.map(onRailElementGroups.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
+    $('ocsElements > trainDetectionElements').append(trackCircuitBorders);
+
+    const stops = stopPost.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
+    if (!_.isEmpty(stops)) { 
+        $('ocsElements').append(`<stopPosts>${_.join(stops, '')}</stopPosts>`);
+    }
+
     // trackElements
     const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => railUtils.isSpeedChangeOnRail(ratanumero, alku, loppu, nr));
     const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(railId, n)));
@@ -140,22 +153,9 @@ function marshallTrack(rail, memo) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
 
-    $('ocsElements').append('<trainDetectionElements/>');
-
-    const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
-    $('ocsElements > trainDetectionElements').append(trainDetectors);
-
-    const trackCircuitBorders = _.map(onRailElementGroups.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
-    $('ocsElements > trainDetectionElements').append(trackCircuitBorders);
-
     const platform = platformEdge.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
     if (!_.isEmpty(platform)) {
         $('trackElements').append(`<platformEdges>${platform}</platformEdges>`);
-    }
-
-    const stops = stopPost.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
-    if (!_.isEmpty(stops)) { 
-        $('ocsElements').append(`<stopPosts>${_.join(stops, '')}</stopPosts>`);
     }
 
     return {

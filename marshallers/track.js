@@ -1,18 +1,13 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
-const balise = require('./balise');
-const signal = require('./signal');
 const _switch = require('./switch');
 const crossing = require('./crossing');
 const trackRef = require('./track-ref');
-const milepost = require('./milepost');
 const mileageChange = require('./mileage-change');
-const trainDetector = require('./train-detector');
-const trackCircuitBorder = require('./track-circuit-border');
 const trackElements = require('./track-elements');
+const ocsElements = require('./ocs-elements');
 const speeds = require('./speeds');
-const stopPost = require('./stop-post');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
 const positionUtils = require('../utils/position-utils');
@@ -113,34 +108,7 @@ function marshallTrack(rail, memo) {
     }
     
     $('track').append(trackElements.marshall(rail, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
-
-    $('track').append('<ocsElements/>');
-
-    // ocsElements
-    const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, alku, kilometrit, o));
-    const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, kilometrit, p));
-    const signalsAndPosts = _.flatten(_.concat(signals, mileposts));
-    if (!_.isEmpty(signals)) {
-        $('ocsElements').append(`<signals>${_.join(signalsAndPosts, '')}</signals>`);
-    }
-    const balises = _.map(onRailElementGroups.baliisi, (b) => balise.marshall(ratanumero, alku, kilometrit, b));
-    if (!_.isEmpty(balises)) {
-        $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
-    }
-
-    $('ocsElements').append('<trainDetectionElements/>');
-
-    const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
-    $('ocsElements > trainDetectionElements').append(trainDetectors);
-
-    const trackCircuitBorders = _.map(onRailElementGroups.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
-    $('ocsElements > trainDetectionElements').append(trackCircuitBorders);
-
-    const stops = stopPost.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
-    if (!_.isEmpty(stops)) { 
-        $('ocsElements').append(`<stopPosts>${_.join(stops, '')}</stopPosts>`);
-    }
-
+    $('track').append(ocsElements.marshall(rail, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
     // speed attributes, should be moved in infrastructrure marshaller
     const nopeudet = railUtils.getSpeedLimits(rail, ratanumero, alku, loppu);

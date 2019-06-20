@@ -6,6 +6,8 @@ const speedChange = require('./speed-change');
 const electrificationChange = require('./electrification-change');
 const platformEdge = require('./platform-edge');
 
+// https://wiki.railml.org/index.php?title=IS:trackElements
+
 module.exports = {
     marshall: (raide, ratanumero, alku, loppu, elementit, kilometrit) => {
 

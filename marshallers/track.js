@@ -15,17 +15,18 @@ const positionUtils = require('../utils/position-utils');
 /**
  * Rail/track marshaller function.
  */
-function marshallTrack(rail, memo) {
+function marshallTrack(raide, memo) {
 
     const { index, marshalled } = memo;
+    const raideId = raide.tunniste;
 
-    const ratakmvali = _.find(rail.ratakmvalit, { ratanumero: index.trackId }) || _.first(rail.ratakmvalit);
+    const ratakmvali = _.find(raide.ratakmvalit, { ratanumero: index.trackId }) || _.first(raide.ratakmvalit);
     const { ratanumero, alku, loppu } = ratakmvali;
 
-    console.log(`\nGenerating track ${rail.tunniste} (${ratakmvali.ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
+    console.log(`\nGenerating track ${raideId} (${ratakmvali.ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
     
     // find & group all elements related to current rail
-    const elements = _.uniqBy(_.filter(index.elementit, (e) => railUtils.isRailElement(rail.tunniste, e)), 'tunniste');
+    const elements = _.uniqBy(_.filter(index.elementit, (e) => railUtils.isRailElement(raideId, e)), 'tunniste');
     const elementsByType = _.groupBy(elements, 'tyyppi');
 
     // all track kilometers along this rail
@@ -33,44 +34,43 @@ function marshallTrack(rail, memo) {
     const kilometrit = _.filter(allKilometers, (km) => railUtils.isOverlapping(ratanumero, alku, loppu, km));
 
     // main track element
-    const railId = rail.tunniste;
     const name = `Raide ${ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
-    const stub = `<track id="${railId}" name="${name}"><trackTopology/></track>`;
+    const stub = `<track id="${raideId}" name="${name}"><trackTopology/></track>`;
     const $ = cheerio.load(stub, config.cheerio);
 
     // track begin/end elements
     const beginAbsPos = positionUtils.getAbsolutePosition(alku);
     const endAbsPos = positionUtils.getAbsolutePosition(loppu);
     const endPos = positionUtils.getPosition(alku, loppu, kilometrit);
-    $('trackTopology').append(`<trackBegin id="tb_${railId}" pos="0.0000" absPos="${beginAbsPos}">`);
-    $('trackTopology').append(`<trackEnd id="te_${railId}" pos="${endPos}" absPos="${endAbsPos}">`); 
+    $('trackTopology').append(`<trackBegin id="tb_${raideId}" pos="0.0000" absPos="${beginAbsPos}">`);
+    $('trackTopology').append(`<trackEnd id="te_${raideId}" pos="${endPos}" absPos="${endAbsPos}">`); 
         
     // find the incoming/outgoing elements of rail, typically a switch or buffer stop
     const beginElement = elementUtils.getConnectingElement('begin', alku, elementsByType);
-    const beginRef = elementUtils.getReference(railId, 'begin', beginElement);
+    const beginRef = elementUtils.getReference(raideId, 'begin', beginElement);
 
     const endElement = elementUtils.getConnectingElement('end', loppu, elementsByType);
-    const endRef = elementUtils.getReference(railId, 'end', endElement);
+    const endRef = elementUtils.getReference(raideId, 'end', endElement);
 
     if (beginElement && beginRef && beginElement.tyyppi === 'vaihde') {
-        $('trackBegin').append(`<connection id="tbc_${railId}" ref="${beginRef}" />`);
+        $('trackBegin').append(`<connection id="tbc_${raideId}" ref="${beginRef}" />`);
     } else if (beginElement && beginElement.tyyppi === 'puskin') {
-        $('trackBegin').append(`<bufferStop id="tbbs_${railId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
+        $('trackBegin').append(`<bufferStop id="tbbs_${raideId}" name="${beginElement.nimi || beginElement.tunniste}" />`);
     } else {
-        $('trackBegin').append(`<openEnd id="tboe_${railId}" name="${rail.tunniste}" />`);
+        $('trackBegin').append(`<openEnd id="tboe_${raideId}" name="${raideId}" />`);
     }
 
     if (endElement && endRef && endElement.tyyppi === 'vaihde') {
-        $('trackEnd').append(`<connection id="tec_${railId}" ref="${endRef}" />`);
+        $('trackEnd').append(`<connection id="tec_${raideId}" ref="${endRef}" />`);
     } else if (endElement && endElement.tyyppi === 'puskin') {
-        $('trackEnd').append(`<bufferStop id="tebs_${railId}" name="${endElement.nimi || beginElement.tunniste}" />`);
+        $('trackEnd').append(`<bufferStop id="tebs_${raideId}" name="${endElement.nimi || beginElement.tunniste}" />`);
     } else {
-        $('trackEnd').append(`<openEnd id="teoe_${railId}" name="${rail.tunniste}" />`);
+        $('trackEnd').append(`<openEnd id="teoe_${raideId}" name="${raideId}" />`);
     }
 
-    // Find graph/topology related elements; each switch is marshalled only once and must be
-    // nested under the main tracks. Otherwise, the connection between main and side tracks
-    // is not resolvable because switches only refer to side tracks.
+    // Find topology related elements; each switch is marshalled only once and must be nested
+    // under a main track (straight direction). Otherwise the connection between main and side
+    // tracks is unresolvable because switches only refer the side tracks (parting direction).
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
 
@@ -101,29 +101,29 @@ function marshallTrack(rail, memo) {
     
     // mileage changes, i.e. absPos corrections due to track kilometers not always being exactly 1000 meters
     // TODO preceeding kilometer has to be included!
-    const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(railId, alku, kilometrit, k)), _.isEmpty);
+    const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(raideId, alku, kilometrit, k)), _.isEmpty);
     if (!_.isEmpty(mileageChanges)) {
         $('trackTopology').append('<mileageChanges/>');
         $('trackTopology > mileageChanges').append(mileageChanges);
     }
     
-    $('track').append(trackElements.marshall(rail, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
-    $('track').append(ocsElements.marshall(rail, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
+    $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
+    $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
     // speed attributes, should be moved in infrastructrure marshaller
-    const nopeudet = railUtils.getSpeedLimits(rail, ratanumero, alku, loppu);
-    const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(railId, n)));
+    const nopeudet = railUtils.getSpeedLimits(raide, ratanumero, alku, loppu);
+    const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(raideId, n)));
 
     return {
         element: $.xml(),
         speeds: speedAttrs,
-        trackRef: trackRef.marshall(rail), // TODO group by track/line number
+        trackRef: trackRef.marshall(raide), // TODO group by track/line number
         length: endPos
     };
 }
 
 /**
- * Rail/track transformer function.
+ * Single rail to track transformer function.
  */
 function marshall(acc, rail) {
     

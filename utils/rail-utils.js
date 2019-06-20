@@ -61,6 +61,13 @@ function isReferredSwitch(vaihde, beginRef, endRef) {
     return beginRef === switchRef || endRef === switchRef;
 }
 
+/**
+ * Returns the rail speed limits.
+ */
+function getSpeedLimits(raide, ratanumero, alku, loppu) {
+    return _.filter(raide.nopeusrajoitukset, (nr) => isSpeedChangeOnRail(ratanumero, alku, loppu, nr));
+}
+
 module.exports = {
-   isRailElement, isOnRail, isOverlapping, isSpeedChangeOnRail, isMilepostOnRail, isReferredSwitch
+   isRailElement, isOnRail, isOverlapping, isSpeedChangeOnRail, isMilepostOnRail, isReferredSwitch, getSpeedLimits
 };

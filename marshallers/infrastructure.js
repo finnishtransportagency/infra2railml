@@ -31,17 +31,17 @@ module.exports = {
             $('infrastructure > tracks').append(model.tracks);
         }
 
-        if (!_.isEmpty(index.liikennepaikat)) {
-            const ocps = _.map(index.liikennepaikat, operationControlPoint.marshall);
-            $('infrastructure').append('<operationControlPoints/>');
-            $('infrastructure > operationControlPoints').append(ocps);
-        }
-
         if (!_.isEmpty(model.trackRefs)) {
             const line = `<line id="line_${index.trackId}_${index.from}_${index.to}" name="${index.trackId}" />`;
             $('infrastructure').append('<trackGroups/>');
             $('infrastructure > trackGroups').append(line);
             $('infrastructure > trackGroups > line').append(model.trackRefs);
+        }
+
+        if (!_.isEmpty(index.liikennepaikat)) {
+            const ocps = _.map(index.liikennepaikat, operationControlPoint.marshall);
+            $('infrastructure').append('<operationControlPoints/>');
+            $('infrastructure > operationControlPoints').append(ocps);
         }
 
         return $.xml();

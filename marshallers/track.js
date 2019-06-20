@@ -5,15 +5,13 @@ const balise = require('./balise');
 const signal = require('./signal');
 const _switch = require('./switch');
 const crossing = require('./crossing');
-const speedChange = require('./speed-change');
-const electrificationChange = require('./electrification-change');
-const speeds = require('./speeds');
 const trackRef = require('./track-ref');
 const milepost = require('./milepost');
 const mileageChange = require('./mileage-change');
 const trainDetector = require('./train-detector');
 const trackCircuitBorder = require('./track-circuit-border');
-const platformEdge = require('./platform-edge');
+const trackElements = require('./track-elements');
+const speeds = require('./speeds');
 const stopPost = require('./stop-post');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
@@ -42,7 +40,7 @@ function marshallTrack(rail, memo) {
     // main track element
     const railId = rail.tunniste;
     const name = `Raide ${ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
-    const stub = `<track id="${railId}" name="${name}"><trackTopology/><trackElements/><ocsElements/></track>`;
+    const stub = `<track id="${railId}" name="${name}"><trackTopology/></track>`;
     const $ = cheerio.load(stub, config.cheerio);
 
     // track begin/end elements
@@ -114,6 +112,10 @@ function marshallTrack(rail, memo) {
         $('trackTopology > mileageChanges').append(mileageChanges);
     }
     
+    $('track').append(trackElements.marshall(rail, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
+
+    $('track').append('<ocsElements/>');
+
     // ocsElements
     const signals = _.map(onRailElementGroups.opastin, (o) => signal.marshall(ratanumero, alku, kilometrit, o));
     const mileposts = _.map(onRailMileposts, (p) => milepost.marshall(ratanumero, railId, alku, kilometrit, p));
@@ -139,24 +141,10 @@ function marshallTrack(rail, memo) {
         $('ocsElements').append(`<stopPosts>${_.join(stops, '')}</stopPosts>`);
     }
 
-    // trackElements
-    const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => railUtils.isSpeedChangeOnRail(ratanumero, alku, loppu, nr));
+
+    // speed attributes, should be moved in infrastructrure marshaller
+    const nopeudet = railUtils.getSpeedLimits(rail, ratanumero, alku, loppu);
     const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(railId, n)));
-    const speedChanges = _.uniq(_.flatMap(nopeudet, (n) => speedChange.marshall(railId, alku, kilometrit, n)));
-    if (!_.isEmpty(speedChanges)) {
-        $('trackElements').append(`<speedChanges>${_.join(speedChanges, '')}</speedChanges>`);
-    }
-
-    // TODO is electrificationChange correct railML term?
-    const electrificationChanges = _.map(onRailElementGroups.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, alku, kilometrit, ej));
-    if (!_.isEmpty(electrificationChanges)) {
-        $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
-    }
-
-    const platform = platformEdge.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
-    if (!_.isEmpty(platform)) {
-        $('trackElements').append(`<platformEdges>${platform}</platformEdges>`);
-    }
 
     return {
         element: $.xml(),

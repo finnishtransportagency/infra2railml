@@ -3,7 +3,29 @@ const c = require('../config.js');
 const http = require('./http-client');
 
 /**
- * Find track element by ID.
+ * List all stations (liikennepaikat)
+ */
+function list() {
+    
+    const url = `${c.infraApi.baseUrl}/rautatieliikennepaikat.json`;
+
+    const options = {
+        params: { srsName: 'crs:84' }
+    };
+
+    return http.get(url, options)
+        .then((res) => {
+            console.info(`${res.status}: ${url}`);
+            return _.flatMap(res.data, (v, k) => v);
+        })
+        .catch((err) => {
+            console.error(`${err.message}: ${url}`);
+            return {};
+        });
+}
+
+/**
+ * Find station by ID.
  */
 function findById(id) {
     
@@ -16,7 +38,7 @@ function findById(id) {
     return http.get(url, options)
         .then((res) => {
             console.info(`${res.status}: ${url}`);
-            return res.data;
+            return _.first(res.data);
         })
         .catch((err) => {
             console.error(`${err.message}: ${url}`);
@@ -25,5 +47,5 @@ function findById(id) {
 }
 
 module.exports = {
-    findById
+    list, findById
 }

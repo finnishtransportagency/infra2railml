@@ -24,18 +24,15 @@ const OperationalType = {
 };
 
 module.exports = {
-    marshall: (liikennepaikanRaide) => {
+    marshall: (liikennepaikka) => {
 
-        if (!liikennepaikanRaide || _.isEmpty(liikennepaikanRaide.liikennepaikka)) {
+        if (_.isEmpty(liikennepaikka)) {
             return undefined;
         }
 
-        // TODO rid unnecessary array in services/station.js
-        const liikennepaikka = _.first(liikennepaikanRaide.liikennepaikka);
-
          // TODO Other types available in API?
         const opType = OperationalType.STATION; 
-
+        
         const $ = cheerio.load('<ocp/>', config.cheerio);
         $('ocp').attr('id', liikennepaikka.tunniste);
         $('ocp').attr('code', liikennepaikka.lyhenne);

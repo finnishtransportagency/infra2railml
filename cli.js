@@ -10,6 +10,8 @@ module.exports = () => {
     .option('-l, --length <n>', 'Total number of kilometers', parseInt)
     .action(rails);
 
+  cmd.command('stations').action(stations);
+
   cmd.version(version);
   cmd.parse(process.argv);
 };
@@ -36,4 +38,17 @@ function rails(trackNumber, args) {
       .then(() => console.info(`Done! (${new Date().getTime() - start} ms)`))
       .catch((err) => console.error(err));
   }
+}
+
+/**
+ * Stations command controller.
+ */
+function stations(args) {
+  const start = new Date().getTime();
+  const filename = `./Stations.railml.xml`;
+  app.getStations()
+    .then((liikennepaikat) => app.stationsToRailML({ liikennepaikat }))
+    .then((railml) => app.writeToFile(filename, railml))
+    .then(() => console.info(`Done! (${new Date().getTime() - start} ms)`))
+    .catch((err) => console.error(err));
 }

@@ -4,6 +4,7 @@ const track = require('./track');
 const config = require('../config');
 const infrastructure = require('./infrastructure');
 const infrastructureVis = require('./infrastructure-vis');
+const station = require('./station');
 
 const XML_NAMESPACES = {
     'version': '2.2', 'xmlns': 'http://www.railml.org/schemas/2013',
@@ -17,14 +18,16 @@ const RAILML_STUB = '<?xml version="1.0" encoding="UTF-8"?><railml/>';
  * Infra-API base types from which the railML track elements are created.
  */
 const BaseType = {
-    RAILS: 'raiteet'
+    RAILS: 'raiteet',
+    STATIONS: 'liikennepaikat'
 };
 
 /**
- * Track element marshallers for base types.
+ * Base type marshallers.
  */
 const RAILML_MARSHALLERS = {
-    raiteet: track.marshall
+    raiteet: track.marshall,
+    liikennepaikat: station.marshall
 };
 
 /**
@@ -41,13 +44,14 @@ function marshall(baseType, index) {
             reject(new Error(`Invalid base type '${baseType}'.`));
         }
 
-        const memo = { index, tracks: [], speeds: [], trackRefs: [], marshalled: [] };
+        // TODO move transforming to infrastructure marshaller
+        const memo = { index, tracks: [], speeds: [], trackRefs: [], stations: [], marshalled: [] };
         const results = _.transform(objects, transformer, memo);
 
         const $ = cheerio.load(RAILML_STUB, config.cheerio);
         _.each(XML_NAMESPACES, (val, key) => $('railml').attr(key, val));
         
-        const infra = infrastructure.marshall(results);
+        const infra = infrastructure.marshall(baseType, results);
         $('railml').append(infra);
 
         if (config.railml.visualize === true) {

@@ -11,7 +11,7 @@ module.exports = {
         }
 
         const { tunnus, liikennepaikka } = liikennepaikanRaide;
-        const { tunniste, nimi, virallinenRatakmsijainti, muutRatakmsijainnit } = _.first(liikennepaikka);
+        const { tunniste, nimi, virallinenRatakmsijainti, muutRatakmsijainnit } = liikennepaikka;
         const sijainti = virallinenRatakmsijainti || _.first(muutRatakmsijainnit);
 
         const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);

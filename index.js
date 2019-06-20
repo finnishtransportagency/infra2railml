@@ -1,24 +1,40 @@
 const fs = require('fs');
 const _ = require('lodash');
 const trackService = require('./services/tracks');
+const stationService = require('./services/stations.js');
 const railml = require('./marshallers/railml');
 const { BaseType } = railml;
 
 module.exports = {
   
   /**
-   * Get track kilometers from API, complemented with selected child objects.
+   * Get track kilometers from the Infra-API, amended with selected child objects.
    */
   getTrack: (trackNumber, from, length) => {
     return trackService.getKilometers(trackNumber, from, length);    
   },
 
   /**
+   * List all stations from the Infra-API.
+   */
+  getStations: () => {
+    return stationService.list();
+  },
+
+  /**
    * Convert rails to railML infrastructure.
    */
   railsToRailML: (index) => {
-    console.info('Generating railML based on rails..');
+    console.info('Generating infrastructure railML..');
     return railml.marshall(BaseType.RAILS, index);
+  },
+
+  /**
+   * Convert stations to railML operation control points.
+   */
+  stationsToRailML: (index) => {
+    console.log('Generating stations railML..');
+    return railml.marshall(BaseType.STATIONS, index);
   },
 
   /**
@@ -41,11 +57,14 @@ module.exports = {
       const elementit = _.uniqBy(_.reject(_.flatMap(kilometrit, 'elementit'), _.isEmpty), 'tunniste');
       const raiteet = _.uniqBy(_.reject(_.flatMap(elementit, 'raiteet'), _.isEmpty), 'tunniste');
 
+      const liikennepaikanRaiteet = _.reject(_.flatMap(raiteet, 'liikennepaikanRaide'), _.isEmpty);
+      const liikennepaikat = _.uniqBy(_.reject(_.flatMap(liikennepaikanRaiteet, 'liikennepaikka'), _.isEmpty), 'tunniste');
+
       // resolve the loaded kilometers and rail ranges
       const loadedKms = _.map(kilometrit, 'ratakm');
       const ratakmvalit = _.flatMap(raiteet, 'ratakmvalit');
 
-      // map all rail ranges into { trackNumber: [km, ...] } object to find the
+      // map all rail ranges into { trackNumber: [km, km, ...] } object to find the
       // track kilometers where each rail begins and ends
       const valienKilometrit = _.transform(ratakmvalit, (res, v) => {
         const track = res[v.ratanumero] || [];
@@ -69,16 +88,22 @@ module.exports = {
 
       // load extra kilometers and compose the index object
       console.info(`\nLoading additional track kilometers.. ${JSON.stringify(nonLoadedKms)}`);
+
       Promise.all(_.flatMap(nonLoadedKms, (kms, ratanumero) =>
-        _.flatMap(kms, (km) => trackService.getKilometer(ratanumero, km))
-      ))
-      .then((extraKilometrit) => {
-        return { trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit };
-      })
-      .then(resolve);
+          _.flatMap(kms, (km) => trackService.getKilometer(ratanumero, km))
+        ))
+        .then((extraKilometrit) => {
+          return {
+            trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit, liikennepaikat
+          };
+        })
+        .then(resolve);
     });
   },
 
+  /**
+   * Write given contents in specified file.
+   */
   writeToFile: (filename, data) => {
     console.log(`\nWriting ${filename} ..`);
     fs.writeFile(filename, data, 'utf8', (err) => {

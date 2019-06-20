@@ -13,6 +13,8 @@ const milepost = require('./milepost');
 const mileageChange = require('./mileage-change');
 const trainDetector = require('./train-detector');
 const trackCircuitBorder = require('./track-circuit-border');
+const platformEdge = require('./platform-edge');
+const stopPost = require('./stop-post');
 const elementUtils = require('../utils/element-utils');
 const railUtils = require('../utils/rail-utils');
 const positionUtils = require('../utils/position-utils');
@@ -124,6 +126,19 @@ function marshallTrack(rail, memo) {
         $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
     }
 
+    $('ocsElements').append('<trainDetectionElements/>');
+
+    const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
+    $('ocsElements > trainDetectionElements').append(trainDetectors);
+
+    const trackCircuitBorders = _.map(onRailElementGroups.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
+    $('ocsElements > trainDetectionElements').append(trackCircuitBorders);
+
+    const stops = stopPost.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
+    if (!_.isEmpty(stops)) { 
+        $('ocsElements').append(`<stopPosts>${_.join(stops, '')}</stopPosts>`);
+    }
+
     // trackElements
     const nopeudet = _.filter(rail.nopeusrajoitukset, (nr) => railUtils.isSpeedChangeOnRail(ratanumero, alku, loppu, nr));
     const speedAttrs = _.uniq(_.flatMap(nopeudet, (n) => speeds.marshall(railId, n)));
@@ -138,18 +153,15 @@ function marshallTrack(rail, memo) {
         $('trackElements').append(`<electrificationChanges>${_.join(electrificationChanges, '')}</electricifationChanges>`);
     }
 
-    $('ocsElements').append('<trainDetectionElements/>')
-
-    const trainDetectors = _.map(onRailElementGroups.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
-    $('ocsElements > trainDetectionElements').append(trainDetectors);
-
-    const trackCircuitBorders = _.map(onRailElementGroups.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
-    $('ocsElements > trainDetectionElements').append(trackCircuitBorders);
+    const platform = platformEdge.marshall(railId, alku, kilometrit, rail.liikennepaikanRaide);
+    if (!_.isEmpty(platform)) {
+        $('trackElements').append(`<platformEdges>${platform}</platformEdges>`);
+    }
 
     return {
         element: $.xml(),
         speeds: speedAttrs,
-        trackRef: trackRef.marshall(rail),
+        trackRef: trackRef.marshall(rail), // TODO group by track/line number
         length: endPos
     };
 }

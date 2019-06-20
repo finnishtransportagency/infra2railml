@@ -30,11 +30,11 @@ module.exports = {
         if (!_.isEmpty(balises)) {
             $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
         }
-        $('ocsElements').append('<trainDetectionElements/>');
 
         const trainDetectors = _.map(elementit.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
         const trackCircuitBorders = _.map(elementit.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
         if (!_.isEmpty(trainDetectors) || !_.isEmpty(trackCircuitBorders)) {
+            $('ocsElements').append('<trainDetectionElements/>');
             $('ocsElements > trainDetectionElements').append(trainDetectors);
             $('ocsElements > trainDetectionElements').append(trackCircuitBorders);    
         }

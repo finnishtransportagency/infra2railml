@@ -68,6 +68,40 @@ function getSpeedLimits(raide, ratanumero, alku, loppu) {
     return _.filter(raide.nopeusrajoitukset, (nr) => isSpeedChangeOnRail(ratanumero, alku, loppu, nr));
 }
 
+/**
+ * Returns the switches to be nested under given track.
+ */
+function getRailSwitches(raideId, ratanumero, alku, loppu, elementit) {
+
+    const beginElement = elementUtils.getConnectingElement('begin', alku, elementit);
+    const beginRef = elementUtils.getReference(raideId, 'begin', beginElement);
+
+    const endElement = elementUtils.getConnectingElement('end', loppu, elementit);
+    const endRef = elementUtils.getReference(raideId, 'end', endElement);
+
+    return _.filter(elementit.vaihde, (v) =>
+        isOnRail(v, ratanumero, alku, loppu) && !isReferredSwitch(v, beginRef, endRef));
+};
+
+/**
+ * Returns the crossings to be nested under given track.
+ */
+function getRailCrossings(raideId, ratanumero, alku, loppu, elementit) {
+    
+    const switches = getRailSwitches(raideId, ratanumero, alku, loppu, elementit);
+    
+    return _.filter(switches, (e) =>
+        !!e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
+}
+
 module.exports = {
-   isRailElement, isOnRail, isOverlapping, isSpeedChangeOnRail, isMilepostOnRail, isReferredSwitch, getSpeedLimits
+   isRailElement,
+   isOnRail,
+   isOverlapping,
+   isSpeedChangeOnRail,
+   isMilepostOnRail,
+   isReferredSwitch,
+   getSpeedLimits,
+   getRailSwitches,
+   getRailCrossings
 };

@@ -33,6 +33,8 @@ module.exports = {
             $('trackElements').append(`<platformEdges>${platform}</platformEdges>`);
         }
 
+        // TODO append gradientChanges when provided by the API
+
         return $('trackElements').children().length > 0 ? $.xml() : '';
     }
 }

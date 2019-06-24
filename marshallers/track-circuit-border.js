@@ -3,20 +3,21 @@ const config = require('../config');
 const elementUtils = require('../utils/element-utils');
 const positionUtils = require('../utils/position-utils');
 
+// https://wiki.railml.org/index.php?title=IS:trackCircuitBorder
+
 module.exports = {
     marshall: (trackId, raideAlku, kilometrit, element) => {
         
-        const dir = element.baliisi.suunta == 'nouseva' ? 'up' : 'down';
         const sijainti = elementUtils.getPosition(trackId, element);
         const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
         const absPos = positionUtils.getAbsolutePosition(sijainti);
 
-        const $ = cheerio.load('<balise/>', config.cheerio);
-        $('balise').attr('id', element.tunniste);
-        $('balise').attr('name', element.nimi);
-        $('balise').attr('pos', pos);
-        $('balise').attr('absPos', absPos);
-        $('balise').attr('dir', dir);
+        const $ = cheerio.load('<trackCircuitBorder/>', config.cheerio);
+        $('trackCircuitBorder').attr('id', element.tunniste);
+        $('trackCircuitBorder').attr('name', element.nimi);
+        $('trackCircuitBorder').attr('pos', pos);
+        $('trackCircuitBorder').attr('absPos', absPos);
+        $('trackCircuitBorder').attr('ocpStationRef', element.liikennepaikka);
 
         return $.xml();        
     }

@@ -19,12 +19,6 @@ function getConnectingElement(type, position, elements) {
     const puskin = _.find(elements.puskin, (p) => !!_.find(p.ratakmsijainnit, criteria));
     const element = vaihde || puskin;
 
-    if (element) {
-        console.info(`- ${type} element ${element.tunniste} (${element.tyyppi})`)
-    } else {
-        console.info(`- ${type} element not found`)
-    }
-
     return element;
 }
 
@@ -55,15 +49,14 @@ function getReference(railId, type, element) {
     // Straight is primary, left/right for side-tracks. BC/CB for non-continuous line of crossings.
     const yhteys = etuTaka || takaEtu || etuVasen || vasenEtu || etuOikea || oikeaEtu || bc || cb;
 
-    if (!yhteys) return '';
-
-    console.log(`- ${type} conn: ${yhteys.mistaRooli} ${yhteys.mista} --> ${yhteys.minneRooli} ${yhteys.minne}`);
+    if (!yhteys) {
+        console.error(`- ERROR: failed to resolve connections of switch ${element.tunniste}`);
+        return '';
+    }
 
     if (yhteys.mista === yhteys.minne) {
         
-        // Infra-API special case where a switch is not located at the rail end,
-        // i.e. both "mista" and "minne" refer to a single rail.
-        console.warn(`- WARN: ${type} switch ${element.tunniste} references rail ${yhteys.mista} both in and out.`);
+        // The switch is located somewhere between rail ends, no reference.
         return '';
 
     } else if (yhteys.mistaRooli === 'vasen' || yhteys.mistaRooli === 'oikea') {
@@ -97,7 +90,7 @@ function getReference(railId, type, element) {
         return `tec_${yhteys.mista}`;
     }
 
-    console.warn(`- failed to determine ${type} connection ref for track ${railId}!`);
+    console.error(`- ERROR: failed to determine ${type} connection ref for track ${railId}!`);
 
     return '';
 }

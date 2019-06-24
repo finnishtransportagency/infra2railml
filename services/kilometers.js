@@ -1,6 +1,6 @@
 const _ = require('lodash');
-const axios = require('axios');
 const c = require('../config.js');
+const http = require('./http-client');
 
 /**
  * Find track kilometer by id.
@@ -14,7 +14,7 @@ function findById(id) {
         transformResponse: (data) => _.first(JSON.parse(data))
     };
 
-    return axios.get(url, options)
+    return http.get(url, options)
         .then((res) => {
             console.log(`${res.status}: ${url}`);
             return res.data;

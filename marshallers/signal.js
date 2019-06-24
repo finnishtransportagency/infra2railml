@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 const elementUtils = require('../utils/element-utils');
@@ -62,7 +61,7 @@ module.exports = {
         const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
         const absPos = positionUtils.getAbsolutePosition(sijainti);
 
-        // Notice: home/exit signal typing not provided by the API, end-user should fix all home signals!
+        // NOTE: signal function not provided in the API, home signals must be fixed manually.
         const func = element.liikennepaikka === null ? SignalFunction.BLOCKING : SignalFunction.EXIT;
 
         // TODO element.opastin.puoli (vasen/oikea): corresponding railML term?
@@ -76,6 +75,7 @@ module.exports = {
         $('signal').attr('dir', dir);
         $('signal').attr('virtual', 'false');
         $('signal').attr('function', func);
+        $('signal').attr('ocpStationRef', element.liikennepaikka);
 
         return $.xml();        
     }

@@ -1,7 +1,6 @@
 const _ = require('lodash');
-const axios = require('axios');
 const c = require('../config.js');
-const rails = require('./rails');
+const http = require('./http-client');
 
 /**
  * Find track element by ID.
@@ -15,7 +14,7 @@ function findById(id) {
         transformResponse: (data) => _.first(JSON.parse(data))
     };
 
-    return axios.get(url, options)
+    return http.get(url, options)
         .then((res) => {
             console.info(`${res.status}: ${url}`);
             return res.data;

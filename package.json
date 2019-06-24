@@ -4,7 +4,7 @@
   "description": "rata.digitraffic.fi/infra-api transformation to railML v2.2.",
   "main": "index.js",
   "bin": {
-    "infra2railml": "bin/infra2railml"
+    "infra2railml": "cross-env LOGGER_LEVEL=info bin/infra2railml"
   },
   "scripts": {
     "test": "test"
@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/finnishtransportagency/infra2railml#readme",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
+    "axios-extensions": "^3.0.6",
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.19.0",
     "lodash": "^4.17.11"

@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 const elementUtils = require('../utils/element-utils');
@@ -18,8 +17,6 @@ const CROSSING_TYPES = {
 module.exports = {
     marshall: (trackId, raideAlku, kilometrit, element) => {
 
-        console.log("\n\n CROSSING!", element.tunniste, '\n\n')
-
         const type = CROSSING_TYPES[element.vaihde.tyyppi];
         const sijainti = elementUtils.getPosition(trackId, element);
         const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
@@ -32,6 +29,7 @@ module.exports = {
         $('crossing').attr('type', type);
         $('crossing').attr('pos', pos);
         $('crossing').attr('absPos', absPos);
+        $('crossing').attr('ocpStationRef', element.liikennepaikka);
         $('crossing').append(connections);
 
         return $.xml();
@@ -47,7 +45,7 @@ function getConnections(element) {
 
     const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
     if (nousevat.length === 0) {
-        console.error(`ERROR: crossing ${element.tunniste} has no connections!`);
+        console.error(`- ERROR: crossing ${element.tunniste} has no connections!`);
         return [];
     }
 
@@ -56,7 +54,7 @@ function getConnections(element) {
     const yhteys = bc || cb;
 
     if (_.isEmpty(yhteys)) {
-        console.error(`ERROR: unable to resolve connections of crossing ${element.tunniste}`);
+        console.error(`- ERROR: unable to resolve connections of crossing ${element.tunniste}`);
         return [];
     }
 

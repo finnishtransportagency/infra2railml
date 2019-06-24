@@ -15,6 +15,9 @@ module.exports = {
         const pos = positionUtils.getPosition(alku, sijainti, kilometrit);
         const absPos = positionUtils.getAbsolutePosition(sijainti);
 
+        // TODO in practice, can there be more than one?
+        const ocpRef = _.first(kilometri.liikennepaikat);
+
         const $ = cheerio.load('<signal/>', config.cheerio);
         $('signal').attr('id', id);
         $('signal').attr('type', 'other:kmpaalu');
@@ -23,6 +26,7 @@ module.exports = {
         $('signal').attr('absPos', absPos);
         $('signal').attr('dir', 'up');
         $('signal').attr('virtual', 'true');
+        $('switch').attr('ocpStationRef', ocpRef);
         $('signal').append(`<milepost shownValue="${kilometri.ratakm}" switchable="false" />`)
 
         // TODO should have reference to mileageChange?

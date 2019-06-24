@@ -20,13 +20,13 @@ function getAbsolutePosition(sijainti) {
  * with varying lengths.
  * 
  * For example, given with positions in format "milepost + distance in meters",
- * 
+ * ```
  *  M1         M2         M3          M4     (mileposts, i.e. track kilometers)
  *  |  1000    |   925    |   1000    |      (actual length between mileposts)
  * 
  *       A------------------P------B         (position P on rail A-B) 
  *     1+500              3+100  3+500
- * 
+ * ```
  * For P, pos = sum(M1.length, M2.length, M3.length) - A.distance + P.distance
  * 
  * With above values, pos = (1000 + 925 + 1000) - 500 + 100 = 2525,

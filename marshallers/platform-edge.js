@@ -14,6 +14,11 @@ module.exports = {
         const { tunniste, nimi, virallinenRatakmsijainti, muutRatakmsijainnit } = liikennepaikka;
         const sijainti = virallinenRatakmsijainti || _.first(muutRatakmsijainnit);
 
+        if (!sijainti) {
+            console.error(`ERROR: station ${tunniste} has no position (${tunnus})`);
+            return undefined;
+        }
+
         const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
         const absPos = positionUtils.getAbsolutePosition(sijainti);
 

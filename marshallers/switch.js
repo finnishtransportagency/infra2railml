@@ -78,8 +78,8 @@ function getConnections(element) {
     const { vaihde } = element;
 
     const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
-    if (nousevat.length === 0) {
-        console.error(`ERROR: switch ${element.tunniste} has no connections!`);
+    if (_.isEmpty(nousevat)) {
+        console.error(`ERROR: switch ${element.tunniste} has no connections.`);
         return [];
     }
 
@@ -90,7 +90,7 @@ function getConnections(element) {
     const parting = etuVasen || etuOikea || vasenEtu || oikeaEtu;
 
     if (_.isEmpty(parting)) {
-        console.error(`ERROR: unable to resolve connections on switch ${element.tunniste}`);
+        console.error(`ERROR: switch ${element.tunniste} has unexpected or missing connections.`);
         return [];
     }
 

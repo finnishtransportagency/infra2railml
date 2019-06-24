@@ -44,7 +44,7 @@ function marshallTrack(raide, memo) {
     const unmarshalledElements = _.reject(elements, (e) => marshalled.includes(e.tunniste));
     const unmarshalledGroups = _.groupBy(unmarshalledElements, 'tyyppi');
     const vaihteet = railUtils.getRailSwitches(raideId, ratanumero, alku, loppu, unmarshalledGroups);
-    const risteykset = railUtils.getRailCrossings(raideId, ratanumero, alku, loppu, vaihteet);
+    const risteykset = railUtils.getRailCrossings(raideId, ratanumero, alku, loppu, unmarshalledGroups);
     
     const switches = _.map(vaihteet, (v) => _switch.marshall(ratanumero, alku, kilometrit, v));
     const crossings = _.map(risteykset, (r) => crossing.marshall(ratanumero, alku, kilometrit, r));

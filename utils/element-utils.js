@@ -71,12 +71,12 @@ function getReference(railId, type, element) {
 
     } else if (yhteys.mista === railId && (yhteys.mistaRooli === 'b' || yhteys.mistaRooli === 'c')) {
 
-        // incoming connection from crossing
+        // incoming connection to crossing
         return `crci_${element.tunniste}`;
 
     } else if (yhteys.minne === railId && (yhteys.minneRooli === 'b' || yhteys.minneRooli === 'c')) {
 
-        // outgoing connection to crossing
+        // outgoing connection from crossing
         return `crco_${element.tunniste}`
 
     } else if (yhteys.mista === railId) {

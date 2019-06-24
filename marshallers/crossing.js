@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
 const elementUtils = require('../utils/element-utils');
@@ -44,8 +45,9 @@ function getConnections(element) {
     const { vaihde } = element;
 
     const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
-    if (nousevat.length === 0) {
-        console.error(`- ERROR: crossing ${element.tunniste} has no connections!`);
+    
+    if (_.isEmpty(nousevat)) {
+        console.error(`ERROR: crossing ${element.tunniste} has no connections.`);
         return [];
     }
 
@@ -54,7 +56,7 @@ function getConnections(element) {
     const yhteys = bc || cb;
 
     if (_.isEmpty(yhteys)) {
-        console.error(`- ERROR: unable to resolve connections of crossing ${element.tunniste}`);
+        console.error(`ERROR: crossing ${element.tunniste} has unexpected or missing connections.`);
         return [];
     }
 

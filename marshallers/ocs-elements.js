@@ -26,17 +26,17 @@ module.exports = {
             $('ocsElements').append(`<signals>${_.join(signalsAndPosts, '')}</signals>`);
         }
 
-        const balises = _.map(elementit.baliisi, (b) => balise.marshall(ratanumero, alku, kilometrit, b));
-        if (!_.isEmpty(balises)) {
-            $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
-        }
-
         const trainDetectors = _.map(elementit.akselinlaskija, (al) => trainDetector.marshall(ratanumero, alku, kilometrit, al));
         const trackCircuitBorders = _.map(elementit.raideeristys, (re) => trackCircuitBorder.marshall(ratanumero, alku, kilometrit, re));
         if (!_.isEmpty(trainDetectors) || !_.isEmpty(trackCircuitBorders)) {
             $('ocsElements').append('<trainDetectionElements/>');
             $('ocsElements > trainDetectionElements').append(trainDetectors);
             $('ocsElements > trainDetectionElements').append(trackCircuitBorders);    
+        }
+
+        const balises = _.map(elementit.baliisi, (b) => balise.marshall(ratanumero, alku, kilometrit, b));
+        if (!_.isEmpty(balises)) {
+            $('ocsElements').append(`<balises>${_.join(balises, '')}</balises>`);
         }
 
         const stops = stopPost.marshall(raideId, alku, kilometrit, raide.liikennepaikanRaide);

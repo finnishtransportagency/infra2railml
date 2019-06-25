@@ -16,7 +16,7 @@ module.exports = {
         $('trackBegin').attr('absPos', absPos);
 
         // find the beginning element of rail, typically a switch or buffer stop
-        const alkuElementti = elementUtils.getConnectingElement('begin', alku, elementit);
+        const alkuElementti = elementUtils.getConnectingElement(alku, elementit);
         const ref = elementUtils.getReference(raideId, 'begin', alkuElementti);
 
         if (alkuElementti && ref && alkuElementti.tyyppi === 'vaihde') {

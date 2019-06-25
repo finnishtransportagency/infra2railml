@@ -10,9 +10,9 @@ function getPosition(ratanumero, element) {
 }
 
 /**
- * Resolve the track begin/end element (graph node), e.g. switch or stop buffer.
+ * Resolve the track begin/end element by given position, e.g. switch or buffer stop.
  */
-function getConnectingElement(type, position, elements) {
+function getConnectingElement(position, elements) {
 
     const criteria = { ratakm: position.ratakm, etaisyys: position.etaisyys };
     const vaihde = _.find(elements.vaihde, (v) => !!_.find(v.ratakmsijainnit, criteria));

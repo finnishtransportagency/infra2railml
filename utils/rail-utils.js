@@ -57,8 +57,12 @@ function isMilepostOnRail(ratanumero, alku, loppu, km) {
  * Tells if the given switch is referred by the track begin or end.
  */
 function isReferredSwitch(vaihde, beginRef, endRef) {
-    const switchRef = `swc_${vaihde.tunniste}`;
-    return beginRef === switchRef || endRef === switchRef;
+    const possibleRefs = [
+        `swc_${vaihde.tunniste}`,
+        `crci_${vaihde.tunniste}`,
+        `crco_${vaihde.tunniste}`
+    ];
+    return possibleRefs.includes(beginRef) || possibleRefs.includes(endRef);
 }
 
 /**
@@ -73,10 +77,10 @@ function getSpeedLimits(raide, ratanumero, alku, loppu) {
  */
 function getRailSwitches(raideId, ratanumero, alku, loppu, elementit) {
 
-    const beginElement = elementUtils.getConnectingElement('begin', alku, elementit);
+    const beginElement = elementUtils.getConnectingElement(alku, elementit);
     const beginRef = elementUtils.getReference(raideId, 'begin', beginElement);
 
-    const endElement = elementUtils.getConnectingElement('end', loppu, elementit);
+    const endElement = elementUtils.getConnectingElement(loppu, elementit);
     const endRef = elementUtils.getReference(raideId, 'end', endElement);
 
     return _.filter(elementit.vaihde, (v) =>

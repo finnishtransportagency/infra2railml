@@ -52,8 +52,7 @@ function marshallTrack(raide, memo) {
 
     if (!_.isEmpty(switchesAndCrossings)) {
         $('trackTopology').append('<connections/>');
-        $('trackTopology > connections').append(switches);
-        $('trackTopology > connections').append(crossings);
+        $('trackTopology > connections').append(switchesAndCrossings);
     }
 
     memo.marshalled = _.concat(memo.marshalled, _.map(_.concat(vaihteet, risteykset), 'tunniste'));

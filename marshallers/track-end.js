@@ -17,7 +17,7 @@ module.exports = {
         $('trackEnd').attr('absPos', absPos);
 
         // find the end element of rail, typically a switch or buffer stop
-        const loppuElementti = elementUtils.getConnectingElement('end', loppu, elementit);
+        const loppuElementti = elementUtils.getConnectingElement(loppu, elementit);
         const ref = elementUtils.getReference(raideId, 'end', loppuElementti);
     
         if (loppuElementti && ref && loppuElementti.tyyppi === 'vaihde') {

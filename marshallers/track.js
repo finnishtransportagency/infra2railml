@@ -38,6 +38,14 @@ function marshallTrack(raide, memo) {
     $('track > trackTopology').append(trackBegin.marshall(raideId, alku, elementsByType));
     $('track > trackTopology').append(trackEnd.marshall(raideId, alku, loppu, kilometrit, elementsByType));
     
+    // mileage changes, i.e. absPos corrections due to track kilometers not always being exactly 1000 meters
+    const onRailMileposts = _.filter(kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));    
+    const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(raideId, alku, kilometrit, k)), _.isEmpty);
+    if (!_.isEmpty(mileageChanges)) {
+        $('track > trackTopology').append('<mileageChanges/>');
+        $('track > trackTopology > mileageChanges').append(mileageChanges);
+    }
+
     // Find topology related elements for marshalling; each switch/crossing is marshalled only once and
     // must be nested under a main track (straight direction). Otherwise the connection between main and
     // side tracks is unresolvable because switches only refer the side tracks (parting direction).
@@ -63,16 +71,6 @@ function marshallTrack(raide, memo) {
     // as children of a certain rail, thus no need to keep track on marshalling.
     const onRailElements = _.filter(elements, (e) => railUtils.isOnRail(e, ratanumero, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
-    const onRailMileposts = _.filter(kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));
-    
-    // mileage changes, i.e. absPos corrections due to track kilometers not always being exactly 1000 meters
-    // TODO preceeding kilometer has to be included!
-    const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(raideId, alku, kilometrit, k)), _.isEmpty);
-    
-    if (!_.isEmpty(mileageChanges)) {
-        $('trackTopology').append('<mileageChanges/>');
-        $('trackTopology > mileageChanges').append(mileageChanges);
-    }
     
     $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));

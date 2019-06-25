@@ -10,7 +10,7 @@ function list() {
     const url = `${c.infraApi.baseUrl}/rautatieliikennepaikat.json`;
 
     const options = {
-        params: { srsName: 'crs:84' }
+        params: { srsName: 'crs:84', presentation: 'diagram' }
     };
 
     return http.get(url, options)

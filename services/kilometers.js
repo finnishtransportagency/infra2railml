@@ -10,7 +10,7 @@ function findById(id) {
     const url = `${c.infraApi.baseUrl}/kilometrimerkit/${id}.json`;
     
     const options = {
-        params: { srsName: 'crs:84' },
+        params: { srsName: 'crs:84', presentation: 'diagram' },
         transformResponse: (data) => _.first(JSON.parse(data))
     };
 

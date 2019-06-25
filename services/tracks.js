@@ -13,7 +13,7 @@ function fetchKilometer(trackId, km) {
     const url = `${c.infraApi.baseUrl}/radat/${trackId}/${km}.json`;
 
     const options = {
-        params: { srsName: 'crs:84' },
+        params: { srsName: 'crs:84', presentation: 'diagram' },
         transformResponse: (body) => _.first(JSON.parse(body))
     };
 

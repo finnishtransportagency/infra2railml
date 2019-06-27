@@ -16,7 +16,7 @@ function list() {
     return http.get(url, options)
         .then((res) => {
             console.info(`${res.status}: ${url}`);
-            return _.flatMap(res.data, (v, k) => v);
+            return _.sortBy(_.flatMap(res.data, (v, k) => v), 'nimi');
         })
         .catch((err) => {
             console.error(`${err.message}: ${url}`);

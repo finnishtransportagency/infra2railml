@@ -23,6 +23,12 @@ const OperationalType = {
     OTHER: (val) => `other:${val}`
 };
 
+const OPERATIONAL_TYPES = {
+    'liikennepaikka': OperationalType.STATION,
+    'linjavaihde': OperationalType.JUNCTION,
+    'seisake': OperationalType.STOPPING_POINT
+};
+
 module.exports = {
     marshall: (liikennepaikka) => {
 
@@ -30,8 +36,7 @@ module.exports = {
             return undefined;
         }
 
-         // TODO Other types available in API?
-        const opType = OperationalType.STATION; 
+        const opType = OPERATIONAL_TYPES[liikennepaikka.tyyppi] || OperationalType.STATION; 
         
         const $ = cheerio.load('<ocp/>', config.cheerio);
         $('ocp').attr('id', liikennepaikka.tunniste);

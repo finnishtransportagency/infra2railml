@@ -4,6 +4,9 @@ const config = require('../config');
 const speeds = require('./speeds');
 const operationControlPoint = require('./operation-control-point');
 
+// Notice: the order of child elements is significant.
+// https://wiki.railml.org/index.php?title=Infrastructure
+
 module.exports = {
     marshall: (baseType, model) => {
 

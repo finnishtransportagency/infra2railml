@@ -6,6 +6,7 @@ const speedChange = require('./speed-change');
 const electrificationChange = require('./electrification-change');
 const platformEdge = require('./platform-edge');
 
+// Notice: the order of child elements is significant.
 // https://wiki.railml.org/index.php?title=IS:trackElements
 
 module.exports = {

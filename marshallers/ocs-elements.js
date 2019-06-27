@@ -9,6 +9,7 @@ const trackCircuitBorder = require('./track-circuit-border');
 const stopPost = require('./stop-post');
 const railUtils = require('../utils/rail-utils');
 
+// Notice: the order of child elements is significant.
 // https://wiki.railml.org/index.php?title=IS:ocsElements
 
 module.exports = {

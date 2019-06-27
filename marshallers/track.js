@@ -11,6 +11,9 @@ const trackElements = require('./track-elements');
 const ocsElements = require('./ocs-elements');
 const railUtils = require('../utils/rail-utils');
 
+// Notice: the order of child elements is significant.
+// https://wiki.railml.org/index.php?title=IS:track
+
 /**
  * Rail/track marshaller function.
  */

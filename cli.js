@@ -35,7 +35,7 @@ function rails(trackNumber, args) {
       .then((kms) => app.createIndex(trackNumber, kms))
       .then(app.railsToRailML)
       .then((railml) => app.writeToFile(filename, railml))
-      .then(() => console.info(`Done! (${new Date().getTime() - start} ms)`))
+      .then(() => console.info(`\r\x1b[KDone! (${new Date().getTime() - start} ms)`))
       .catch((err) => console.error(err));
   }
 }
@@ -49,6 +49,6 @@ function stations(args) {
   app.getStations()
     .then((liikennepaikat) => app.stationsToRailML({ liikennepaikat }))
     .then((railml) => app.writeToFile(filename, railml))
-    .then(() => console.info(`Done! (${new Date().getTime() - start} ms)`))
+    .then(() => console.info(`\r\x1b[KDone! (${new Date().getTime() - start} ms)`))
     .catch((err) => console.error(err));
 }

@@ -25,7 +25,7 @@ module.exports = {
    * Convert rails to railML infrastructure.
    */
   railsToRailML: (index) => {
-    console.info('Generating infrastructure railML..');
+    console.info('\r\x1b[KGenerating infrastructure railML..');
     return railml.marshall(BaseType.RAILS, index);
   },
 
@@ -33,7 +33,7 @@ module.exports = {
    * Convert stations to railML operation control points.
    */
   stationsToRailML: (index) => {
-    console.log('Generating stations railML..');
+    console.log('\r\x1b[KGenerating stations railML..');
     return railml.marshall(BaseType.STATIONS, index);
   },
 
@@ -87,7 +87,7 @@ module.exports = {
       }, {});
 
       // load extra kilometers and compose the index object
-      console.info(`\nLoading additional track kilometers.. ${JSON.stringify(nonLoadedKms)}`);
+      console.info(`\r\x1b[KLoading additional track kilometers.. ${JSON.stringify(nonLoadedKms)}`);
 
       Promise.all(_.flatMap(nonLoadedKms, (kms, ratanumero) =>
           _.flatMap(kms, (km) => trackService.getKilometer(ratanumero, km))
@@ -105,7 +105,7 @@ module.exports = {
    * Write given contents in specified file.
    */
   writeToFile: (filename, data) => {
-    console.log(`\nWriting ${filename} ..`);
+    console.log(`\r\x1b[KWriting ${filename} ..`);
     fs.writeFile(filename, data, 'utf8', (err) => {
       if (err) throw err;
     });

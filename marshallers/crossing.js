@@ -47,7 +47,7 @@ function getConnections(element) {
     const nousevat = _.filter(vaihde.raideyhteydet, (y) => y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva');
     
     if (_.isEmpty(nousevat)) {
-        console.error(`ERROR: crossing ${element.tunniste} has no connections.`);
+        console.error(`Error: crossing ${element.tunniste} has no connections.`);
         return [];
     }
 
@@ -56,7 +56,7 @@ function getConnections(element) {
     const yhteys = bc || cb;
 
     if (_.isEmpty(yhteys)) {
-        console.error(`ERROR: crossing ${element.tunniste} has unexpected or missing connections.`);
+        console.error(`Error: crossing ${element.tunniste} has unexpected or missing connections.`);
         return [];
     }
 

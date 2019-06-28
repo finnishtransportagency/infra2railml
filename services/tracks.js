@@ -15,13 +15,16 @@ function fetchKilometer(trackId, km) {
 
     const options = {
         params: { srsName: 'crs:84', presentation: 'diagram' },
-        transformResponse: (body) => _.first(JSON.parse(body))
     };
 
     return http.get(url, options)
       .then((res) => {
-          console.info(`${res.status}: ${url}`);
-          return res.data;
+        process.stdout.write(`\r\x1b[K${res.status}: ${url}`);
+        return _.first(res.data);
+      })
+      .catch((err) => {
+        console.error(`\r\x1b[K${err}: ${url}`);
+        throw err;
       });
 }
 
@@ -73,7 +76,7 @@ function getKilometer(trackId, km) {
           });
         })
       .catch((err) => {
-          console.error(`${err.message}`);
+          // console.error(`\r\x1b[K${err.message}`);
           return {};
       });
 }

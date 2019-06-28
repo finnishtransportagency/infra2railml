@@ -50,7 +50,7 @@ function getReference(railId, type, element) {
     const yhteys = etuTaka || takaEtu || etuVasen || vasenEtu || etuOikea || oikeaEtu || bc || cb;
 
     if (!yhteys) {
-        console.error(`ERROR: failed to resolve connections of switch ${element.tunniste}`);
+        console.error(`Error: failed to resolve connections of switch ${element.tunniste}`);
         return '';
     }
 
@@ -90,7 +90,7 @@ function getReference(railId, type, element) {
         return `tec_${yhteys.mista}`;
     }
 
-    console.error(`ERROR: failed to determine ${type} connection ref for track ${railId}!`);
+    console.error(`Error: failed to determine ${type} connection ref for track ${railId}!`);
 
     return '';
 }

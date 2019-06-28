@@ -24,7 +24,7 @@ function marshallTrack(raide, memo) {
     const ratakmvali = _.find(raide.ratakmvalit, { ratanumero: index.trackId }) || _.first(raide.ratakmvalit);
     const { ratanumero, alku, loppu } = ratakmvali;
 
-    console.log(`Generating track ${raideId} (${ratakmvali.ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
+    console.info(`Generating track ${raideId} (${ratakmvali.ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys})`);
 
     const trackName = `Raide ${ratanumero} ${alku.ratakm}+${alku.etaisyys} - ${loppu.ratakm}+${loppu.etaisyys}`;
     const $ = cheerio.load('<track><trackTopology/></track>', config.cheerio);

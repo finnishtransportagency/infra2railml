@@ -15,11 +15,11 @@ function list() {
 
     return http.get(url, options)
         .then((res) => {
-            console.info(`${res.status}: ${url}`);
+            process.stdout.write(`\x1b[0G${res.status}: ${url}\x1b[K`);
             return _.sortBy(_.flatMap(res.data, (v, k) => v), 'nimi');
         })
         .catch((err) => {
-            console.error(`${err.message}: ${url}`);
+            console.error(`\r\x1b[K${err.message}: ${url}`);
             return {};
         });
 }
@@ -37,11 +37,11 @@ function findById(id) {
 
     return http.get(url, options)
         .then((res) => {
-            console.info(`${res.status}: ${url}`);
+            process.stdout.write(`\r\x1b[K${res.status}: ${url}`);
             return _.first(res.data);
         })
         .catch((err) => {
-            console.error(`${err.message}: ${url}`);
+            console.error(`\r\x1b[K${err.message}: ${url}`);
             return {};
         });
 }

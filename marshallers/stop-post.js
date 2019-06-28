@@ -25,7 +25,7 @@ const getStopPost = (raideId, raideAlku, kilometrit, liikennepaikanRaide, dir) =
     const sijainti = virallinenRatakmsijainti || _.first(muutRatakmsijainnit);
 
     if (!sijainti) {
-        console.error(`ERROR: station ${tunniste} has no position (${tunnus})`);
+        console.error(`Error: station ${tunniste} has no position (${tunnus})`);
         return undefined;
     }
 

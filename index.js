@@ -86,9 +86,13 @@ module.exports = {
         return res;
       }, {});
 
-      // load extra kilometers and compose the index object
-      console.info(`\r\x1b[KLoading additional track kilometers.. ${JSON.stringify(nonLoadedKms)}`);
+      const kmInfo = _.transform(nonLoadedKms, (res, v, k) => {
+        if (v.length > 0) res.push(`${k} [${v.join(', ')}]`);
+        return res;
+      }, []).join(', ');
+      console.info(`\r\x1b[KLoading additional kilometers; ${kmInfo}`);
 
+      // load extra kilometers and compose the index object
       Promise.all(_.flatMap(nonLoadedKms, (kms, ratanumero) =>
           _.flatMap(kms, (km) => trackService.getKilometer(ratanumero, km))
         ))

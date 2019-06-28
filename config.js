@@ -12,6 +12,7 @@ module.exports = {
     http: {
         throttle: {
             threshold: 15 * 60 * 1000
-        }
+        },
+        concurrency: 10
     }
 };

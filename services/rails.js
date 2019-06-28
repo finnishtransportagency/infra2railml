@@ -1,11 +1,12 @@
 const _ = require('lodash');
-const c = require('../config');
+const config = require('../config');
 const http = require('./http-client');
 const stations = require('./stations');
+const Promise = require('bluebird');
 
 function findById(id) {
     
-    const url = `${c.infraApi.baseUrl}/raiteet/${id}.json`;
+    const url = `${config.infraApi.baseUrl}/raiteet/${id}.json`;
 
     const options = {
         params: { srsName: 'crs:84', presentation: 'diagram' },
@@ -39,7 +40,8 @@ function findById(id) {
 }
 
 function findAllById(ids) {
-    return Promise.all(_.map(ids, findById));
+    const opts = { concurrency: config.http.concurrency }
+    return Promise.map(ids, findById, opts);
 }
 
 module.exports = {

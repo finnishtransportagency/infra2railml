@@ -1,16 +1,17 @@
 const _ = require('lodash');
-const c = require('../config.js');
+const config = require('../config.js');
 const kilometers = require('./kilometers');
 const elements = require('./elements');
 const rails = require('./rails');
 const http = require('./http-client');
+const Promise = require('bluebird');
 
 /**
  * Fetch plain track kilometer object.
  */
 function fetchKilometer(trackId, km) {
     
-    const url = `${c.infraApi.baseUrl}/radat/${trackId}/${km}.json`;
+    const url = `${config.infraApi.baseUrl}/radat/${trackId}/${km}.json`;
 
     const options = {
         params: { srsName: 'crs:84', presentation: 'diagram' },
@@ -35,11 +36,11 @@ function getKilometers(trackNumber, from, length) {
 
     console.info(`Loading track ${trackNumber} [${from}..${from+length-1} km] ..`);
 
-    return Promise.all(
-        _.times(length, (i) => getKilometer(trackNumber, from + i))
-    ).then((kilometers) =>
-        _.reject(kilometers, _.isEmpty)
-    );
+    const n = _.times(length, (i) => i);
+    const opts = { concurrency: config.http.concurrency };
+
+    return Promise.map(n, (i) => getKilometer(trackNumber, from + i), opts)
+        .then((kilometers) => _.reject(kilometers, _.isEmpty));
 }
 
 /**
@@ -56,14 +57,15 @@ function getKilometer(trackId, km) {
             });
       })
       .then((kilometer) => {
-        return Promise.all(_.map(kilometer.elementit, elements.findById))
+        const opts = { concurrency: config.http.concurrency };
+        return Promise.map(kilometer.elementit, elements.findById, opts)
           .then((elements) => {
-              return Promise.all(_.map(elements, (e) => {
-                return rails.findAllById(e.raiteet).then((rails) => {
-                    e.raiteet = rails;
-                    return e;
-                  })
-              }));
+              return Promise.map(elements, (element) => {
+                return rails.findAllById(element.raiteet).then((rails) => {
+                    element.raiteet = rails;
+                    return element;
+                  });
+              });
           })
           .then((elements) => {
               kilometer.elementit = elements;

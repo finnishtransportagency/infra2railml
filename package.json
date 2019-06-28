@@ -22,6 +22,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "axios-extensions": "^3.0.6",
+    "bluebird": "^3.5.5",
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.19.0",
     "lodash": "^4.17.11"

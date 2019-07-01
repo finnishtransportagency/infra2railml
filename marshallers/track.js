@@ -81,15 +81,7 @@ function marshallTrack(raide, memo) {
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
     // Keep track of all the elements that should be visualized in RailML
-    // Visualize switches, crossings and "normal" elements.
-    var elementsToVisualize = [];
-    elementsToVisualize = elementsToVisualize.concat(
-        onRailElements,
-        vaihteet,
-        risteykset
-    );
-
-    const trackData = getTracksVisualizationData(raide, raideId, elementsToVisualize);
+    const trackData = getTracksVisualizationData(raide, raideId, elements);
     memo.visualElements.push(trackData);
 
     return {

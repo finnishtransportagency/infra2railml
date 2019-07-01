@@ -10,6 +10,8 @@ const mileageChange = require('./mileage-change');
 const trackElements = require('./track-elements');
 const ocsElements = require('./ocs-elements');
 const railUtils = require('../utils/rail-utils');
+const visualizationUtils = require('../utils/visualization-utils');
+const positionUtils = require('../utils/position-utils');
 
 // Notice: the order of child elements is significant.
 // https://wiki.railml.org/index.php?title=IS:track
@@ -78,10 +80,56 @@ function marshallTrack(raide, memo) {
     $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
+    // Keep track of all the elements that should be visualized in RailML
+    // Visualize switches, crossings and "normal" elements.
+    var elementsToVisualize = [];
+    elementsToVisualize = elementsToVisualize.concat(
+        onRailElements,
+        vaihteet,
+        risteykset
+    );
+
+    const trackData = getTracksVisualizationData(raide, raideId, elementsToVisualize);
+    memo.visualElements.push(trackData);
+
     return {
         element: $.xml(),
         trackRef: trackRef.marshall(raide)
     };
+}
+
+
+/**
+ * Assemble tracks visualization information
+ */
+function getTracksVisualizationData(trackData, trackID, elements) {
+
+    // Sort elements according to their position on track
+    elements = _.sortBy(
+        elements,
+        function(element) {
+            return positionUtils.getAbsolutePosition(element.ratakmsijainnit[0]);
+        });
+
+    // Only add necessary information
+    const elementsVisualData = _.map(elements,
+        function(element) {
+            const elementId = element.tunniste || element.kilometrimerkki.tunniste;
+            const elementRefId = element.ratakm || elementId;
+            const coordinates = visualizationUtils.getElementCoordinates(element);
+            return {
+                "id" : elementRefId,
+                "coordinates" : coordinates.start
+            }
+        }
+    );
+
+    return  {
+        "id" : trackID,
+        "coordinates" : visualizationUtils.getElementCoordinates(trackData),
+        "elements" : elementsVisualData
+    }
+
 }
 
 /**

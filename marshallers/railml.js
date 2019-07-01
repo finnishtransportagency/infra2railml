@@ -5,6 +5,7 @@ const config = require('../config');
 const infrastructure = require('./infrastructure');
 const infrastructureVis = require('./infrastructure-vis');
 const station = require('./station');
+const visualizationUtils = require('../utils/visualization-utils');
 
 const XML_NAMESPACES = {
     'version': '2.2', 'xmlns': 'http://www.railml.org/schemas/2013',
@@ -45,7 +46,7 @@ function marshall(baseType, index) {
         }
 
         // TODO move transforming to infrastructure marshaller
-        const memo = { index, tracks: [], speeds: [], trackRefs: [], stations: [], marshalled: [] };
+        const memo = { index, tracks: [], speeds: [], trackRefs: [], stations: [], marshalled: [], visualElements: [] };
         const results = _.transform(objects, transformer, memo);
 
         const $ = cheerio.load(RAILML_STUB, config.cheerio);
@@ -55,7 +56,10 @@ function marshall(baseType, index) {
         $('railml').append(infra);
 
         if (config.railml.visualize === true) {
-            const visuals = infrastructureVis.marshall(baseType, results);
+            // Calculate bounding box for visual elements
+            const boundingBox = visualizationUtils.getAABB(memo.visualElements);
+
+            const visuals = infrastructureVis.marshall(baseType, results, boundingBox);
             $('railml').append(visuals);
         }
 

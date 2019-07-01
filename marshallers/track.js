@@ -119,7 +119,8 @@ function getTracksVisualizationData(trackData, trackID, elements) {
             const coordinates = visualizationUtils.getElementCoordinates(element);
             return {
                 "id" : elementRefId,
-                "coordinates" : coordinates.start
+                "coordinates" : coordinates.start,
+                "type" : element.tyyppi
             }
         }
     );

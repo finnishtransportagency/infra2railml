@@ -61,6 +61,14 @@ function marshall(baseType, index) {
 
             const visuals = infrastructureVis.marshall(baseType, results, boundingBox);
             $('railml').append(visuals);
+
+            if(config.railml.debugVisualization === true) {
+                // Create a debug image
+                const { createCanvas } = require('canvas');
+                const canvas = createCanvas(5000, 5000);
+                const fileNamePrefix = `Rails-${results.index.trackId}_${results.index.from}_${results.index.to}`;
+                visualizationUtils.createHTMLCanvasVisualization(fileNamePrefix, canvas, memo.visualElements, boundingBox);
+            }
         }
 
         resolve($.xml());

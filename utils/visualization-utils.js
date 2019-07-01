@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const canvasUtils = require('../utils/canvas-utils');
 
 /**
  * Calculates the shape of a axis-aligned bounding box
@@ -73,7 +74,7 @@ function getElementCoordinates(element) {
             "x" : element.geometria[0][0][0],
             "y" : element.geometria[0][0][1]
         };
-        const lastElementIndex = element.geometria.length - 1;
+        const lastElementIndex = element.geometria[0].length - 1;
         coordinates.end = {
             "x" : element.geometria[0][lastElementIndex][0],
             "y" : element.geometria[0][lastElementIndex][1]
@@ -104,6 +105,80 @@ function getCanvasPositionForCoordinates(coordinates, geometryBoundingBox, canva
 
 }
 
+/**
+ * Create a HTML write with a canvas visualization of tracks visual
+ * elements.
+ */
+function createHTMLCanvasVisualization(fileNamePrefix, canvas, trackVisualElements, boundingBox) {
+
+    canvasUtils.clearBackground(canvas);
+
+    _.forEach(trackVisualElements, function(trackVisualData) {
+
+        // Track start
+        const trackCanvasStartPosition = getCanvasPositionForCoordinates(
+            trackVisualData.coordinates.start,
+            boundingBox,
+            canvas.width,
+            canvas.height
+        );
+
+        // Track end
+        const trackCanvasEndPosition = getCanvasPositionForCoordinates(
+            trackVisualData.coordinates.end,
+            boundingBox,
+            canvas.width,
+            canvas.height
+        );
+
+        // If track has no elements, draw line from start to end.
+        if(trackVisualData.elements.length === 0) {
+            canvasUtils.drawLine(canvas, trackCanvasStartPosition, trackCanvasEndPosition, "#ff0008");
+            return;
+        }
+
+        // Else, start by drawing a line from track start to first element
+        const canvasFirstElementPosition = getCanvasPositionForCoordinates(
+            trackVisualData.elements[0].coordinates,boundingBox, canvas.width, canvas.height);
+
+        canvasUtils.drawLine(canvas, trackCanvasStartPosition, canvasFirstElementPosition, "#ffe009");
+
+        // Draw connections between elements if there are more than one
+        if(trackVisualData.elements.length > 1) {
+            for(let i = 0; i <= trackVisualData.elements.length - 2; i++) {
+
+                const coordinatesStart = {
+                    "x": trackVisualData.elements[i].coordinates.x,
+                    "y": trackVisualData.elements[i].coordinates.y
+                };
+
+                const coordinatesEnd = {
+                    "x": trackVisualData.elements[i + 1].coordinates.x,
+                    "y": trackVisualData.elements[i + 1].coordinates.y
+                };
+
+                const canvasPositionStart = getCanvasPositionForCoordinates(coordinatesStart,boundingBox, canvas.width, canvas.height);
+                const canvasPositionEnd = getCanvasPositionForCoordinates(coordinatesEnd,boundingBox, canvas.width, canvas.height);
+
+                canvasUtils.writeLabel(canvas, canvasPositionStart, trackVisualData.elements[i].type, "#0011ff");
+                canvasUtils.drawLine(canvas, canvasPositionStart, canvasPositionEnd, "#0011ff");
+                canvasUtils.drawABox(canvas, canvasPositionStart, "#00ffe3");
+            }
+        }
+
+        // Draw a line from the last (or only) track element to the end of track
+        const lastElementPos = {
+            "x" : trackVisualData.elements[trackVisualData.elements.length-1].coordinates.x,
+            "y" : trackVisualData.elements[trackVisualData.elements.length-1].coordinates.y
+        };
+        const lastElementCanvasPos = getCanvasPositionForCoordinates(lastElementPos,boundingBox, canvas.width, canvas.height);
+
+        canvasUtils.drawLine(canvas, lastElementCanvasPos, trackCanvasEndPosition, "#00ff3c");
+    });
+
+    canvasUtils.createDebugImage(canvas, fileNamePrefix);
+}
+
 module.exports = {
-    getAABB, getElementCoordinates, getCanvasPositionForCoordinates
+    getAABB, getElementCoordinates, getCanvasPositionForCoordinates, createHTMLCanvasVisualization
 };

@@ -14,7 +14,7 @@ module.exports = {
         const $ = cheerio.load('<infrastructureVisualizations/>', config.cheerio);
 
         let trackVis = "";
-        _.forEach(model.visualElements, function(trackVisualData) {
+        _.forEach(model.visualElements, (trackVisualData) => {
             trackVis += trackElemVis.marshall(trackVisualData, boundingBox);
         });
 

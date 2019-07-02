@@ -24,7 +24,7 @@ module.exports = {
                             </trackElementVis>`);
 
         // Track elements
-        _.forEach(trackVisualData.elements, function(elementVisualData) {
+        _.forEach(trackVisualData.elements, (elementVisualData)  => {
             const trackElementCanvasPosition = visualizationUtils.getCanvasPositionForCoordinates(
                 elementVisualData.coordinates,
                 boundingBox,

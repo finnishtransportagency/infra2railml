@@ -99,13 +99,13 @@ function getTracksVisualizationData(trackData, trackID, elements) {
     // Sort elements according to their position on track
     elements = _.sortBy(
         elements,
-        function(element) {
+        (element) => {
             return positionUtils.getAbsolutePosition(element.ratakmsijainnit[0]);
         });
 
     // Only add necessary information
     const elementsVisualData = _.map(elements,
-        function(element) {
+        (element) => {
             const elementId = element.tunniste || element.kilometrimerkki.tunniste;
             const elementRefId = element.ratakm || elementId;
             const coordinates = visualizationUtils.getElementCoordinates(element);

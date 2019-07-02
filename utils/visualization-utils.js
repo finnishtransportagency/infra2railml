@@ -15,7 +15,7 @@ function getAABB(visualElements) {
 
     // Gather all coordinates
     let coordinates = [];
-    _.forEach(visualElements, function(track) {
+    _.forEach(visualElements, (track) => {
         coordinates.push(track.coordinates.start);
         coordinates.push(track.coordinates.end);
         const elementsList = track.elements;
@@ -26,7 +26,7 @@ function getAABB(visualElements) {
     });
 
     // Determine bounding box
-    _.forEach(coordinates, function(coordinate) {
+    _.forEach(coordinates, (coordinate) => {
         let x = coordinate.x;
         let y = coordinate.y;
         if(x < minX) minX = x;
@@ -113,7 +113,7 @@ function createHTMLCanvasVisualization(fileNamePrefix, canvas, trackVisualElemen
 
     canvasUtils.clearBackground(canvas);
 
-    _.forEach(trackVisualElements, function(trackVisualData) {
+    _.forEach(trackVisualElements, (trackVisualData) => {
 
         // Track start
         const trackCanvasStartPosition = getCanvasPositionForCoordinates(

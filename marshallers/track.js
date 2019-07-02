@@ -81,7 +81,38 @@ function marshallTrack(raide, memo) {
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
     // Keep track of all the elements that should be visualized in RailML
-    const trackData = getTracksVisualizationData(ratanumero, raide, elements);
+    // Only add elements that are marshalled
+    // TODO: This will probably still need work to get the right elements included
+    let elementsToBeVisualized = [];
+
+    // From track.js
+    //_.each(onRailMileposts, (e) => elementsToBeVisualized.push(e));
+    _.each(vaihteet, (e) => elementsToBeVisualized.push(e));
+    _.each(risteykset, (e) => elementsToBeVisualized.push(e));
+
+    // From track-element.js
+    //const speedChanges = railUtils.getSpeedLimits(raide, ratanumero, alku, loppu);
+    //_.each(speedChanges, (e) => elementsToBeVisualized.push(e));
+    _.each(onRailElementGroups.erotusjakso, (e) => elementsToBeVisualized.push(e));
+
+    // From ocs-elements.js
+    _.each(onRailElementGroups.opastin, (e) => elementsToBeVisualized.push(e));
+    //_.each(onRailMileposts, (e) => elementsToBeVisualized.push(e));
+    _.each(onRailElementGroups.akselinlaskija, (e) => elementsToBeVisualized.push(e));
+    _.each(onRailElementGroups.raideeristys, (e) => elementsToBeVisualized.push(e));
+    _.each(onRailElementGroups.baliisi, (e) => elementsToBeVisualized.push(e));
+
+    // From track-end.js
+    const loppuElementti = elementUtils.getConnectingElement(loppu, elementsByType);
+    if(loppuElementti)
+        elementsToBeVisualized.push(loppuElementti);
+
+    // From track-begin.js
+    const alkuElementti = elementUtils.getConnectingElement(alku, elementsByType);
+    if(alkuElementti)
+        elementsToBeVisualized.push(alkuElementti);
+
+    const trackData = getTracksVisualizationData(ratanumero, raide, elementsToBeVisualized);
     memo.visualElements.push(trackData);
 
     return {

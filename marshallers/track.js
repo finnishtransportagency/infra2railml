@@ -138,7 +138,7 @@ function getTracksVisualizationData(ratanumero, raide, trackElements) {
     // Only add necessary information
     const elementsVisualData = _.map(trackElements,
         (element) => {
-            const elementId = element.tunniste || element.kilometrimerkki.tunniste;
+            const elementId = element.tunniste;
             const elementRefId = element.ratakm || elementId;
             const coordinates = visualizationUtils.getElementCoordinates(element);
             return {

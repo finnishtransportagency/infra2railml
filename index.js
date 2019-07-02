@@ -1,7 +1,9 @@
 const fs = require('fs');
 const _ = require('lodash');
 const trackService = require('./services/tracks');
-const stationService = require('./services/stations.js');
+const stationService = require('./services/stations');
+const positionUtils = require('./utils/position-utils');
+const gradientUtils = require('./utils/gradient-utils');
 const railml = require('./marshallers/railml');
 const { BaseType } = railml;
 
@@ -77,7 +79,7 @@ module.exports = {
         const kilometersToLoad = [];
         const diff = _.difference(kms, loadedKms);
         // fill in the blanks between diff and loaded
-        for (var i = _.min(diff); i < _.max(diff); i++) {
+        for (var i = _.min(diff); i <= _.max(diff); i++) {
           if (i < _.min(loadedKms) || i > _.max(loadedKms)) {
             kilometersToLoad.push(i);
           }
@@ -97,8 +99,12 @@ module.exports = {
           _.flatMap(kms, (km) => trackService.getKilometer(ratanumero, km))
         ))
         .then((extraKilometrit) => {
+
+          const korkeudet = _.flatMap(raiteet, 'korkeuspisteet');
+          const kaltevuudet = gradientUtils.toSlopes(korkeudet, _.concat(kilometrit, extraKilometrit));
+
           return {
-            trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit, liikennepaikat
+            trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit, liikennepaikat, kaltevuudet
           };
         })
         .then(resolve);

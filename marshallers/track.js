@@ -75,7 +75,7 @@ function marshallTrack(raide, memo) {
     const onRailElements = _.filter(elements, (e) => railUtils.isOnRail(e, ratanumero, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
     
-    $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
+    $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit, index.kaltevuudet));
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
     return {

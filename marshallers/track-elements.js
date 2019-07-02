@@ -5,12 +5,13 @@ const railUtils = require('../utils/rail-utils');
 const speedChange = require('./speed-change');
 const electrificationChange = require('./electrification-change');
 const platformEdge = require('./platform-edge');
+const gradientChange = require('./gradient-change');
 
 // Notice: the order of child elements is significant.
 // https://wiki.railml.org/index.php?title=IS:trackElements
 
 module.exports = {
-    marshall: (raide, ratanumero, alku, loppu, elementit, kilometrit) => {
+    marshall: (raide, ratanumero, alku, loppu, elementit, kilometrit, kaltevuudet) => {
 
         const raideId = raide.tunniste;
         const nopeudet = railUtils.getSpeedLimits(raide, ratanumero, alku, loppu);
@@ -23,6 +24,12 @@ module.exports = {
             $('trackElements > speedChanges').append(_.join(speedChanges, ''));
         }
 
+        const gradientChanges = gradientChange.marshall(raideId, alku, raide.korkeuspisteet, kaltevuudet, kilometrit);
+        if (!_.isEmpty(gradientChanges)) {
+            $('trackElements').append('<gradientChanges/>');
+            $('trackElements > gradientChanges').append(_.join(gradientChanges, ''));
+        }
+        
         // TODO is electrificationChange correct railML term?
         const electrificationChanges = _.map(elementit.erotusjakso, (ej) => electrificationChange.marshall(ratanumero, alku, kilometrit, ej));
         if (!_.isEmpty(electrificationChanges)) {
@@ -33,8 +40,6 @@ module.exports = {
         if (!_.isEmpty(platform)) {
             $('trackElements').append(`<platformEdges>${platform}</platformEdges>`);
         }
-
-        // TODO append gradientChanges when provided by the API
 
         return $('trackElements').children().length > 0 ? $.xml() : '';
     }

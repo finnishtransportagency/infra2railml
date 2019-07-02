@@ -11,7 +11,7 @@ const trackElements = require('./track-elements');
 const ocsElements = require('./ocs-elements');
 const railUtils = require('../utils/rail-utils');
 const visualizationUtils = require('../utils/visualization-utils');
-const positionUtils = require('../utils/position-utils');
+const elementUtils = require('../utils/element-utils');
 
 // Notice: the order of child elements is significant.
 // https://wiki.railml.org/index.php?title=IS:track
@@ -81,7 +81,7 @@ function marshallTrack(raide, memo) {
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
     // Keep track of all the elements that should be visualized in RailML
-    const trackData = getTracksVisualizationData(raide, raideId, elements);
+    const trackData = getTracksVisualizationData(ratanumero, raide, elements);
     memo.visualElements.push(trackData);
 
     return {
@@ -94,17 +94,18 @@ function marshallTrack(raide, memo) {
 /**
  * Assemble tracks visualization information
  */
-function getTracksVisualizationData(trackData, trackID, elements) {
+function getTracksVisualizationData(ratanumero, raide, trackElements) {
 
     // Sort elements according to their position on track
-    elements = _.sortBy(
-        elements,
+    trackElements = _.sortBy(
+        trackElements,
         (element) => {
-            return positionUtils.getAbsolutePosition(element.ratakmsijainnit[0]);
+            const position = elementUtils.getPosition(ratanumero, element);
+            return position.ratakm + (position.etaisyys / 1500); // The etaisyys can sometimes go over 1000m
         });
 
     // Only add necessary information
-    const elementsVisualData = _.map(elements,
+    const elementsVisualData = _.map(trackElements,
         (element) => {
             const elementId = element.tunniste || element.kilometrimerkki.tunniste;
             const elementRefId = element.ratakm || elementId;
@@ -118,8 +119,8 @@ function getTracksVisualizationData(trackData, trackID, elements) {
     );
 
     return  {
-        "id" : trackID,
-        "coordinates" : visualizationUtils.getElementCoordinates(trackData),
+        "id" : raide.tunniste,
+        "coordinates" : visualizationUtils.getElementCoordinates(raide),
         "elements" : elementsVisualData
     }
 

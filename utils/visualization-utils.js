@@ -6,7 +6,7 @@ const elementUtils = require('../utils/element-utils');
  * Calculates the shape of a axis-aligned bounding box
  * for given track visual elements list.
  */
-function getAABB(visualElements) {
+function getBoundingBox(visualElements) {
 
     let minX = 90; // Max value for latitude
     let minY = 180; // Max value for longitude
@@ -216,5 +216,5 @@ function getTracksVisualizationData(ratanumero, raide, trackElements) {
 }
 
 module.exports = {
-    getAABB, getCanvasPositionForCoordinates, createHTMLCanvasVisualization, getTracksVisualizationData
+    getBoundingBox, getCanvasPositionForCoordinates, createHTMLCanvasVisualization, getTracksVisualizationData
 };

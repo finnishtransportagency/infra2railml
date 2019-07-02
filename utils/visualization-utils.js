@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const canvasUtils = require('../utils/canvas-utils');
+const elementUtils = require('../utils/element-utils');
 
 /**
  * Calculates the shape of a axis-aligned bounding box
@@ -179,6 +180,41 @@ function createHTMLCanvasVisualization(fileNamePrefix, canvas, trackVisualElemen
     canvasUtils.createDebugImage(canvas, fileNamePrefix);
 }
 
+/**
+ * Assemble tracks visualization information
+ */
+function getTracksVisualizationData(ratanumero, raide, trackElements) {
+
+    // Sort elements according to their position on track
+    trackElements = _.sortBy(
+        trackElements,
+        (element) => {
+            const position = elementUtils.getPosition(ratanumero, element);
+            return position.ratakm + (position.etaisyys / 1500); // The etaisyys can sometimes go over 1000m
+        });
+
+    // Only add necessary information
+    const elementsVisualData = _.map(trackElements,
+        (element) => {
+            const elementId = element.tunniste;
+            const elementRefId = element.ratakm || elementId;
+            const coordinates = getElementCoordinates(element);
+            return {
+                "id" : elementRefId,
+                "coordinates" : coordinates.start,
+                "type" : element.tyyppi
+            }
+        }
+    );
+
+    return  {
+        "id" : raide.tunniste,
+        "coordinates" : getElementCoordinates(raide),
+        "elements" : elementsVisualData
+    }
+
+}
+
 module.exports = {
-    getAABB, getElementCoordinates, getCanvasPositionForCoordinates, createHTMLCanvasVisualization
+    getAABB, getCanvasPositionForCoordinates, createHTMLCanvasVisualization, getTracksVisualizationData
 };

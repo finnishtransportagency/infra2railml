@@ -112,49 +112,13 @@ function marshallTrack(raide, memo) {
     if(alkuElementti)
         elementsToBeVisualized.push(alkuElementti);
 
-    const trackData = getTracksVisualizationData(ratanumero, raide, elementsToBeVisualized);
+    const trackData = visualizationUtils.getTracksVisualizationData(ratanumero, raide, elementsToBeVisualized);
     memo.visualElements.push(trackData);
 
     return {
         element: $.xml(),
         trackRef: trackRef.marshall(raide)
     };
-}
-
-
-/**
- * Assemble tracks visualization information
- */
-function getTracksVisualizationData(ratanumero, raide, trackElements) {
-
-    // Sort elements according to their position on track
-    trackElements = _.sortBy(
-        trackElements,
-        (element) => {
-            const position = elementUtils.getPosition(ratanumero, element);
-            return position.ratakm + (position.etaisyys / 1500); // The etaisyys can sometimes go over 1000m
-        });
-
-    // Only add necessary information
-    const elementsVisualData = _.map(trackElements,
-        (element) => {
-            const elementId = element.tunniste;
-            const elementRefId = element.ratakm || elementId;
-            const coordinates = visualizationUtils.getElementCoordinates(element);
-            return {
-                "id" : elementRefId,
-                "coordinates" : coordinates.start,
-                "type" : element.tyyppi
-            }
-        }
-    );
-
-    return  {
-        "id" : raide.tunniste,
-        "coordinates" : visualizationUtils.getElementCoordinates(raide),
-        "elements" : elementsVisualData
-    }
-
 }
 
 /**

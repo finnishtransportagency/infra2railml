@@ -84,7 +84,7 @@ function marshallTrack(raide, memo) {
     // Keep track of all the elements that should be visualized in RailML
     // Only add elements that are marshalled
     // TODO: This will probably still need work to get the right elements included
-    const typesToVisualize = ['vaihde', 'baliisi', 'opastin', 'raideeristys', 'akselinlaskija', 'erotusjakso'];
+    const typesToVisualize = ['vaihde', 'baliisi', 'opastin', 'raideeristys', 'akselinlaskija', 'erotusjakso', 'puskin'];
     const elementsToVisualize = _.filter(onRailElements, (e) => typesToVisualize.includes(e.tyyppi));
 
     /*

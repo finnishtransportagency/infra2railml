@@ -255,7 +255,11 @@ function getTracksVisualizationData(ratanumero, raide, trackElements) {
         }
         */
         const elementId = element.tunniste;
-        const elementRefId = element.ratakm || elementId;
+
+
+        const elementRefId = elementId;
+
+
         const coordinates = getElementCoordinates(element);
         elementsVisualData.push({
             "id" : elementRefId,

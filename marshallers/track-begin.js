@@ -22,7 +22,7 @@ module.exports = {
         if (alkuElementti && ref && alkuElementti.tyyppi === 'vaihde') {
             $('trackBegin').append(`<connection id="tbc_${raideId}" ref="${ref}" />`);
         } else if (alkuElementti && alkuElementti.tyyppi === 'puskin') {
-            $('trackBegin').append(`<bufferStop id="tbbs_${raideId}" name="${alkuElementti.nimi || alkuElementti.tunniste}" />`);
+            $('trackBegin').append(`<bufferStop id="${alkuElementti.tunniste}" />`);
         } else {
             $('trackBegin').append(`<openEnd id="tboe_${raideId}" name="${raideId}" />`);
         }

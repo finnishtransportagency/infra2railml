@@ -28,14 +28,12 @@ function getSlope(sijainti, suunta, kaltevuudet) {
         slope.sijainti.ratakm < sijainti.ratakm ||
         (slope.sijainti.ratakm === sijainti.ratakm && slope.sijainti.etaisyys < sijainti.etaisyys)
     ));
- 
-    if (_.isEmpty(preceding)) {
-        // TODO how to determine the slope before model beginning?
-        return { sijainti, suunta, kaltevuus: 0.0 };
-    }
 
-    // no match, assume the preceding known value
-    return { sijainti: sijainti, kaltevuus: preceding.kaltevuus, suunta: preceding.suunta };
+    // no exact match, assume preceding value or zero
+    // TODO how to determine the slope before model beginning?
+    const kaltevuus = _.isEmpty(preceding) ? 0.0 : preceding.kaltevuus;
+
+    return { sijainti, suunta, kaltevuus };
 }
 
 /**

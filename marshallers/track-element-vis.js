@@ -3,11 +3,12 @@ const cheerio = require('cheerio');
 const config = require('../config');
 const visualizationUtils = require('../utils/visualization-utils');
 
-const CANVAS_WIDTH = 30000;
-const CANVAS_HEIGHT = 30000;
 
 module.exports = {
     marshall: (trackVisualData, boundingBox) => {
+
+        let CANVAS_WIDTH = 30000 * boundingBox.width / 0.2;
+        let CANVAS_HEIGHT = CANVAS_WIDTH;
 
         const refId = trackVisualData.id;
         const $ = cheerio.load(`<trackVis ref="${refId}">`, config.cheerio);

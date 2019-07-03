@@ -91,6 +91,11 @@ function getElementCoordinates(element) {
  */
 function getCanvasPositionForCoordinates(coordinates, geometryBoundingBox, canvasWidth, canvasHeight) {
 
+    const margins = {
+        "x" : canvasWidth * 0.1,
+        "y" : canvasHeight * 0.1
+    };
+
     // Don't distort coordinates, expand bounding box into a square
     let drawAreaEdgeSize = Math.max(geometryBoundingBox.width, geometryBoundingBox.height);
 
@@ -100,8 +105,8 @@ function getCanvasPositionForCoordinates(coordinates, geometryBoundingBox, canva
 
     // Return position on canvas
     return {
-        "x" : normalizedX * canvasWidth,
-        "y" : normalizedY * canvasHeight
+        "x" : margins.x + (normalizedX * (canvasWidth - (margins.x * 2))),
+        "y" : margins.y + (normalizedY * (canvasHeight - (margins.y * 2)))
     }
 
 }
@@ -191,74 +196,16 @@ function getTracksVisualizationData(ratanumero, raide, trackElements) {
     trackElements = _.sortBy(
         trackElements,
         (element) => {
-            // Special case for mileposts
-            if(element.ratakm)
-                return (element.ratakm) + (element.pituus / 1100);
-            else {
-                const position = elementUtils.getPosition(ratanumero, element);
-                return position.ratakm + (position.etaisyys / 1100); // The etaisyys can sometimes go over 1000m
-            }
+            const position = elementUtils.getPosition(ratanumero, element);
+            return position.ratakm + (position.etaisyys / 1100); // The etaisyys can sometimes go over 1000m
         });
 
     let elementsVisualData = [];
     // Only add necessary information
     for(let i = 0; i <= trackElements.length - 1; i++) {
         const element = trackElements[i];
-        /*
-        if(element.tyyppi == "milepost") {
-            let previousCoordinate = null;
-            let nextCoordinate = null;
-            let previousAbsolutePosition = null;
-            let nextAbsolutePosition = null;
-            if(i == 0) {
-                previousCoordinate = raideCoordinates.start;
-                previousAbsolutePosition = positionUtils.getAbsolutePosition(raide.ratakmvalit[0].alku);
-            }
-            else {
-                let previousNonMilePostElement = getPreviousNonMilepostElement(trackElements, i - 1);
-                if(previousNonMilePostElement == null) {
-                    console.log("Got null");
-                    previousCoordinate = raideCoordinates.start;
-                    previousAbsolutePosition = positionUtils.getAbsolutePosition(raide.ratakmvalit[0].alku);
-                    console.log(previousAbsolutePosition);
-                }
-                else {
-                    console.log("Not null");
-                    console.log(previousNonMilePostElement);
-                    previousCoordinate = getElementCoordinates(previousNonMilePostElement).start;
-                    previousAbsolutePosition = positionUtils.getAbsolutePosition(previousNonMilePostElement.ratakmsijainnit[0]);
-                }
-
-            }
-
-            if(i == trackElements.length - 1) {
-                nextCoordinate = raideCoordinates.end;
-                nextAbsolutePosition = positionUtils.getAbsolutePosition(raide.ratakmvalit[0].loppu);
-            }
-            else {
-                let nextNonMilePostElement = getNextNonMilepostElement(trackElements, i + 1);
-                if(nextNonMilePostElement == null) {
-
-                    nextCoordinate = raideCoordinates.end;
-                    nextAbsolutePosition = positionUtils.getAbsolutePosition(raide.ratakmvalit[0].loppu);
-
-                } else {
-                    nextCoordinate = getElementCoordinates(nextNonMilePostElement).start;
-                    nextAbsolutePosition = positionUtils.getAbsolutePosition(nextNonMilePostElement.ratakmsijainnit[0]);
-                }
-
-
-            }
-
-            element.geometria = getMilepostGeometria(element, previousCoordinate, nextCoordinate, previousAbsolutePosition, nextAbsolutePosition);
-            console.log(i, element, previousCoordinate, nextCoordinate, previousAbsolutePosition, nextAbsolutePosition);
-        }
-        */
         const elementId = element.tunniste;
-
-
         const elementRefId = elementId;
-
 
         const coordinates = getElementCoordinates(element);
         elementsVisualData.push({
@@ -274,45 +221,6 @@ function getTracksVisualizationData(ratanumero, raide, trackElements) {
         "coordinates" : raideCoordinates,
         "elements" : elementsVisualData
     }
-
-}
-
-function getNextNonMilepostElement(elements, startingIndex) {
-    let nonMilepostElement = null;
-    for(let i = startingIndex; i <= elements.length - 1; i++) {
-        if(elements[i].tyyppi !== "milepost") {
-            nonMilepostElement = elements[i];
-            break;
-        }
-    }
-    return nonMilepostElement;
-}
-
-function getPreviousNonMilepostElement(elements, startingIndex) {
-    let nonMilepostElement = null;
-    for(let i = startingIndex; i >= 0; i--) {
-        if(elements[i].tyyppi !== "milepost") {
-            nonMilepostElement = elements[i];
-            break;
-        }
-    }
-    return nonMilepostElement;
-}
-
-function getMilepostGeometria(milepost, previousCoordinates, nextCoordinates, previousAbsolutePosition, nextAbsolutePosition) {
-
-    const trackLength = (nextAbsolutePosition - previousAbsolutePosition);
-    const milepostPosition = positionUtils.getAbsolutePosition(milepost) - previousAbsolutePosition;
-    const deltaX = nextCoordinates.x - previousCoordinates.x;
-    const deltaY = nextCoordinates.y - previousCoordinates.y;
-    const relativePositionOnTrack = milepostPosition / trackLength;
-    const geometria = [
-        previousCoordinates.x + (deltaX * relativePositionOnTrack),
-        previousCoordinates.y + (deltaY * relativePositionOnTrack)
-        ];
-
-    return  geometria;
-
 
 }
 

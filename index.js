@@ -104,11 +104,14 @@ module.exports = {
         ))
         .then((extraKilometrit) => {
 
+          const extraElementit = _.uniqBy(_.reject(_.flatMap(extraKilometrit, 'elementit'),_ .isEmpty), 'tunniste');
+          const kaikkiElementit = _.uniqBy(_.concat(elementit, extraElementit), 'tunniste');
+
           const korkeudet = _.flatMap(raiteet, 'korkeuspisteet');
           const kaltevuudet = gradientUtils.toSlopes(korkeudet, _.concat(kilometrit, extraKilometrit));
 
           return {
-            trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit, liikennepaikat, kaltevuudet
+            trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit : kaikkiElementit, liikennepaikat, kaltevuudet
           };
         })
         .then(resolve);

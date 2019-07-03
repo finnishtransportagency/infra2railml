@@ -83,52 +83,9 @@ function marshallTrack(raide, memo) {
 
     // Keep track of all the elements that should be visualized in RailML
     // Only add elements that are marshalled
-    // TODO: This will probably still need work to get the right elements included
     const typesToVisualize = ['vaihde', 'baliisi', 'opastin', 'raideeristys', 'akselinlaskija', 'erotusjakso', 'puskin'];
     const elementsToVisualize = _.filter(onRailElements, (e) => typesToVisualize.includes(e.tyyppi));
 
-    /*
-    let elementsToBeVisualized = [];
-
-    // From track.js
-    //_.each(onRailMileposts, (e) => elementsToBeVisualized.push(e));
-    _.each(vaihteet, (e) => elementsToBeVisualized.push(e));
-    _.each(risteykset, (e) => elementsToBeVisualized.push(e));
-
-    // From track-element.js
-    //const speedChanges = railUtils.getSpeedLimits(raide, ratanumero, alku, loppu);
-    //_.each(speedChanges, (e) => elementsToBeVisualized.push(e));
-    _.each(onRailElementGroups.erotusjakso, (e) => elementsToBeVisualized.push(e));
-
-    // From ocs-elements.js
-    _.each(onRailElementGroups.opastin, (e) => elementsToBeVisualized.push(e));
-    //_.each(onRailMileposts, (e) => elementsToBeVisualized.push(e));
-    _.each(onRailElementGroups.akselinlaskija, (e) => elementsToBeVisualized.push(e));
-    _.each(onRailElementGroups.raideeristys, (e) => elementsToBeVisualized.push(e));
-    _.each(onRailElementGroups.baliisi, (e) => elementsToBeVisualized.push(e));
-
-    // From track-end.js
-    const loppuElementti = elementUtils.getConnectingElement(loppu, elementsByType);
-    if(loppuElementti)
-        elementsToBeVisualized.push(loppuElementti);
-
-    // From track-begin.js
-    const alkuElementti = elementUtils.getConnectingElement(alku, elementsByType);
-    if(alkuElementti)
-        elementsToBeVisualized.push(alkuElementti);
-
-    const relativeStartPosition = positionUtils.getAbsolutePosition(alku);
-    const relativeEndPosition = positionUtils.getAbsolutePosition(loppu);
-    const trackLength = (relativeEndPosition- relativeStartPosition);
-    const trackCoordinates = visualizationUtils.getElementCoordinates(raide);
-
-    _.forEach(onRailMileposts, (milepost) => {
-        elementsToBeVisualized.push(milepost.kilometrimerkki);
-        milepost.kilometrimerkki.tyyppi = "milepost";
-        milepost.kilometrimerkki.etaisyys = milepost.kilometrimerkki.pituus;
-
-    });
-    */
     const trackData = visualizationUtils.getTracksVisualizationData(ratanumero, raide, elementsToVisualize);
     memo.visualElements.push(trackData);
 

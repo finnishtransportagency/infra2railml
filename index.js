@@ -76,14 +76,18 @@ module.exports = {
 
       // resolve track kilometers that have not been loaded
       const nonLoadedKms = _.transform(valienKilometrit, (res, kms, ratanumero) => {
+
         const kilometersToLoad = [];
         const diff = _.difference(kms, loadedKms);
+
         // fill in the blanks between diff and loaded
-        for (var i = _.min(diff); i <= _.max(diff); i++) {
-          if (i < _.min(loadedKms) || i > _.max(loadedKms)) {
+        const limit = Math.max(_.max(diff), _.min(loadedKms));
+        for (let i = _.min(diff); i <= limit; i++) {
+          if (i < _.min(loadedKms) || i > _.max(loadedKms)) {
             kilometersToLoad.push(i);
           }
         }
+
         res[ratanumero] = kilometersToLoad;
         return res;
       }, {});
@@ -92,7 +96,7 @@ module.exports = {
         if (v.length > 0) res.push(`${k} [${v.join(', ')}]`);
         return res;
       }, []).join(', ');
-      console.info(`\r\x1b[KLoading additional kilometers; ${kmInfo}`);
+      console.info(`\r\x1b[KLoading additional kilometers ${kmInfo}`);
 
       // load extra kilometers and compose the index object
       Promise.all(_.flatMap(nonLoadedKms, (kms, ratanumero) =>

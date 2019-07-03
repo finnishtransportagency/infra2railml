@@ -24,24 +24,18 @@ function getSlope(sijainti, suunta, kaltevuudet) {
         return onPosition;
     }
 
-    /*
-    const absPos = positionUtils.getAbsolutePosition(sijainti);
-    const preceeding = _.last(_.takeWhile(suuntaan, (slope) =>
-        positionUtils.getAbsolutePosition(slope.sijainti) <= absPos
-    ));
-    */
-   const preceeding = _.last(_.takeWhile(suuntaan, (slope) =>
+    const preceding = _.last(_.takeWhile(suuntaan, (slope) =>
         slope.sijainti.ratakm < sijainti.ratakm ||
         (slope.sijainti.ratakm === sijainti.ratakm && slope.sijainti.etaisyys < sijainti.etaisyys)
     ));
  
-    if (_.isEmpty(preceeding)) {
+    if (_.isEmpty(preceding)) {
         // TODO how to determine the slope before model beginning?
         return { sijainti, suunta, kaltevuus: 0.0 };
     }
 
-    // no match, assume the preceeding known value
-    return { sijainti: sijainti, kaltevuus: preceeding.kaltevuus, suunta: preceeding.suunta };
+    // no match, assume the preceding known value
+    return { sijainti: sijainti, kaltevuus: preceding.kaltevuus, suunta: preceding.suunta };
 }
 
 /**
@@ -78,7 +72,8 @@ function slopes(korkeuspisteet, kilometrit, kaltevuudet) {
     const sign = next.korkeus > head.korkeus || next.korkeus === head.korkeus ? 1 : -1;
     const slopePerMille = Math.tan(y/x) * 1000 * sign;
 
-    const slopeUp = Math.round(slopePerMille * 1000) / 1000; // round to three decimals
+    // round to three decimals and switch sign for opposite direction
+    const slopeUp = Math.round(slopePerMille * 1000) / 1000;
     const slopeDown = -1.0 * slopeUp;
 
     kaltevuudet.push({ sijainti: head.sijainti, suunta: 'nouseva', kaltevuus: slopeUp });

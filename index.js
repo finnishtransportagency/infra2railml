@@ -2,7 +2,6 @@ const fs = require('fs');
 const _ = require('lodash');
 const trackService = require('./services/tracks');
 const stationService = require('./services/stations');
-const positionUtils = require('./utils/position-utils');
 const gradientUtils = require('./utils/gradient-utils');
 const railml = require('./marshallers/railml');
 const { BaseType } = railml;

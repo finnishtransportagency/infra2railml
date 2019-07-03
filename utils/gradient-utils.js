@@ -48,8 +48,11 @@ function getSlope(sijainti, suunta, kaltevuudet) {
  * Converts the given elevation points to track slope values.
  */
 function toSlopes(korkeuspisteet, kilometrit) {
-    const sorted = _.sortBy(korkeuspisteet, (k) => positionUtils.getAbsolutePosition(k.sijainti));
-    return slopes(sorted, kilometrit, []);
+    return _.transform(korkeuspisteet, (res, korkeudet, ratanumero) => {
+        const sorted = _.sortBy(korkeudet, (k) => positionUtils.getAbsolutePosition(k.sijainti));
+        res[ratanumero] = slopes(sorted, kilometrit, []);
+        return res;
+    }, {});
 }
 
 /**

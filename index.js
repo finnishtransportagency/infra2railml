@@ -104,7 +104,7 @@ module.exports = {
         ))
         .then((extraKilometrit) => {
 
-          const korkeudet = _.flatMap(raiteet, 'korkeuspisteet');
+          const korkeudet = _.groupBy(_.flatMap(raiteet, 'korkeuspisteet'), (k) => k.sijainti.ratanumero);
           const kaltevuudet = gradientUtils.toSlopes(korkeudet, _.concat(kilometrit, extraKilometrit));
 
           return {

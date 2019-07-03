@@ -12,6 +12,7 @@ const ocsElements = require('./ocs-elements');
 const railUtils = require('../utils/rail-utils');
 const visualizationUtils = require('../utils/visualization-utils');
 const elementUtils = require('../utils/element-utils');
+const positionUtils = require('../utils/position-utils');
 
 // Notice: the order of child elements is significant.
 // https://wiki.railml.org/index.php?title=IS:track
@@ -83,6 +84,10 @@ function marshallTrack(raide, memo) {
     // Keep track of all the elements that should be visualized in RailML
     // Only add elements that are marshalled
     // TODO: This will probably still need work to get the right elements included
+    const typesToVisualize = ['vaihde', 'baliisi', 'opastin', 'raideeristys', 'akselinlaskija', 'erotusjakso'];
+    const elementsToVisualize = _.filter(onRailElements, (e) => typesToVisualize.includes(e.tyyppi));
+
+    /*
     let elementsToBeVisualized = [];
 
     // From track.js
@@ -112,7 +117,19 @@ function marshallTrack(raide, memo) {
     if(alkuElementti)
         elementsToBeVisualized.push(alkuElementti);
 
-    const trackData = visualizationUtils.getTracksVisualizationData(ratanumero, raide, elementsToBeVisualized);
+    const relativeStartPosition = positionUtils.getAbsolutePosition(alku);
+    const relativeEndPosition = positionUtils.getAbsolutePosition(loppu);
+    const trackLength = (relativeEndPosition- relativeStartPosition);
+    const trackCoordinates = visualizationUtils.getElementCoordinates(raide);
+
+    _.forEach(onRailMileposts, (milepost) => {
+        elementsToBeVisualized.push(milepost.kilometrimerkki);
+        milepost.kilometrimerkki.tyyppi = "milepost";
+        milepost.kilometrimerkki.etaisyys = milepost.kilometrimerkki.pituus;
+
+    });
+    */
+    const trackData = visualizationUtils.getTracksVisualizationData(ratanumero, raide, elementsToVisualize);
     memo.visualElements.push(trackData);
 
     return {

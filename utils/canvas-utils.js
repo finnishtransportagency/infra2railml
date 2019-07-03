@@ -3,7 +3,7 @@ const fs = require("fs");
 function writeToFile(data, fileName) {
     fs.writeFile(fileName, data, (err) => {
         if (err) console.log(err);
-        console.log("Successfully created debug visualization HTML file.");
+        console.log("Successfully created debug visualization HTML file: " + fileName);
     });
 }
 

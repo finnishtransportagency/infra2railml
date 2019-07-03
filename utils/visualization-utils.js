@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const canvasUtils = require('../utils/canvas-utils');
 const elementUtils = require('../utils/element-utils');
-
+const positionUtils = require('../utils/position-utils');
 /**
  * Calculates the shape of a axis-aligned bounding box
  * for given track visual elements list.
@@ -185,36 +185,133 @@ function createHTMLCanvasVisualization(fileNamePrefix, canvas, trackVisualElemen
  */
 function getTracksVisualizationData(ratanumero, raide, trackElements) {
 
+    const raideCoordinates = getElementCoordinates(raide);
+
     // Sort elements according to their position on track
     trackElements = _.sortBy(
         trackElements,
         (element) => {
-            const position = elementUtils.getPosition(ratanumero, element);
-            return position.ratakm + (position.etaisyys / 1500); // The etaisyys can sometimes go over 1000m
+            // Special case for mileposts
+            if(element.ratakm)
+                return (element.ratakm) + (element.pituus / 1100);
+            else {
+                const position = elementUtils.getPosition(ratanumero, element);
+                return position.ratakm + (position.etaisyys / 1100); // The etaisyys can sometimes go over 1000m
+            }
         });
 
+    let elementsVisualData = [];
     // Only add necessary information
-    const elementsVisualData = _.map(trackElements,
-        (element) => {
-            const elementId = element.tunniste;
-            const elementRefId = element.ratakm || elementId;
-            const coordinates = getElementCoordinates(element);
-            return {
-                "id" : elementRefId,
-                "coordinates" : coordinates.start,
-                "type" : element.tyyppi
+    for(let i = 0; i <= trackElements.length - 1; i++) {
+        const element = trackElements[i];
+        /*
+        if(element.tyyppi == "milepost") {
+            let previousCoordinate = null;
+            let nextCoordinate = null;
+            let previousAbsolutePosition = null;
+            let nextAbsolutePosition = null;
+            if(i == 0) {
+                previousCoordinate = raideCoordinates.start;
+                previousAbsolutePosition = positionUtils.getAbsolutePosition(raide.ratakmvalit[0].alku);
             }
+            else {
+                let previousNonMilePostElement = getPreviousNonMilepostElement(trackElements, i - 1);
+                if(previousNonMilePostElement == null) {
+                    console.log("Got null");
+                    previousCoordinate = raideCoordinates.start;
+                    previousAbsolutePosition = positionUtils.getAbsolutePosition(raide.ratakmvalit[0].alku);
+                    console.log(previousAbsolutePosition);
+                }
+                else {
+                    console.log("Not null");
+                    console.log(previousNonMilePostElement);
+                    previousCoordinate = getElementCoordinates(previousNonMilePostElement).start;
+                    previousAbsolutePosition = positionUtils.getAbsolutePosition(previousNonMilePostElement.ratakmsijainnit[0]);
+                }
+
+            }
+
+            if(i == trackElements.length - 1) {
+                nextCoordinate = raideCoordinates.end;
+                nextAbsolutePosition = positionUtils.getAbsolutePosition(raide.ratakmvalit[0].loppu);
+            }
+            else {
+                let nextNonMilePostElement = getNextNonMilepostElement(trackElements, i + 1);
+                if(nextNonMilePostElement == null) {
+
+                    nextCoordinate = raideCoordinates.end;
+                    nextAbsolutePosition = positionUtils.getAbsolutePosition(raide.ratakmvalit[0].loppu);
+
+                } else {
+                    nextCoordinate = getElementCoordinates(nextNonMilePostElement).start;
+                    nextAbsolutePosition = positionUtils.getAbsolutePosition(nextNonMilePostElement.ratakmsijainnit[0]);
+                }
+
+
+            }
+
+            element.geometria = getMilepostGeometria(element, previousCoordinate, nextCoordinate, previousAbsolutePosition, nextAbsolutePosition);
+            console.log(i, element, previousCoordinate, nextCoordinate, previousAbsolutePosition, nextAbsolutePosition);
         }
-    );
+        */
+        const elementId = element.tunniste;
+        const elementRefId = element.ratakm || elementId;
+        const coordinates = getElementCoordinates(element);
+        elementsVisualData.push({
+            "id" : elementRefId,
+            "coordinates" : coordinates.start,
+            "type" : element.tyyppi
+        });
+    };
+
 
     return  {
         "id" : raide.tunniste,
-        "coordinates" : getElementCoordinates(raide),
+        "coordinates" : raideCoordinates,
         "elements" : elementsVisualData
     }
 
 }
 
+function getNextNonMilepostElement(elements, startingIndex) {
+    let nonMilepostElement = null;
+    for(let i = startingIndex; i <= elements.length - 1; i++) {
+        if(elements[i].tyyppi !== "milepost") {
+            nonMilepostElement = elements[i];
+            break;
+        }
+    }
+    return nonMilepostElement;
+}
+
+function getPreviousNonMilepostElement(elements, startingIndex) {
+    let nonMilepostElement = null;
+    for(let i = startingIndex; i >= 0; i--) {
+        if(elements[i].tyyppi !== "milepost") {
+            nonMilepostElement = elements[i];
+            break;
+        }
+    }
+    return nonMilepostElement;
+}
+
+function getMilepostGeometria(milepost, previousCoordinates, nextCoordinates, previousAbsolutePosition, nextAbsolutePosition) {
+
+    const trackLength = (nextAbsolutePosition - previousAbsolutePosition);
+    const milepostPosition = positionUtils.getAbsolutePosition(milepost) - previousAbsolutePosition;
+    const deltaX = nextCoordinates.x - previousCoordinates.x;
+    const deltaY = nextCoordinates.y - previousCoordinates.y;
+    const relativePositionOnTrack = milepostPosition / trackLength;
+    const geometria = [
+        previousCoordinates.x + (deltaX * relativePositionOnTrack),
+        previousCoordinates.y + (deltaY * relativePositionOnTrack)
+        ];
+
+    return  geometria;
+
+
+}
+
 module.exports = {
-    getBoundingBox, getCanvasPositionForCoordinates, createHTMLCanvasVisualization, getTracksVisualizationData
+    getBoundingBox, getCanvasPositionForCoordinates, createHTMLCanvasVisualization, getTracksVisualizationData, getElementCoordinates
 };

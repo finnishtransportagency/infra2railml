@@ -53,6 +53,7 @@ function toSlopes(korkeuspisteet, kilometrit) {
 function slopes(korkeuspisteet, kilometrit, kaltevuudet) {
 
     if (_.isEmpty(_.tail(korkeuspisteet))) {
+        // end of array reached
         return kaltevuudet;
     }
 
@@ -61,14 +62,15 @@ function slopes(korkeuspisteet, kilometrit, kaltevuudet) {
     const next = _.first(tail);
 
     const x = positionUtils.getPosition(head.sijainti, next.sijainti, kilometrit);
-    const y = next.korkeus > head.korkeus ? next.korkeus - head.korkeus : head.korkeus - next.korkeus;
+    const y = next.korkeus - head.korkeus;
     
-    if (x <= 0 || y <= 0) {
+    // Zero values mean "no change", thus no need for gradientChange element at this point.
+    // The x below zero might happen if we're missing kilometers due to 404 from API.
+    if (x <= 0 || y == 0) {
         return slopes(tail, kilometrit, kaltevuudet);
     }
 
-    const sign = next.korkeus > head.korkeus || next.korkeus === head.korkeus ? 1 : -1;
-    const slopePerMille = Math.tan(y/x) * 1000 * sign;
+    const slopePerMille = Math.tan(y/x) * 1000;
 
     // round to three decimals and switch sign for opposite direction
     const slopeUp = Math.round(slopePerMille * 1000) / 1000;

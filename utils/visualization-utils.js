@@ -209,13 +209,18 @@ function createHTMLCanvasVisualization(fileNamePrefix, canvas, trackVisualElemen
 /**
  * Assemble tracks visualization information
  */
-function getTracksVisualizationData(ratanumero, raide, trackElements) {
+function getTracksVisualizationData(ratanumero, raide, onRailElements) {
+
+    // Keep track of all the elements that should be visualized in RailML
+    // Only add elements that are marshalled
+    const typesToVisualize = ['vaihde', 'baliisi', 'opastin', 'raideeristys', 'akselinlaskija', 'erotusjakso', 'puskin'];
+    let elementsToVisualize = _.filter(onRailElements, (e) => typesToVisualize.includes(e.tyyppi));
 
     const raideCoordinates = getTrackCoordinates(raide);
 
     // Sort elements according to their position on track
-    trackElements = _.sortBy(
-        trackElements,
+    elementsToVisualize = _.sortBy(
+        elementsToVisualize,
         (element) => {
             const position = elementUtils.getPosition(ratanumero, element);
             return position.ratakm + (position.etaisyys / 1100); // The etaisyys can sometimes go over 1000m
@@ -223,10 +228,9 @@ function getTracksVisualizationData(ratanumero, raide, trackElements) {
 
     let elementsVisualData = [];
     // Only add necessary information
-    for(let i = 0; i <= trackElements.length - 1; i++) {
-        const element = trackElements[i];
-        const elementId = element.tunniste;
-        const elementRefId = elementId;
+    for(let i = 0; i <= elementsToVisualize.length - 1; i++) {
+        const element = elementsToVisualize[i];
+        const elementRefId = element.tunniste;
 
         const elementCoordinates = getElementCoordinates(element);
         elementsVisualData.push({

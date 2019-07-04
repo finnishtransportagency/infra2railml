@@ -81,12 +81,7 @@ function marshallTrack(raide, memo) {
     $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit, index.kaltevuudet));
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
 
-    // Keep track of all the elements that should be visualized in RailML
-    // Only add elements that are marshalled
-    const typesToVisualize = ['vaihde', 'baliisi', 'opastin', 'raideeristys', 'akselinlaskija', 'erotusjakso', 'puskin'];
-    const elementsToVisualize = _.filter(onRailElements, (e) => typesToVisualize.includes(e.tyyppi));
-
-    const trackData = visualizationUtils.getTracksVisualizationData(ratanumero, raide, elementsToVisualize);
+    const trackData = visualizationUtils.getTracksVisualizationData(ratanumero, raide, onRailElements);
     memo.visualElements.push(trackData);
 
     return {

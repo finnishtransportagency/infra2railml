@@ -1,9 +1,9 @@
 const fs = require("fs");
 
 function writeToFile(data, fileName) {
+    console.log(`Writing visualization preview in ${fileName} ..`);
     fs.writeFile(fileName, data, (err) => {
         if (err) console.log(err);
-        console.log("Successfully created debug visualization HTML file: " + fileName);
     });
 }
 

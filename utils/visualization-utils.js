@@ -97,11 +97,11 @@ function getCanvasPositionForCoordinates(coordinates, geometryBoundingBox, canva
     };
 
     // Don't distort coordinates, expand bounding box into a square
-    let drawAreaEdgeSize = Math.max(geometryBoundingBox.width, geometryBoundingBox.height);
+    let drawAreaEdgeLength = Math.max(geometryBoundingBox.width, geometryBoundingBox.height);
 
     // Convert X and Y coordinates to values between 0 - 1
-    const normalizedX = (coordinates.x - geometryBoundingBox.min.x) / drawAreaEdgeSize;
-    const normalizedY = (coordinates.y - geometryBoundingBox.min.y) / drawAreaEdgeSize;
+    const normalizedX = (coordinates.x - geometryBoundingBox.min.x) / drawAreaEdgeLength;
+    const normalizedY = (coordinates.y - geometryBoundingBox.min.y) / drawAreaEdgeLength;
 
     // Return position on canvas
     return {

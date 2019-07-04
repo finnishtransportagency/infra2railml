@@ -10,6 +10,9 @@ const mileageChange = require('./mileage-change');
 const trackElements = require('./track-elements');
 const ocsElements = require('./ocs-elements');
 const railUtils = require('../utils/rail-utils');
+const visualizationUtils = require('../utils/visualization-utils');
+const elementUtils = require('../utils/element-utils');
+const positionUtils = require('../utils/position-utils');
 
 // Notice: the order of child elements is significant.
 // https://wiki.railml.org/index.php?title=IS:track
@@ -77,6 +80,9 @@ function marshallTrack(raide, memo) {
     
     $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit, index.kaltevuudet));
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
+
+    const trackData = visualizationUtils.getTracksVisualizationData(ratanumero, raide, onRailElements);
+    memo.visualElements.push(trackData);
 
     return {
         element: $.xml(),

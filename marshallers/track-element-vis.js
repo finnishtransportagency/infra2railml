@@ -1,26 +1,55 @@
+const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
+const visualizationUtils = require('../utils/visualization-utils');
 
-const MARGIN = 150;
-const COLUMN_WIDTH = 1000;
-const ROW_HEIGHT = 750;
+// 30 000 pixels for every 0.2 of bounding box width
+const CANVAS_SIZE_RATIO = 30000 / 0.2;
 
 module.exports = {
-    marshall: (obj, i) => {
+    marshall: (trackVisualData, boundingBox) => {
 
-        const col = Math.round(10 * ((i / 10) % 1));
-        const row = Math.floor(i / 10);
+        let canvasWidth = CANVAS_SIZE_RATIO * boundingBox.width;
+        let canvasHeight = canvasWidth * (boundingBox.height / boundingBox.width);
 
-        const x = MARGIN + (col * COLUMN_WIDTH);
-        const y = MARGIN + (row * ROW_HEIGHT);
-        const dx = x + COLUMN_WIDTH;
+        const refId = trackVisualData.id;
+        const $ = cheerio.load(`<trackVis ref="${refId}">`, config.cheerio);
 
-        const id = obj.tunniste || obj.kilometrimerkki.tunniste;
-        const refId = obj.ratakm || id;
+        // Track start
+        const trackCanvasStartPosition = visualizationUtils.getCanvasPositionForCoordinates(
+            trackVisualData.coordinates.start,
+            boundingBox,
+            canvasWidth,
+            canvasHeight
+        );
 
-        const $ = cheerio.load(`<trackVis ref="${id}">`, config.cheerio);
-        $('trackVis').append(`<trackElementVis ref="tb_${refId}"><position x="${x}" y="${y}"/></trackElementVis>`);
-        $('trackVis').append(`<trackElementVis ref="te_${refId}"><position x="${dx}" y="${y}"/></trackElementVis>`);
+        $('trackVis').append(`<trackElementVis ref="tb_${refId}">
+                            <position x="${trackCanvasStartPosition.x}" y="${trackCanvasStartPosition.y}"/>
+                            </trackElementVis>`);
+
+        // Track elements
+        _.forEach(trackVisualData.elements, (elementVisualData)  => {
+            const trackElementCanvasPosition = visualizationUtils.getCanvasPositionForCoordinates(
+                elementVisualData.coordinates,
+                boundingBox,
+                canvasWidth,
+                canvasHeight
+            );
+            $('trackVis').append(`<trackElementVis ref="${elementVisualData.id}">
+                                <position x="${trackElementCanvasPosition.x}" y="${trackElementCanvasPosition.y}"/>
+                                </trackElementVis>`);
+        });
+
+        // Track end
+        const trackCanvasEndPosition = visualizationUtils.getCanvasPositionForCoordinates(
+            trackVisualData.coordinates.end,
+            boundingBox,
+            canvasWidth,
+            canvasHeight
+        );
+        $('trackVis').append(`<trackElementVis ref="te_${refId}">
+                            <position x="${trackCanvasEndPosition.x}" y="${trackCanvasEndPosition.y}"/>
+                            </trackElementVis>`);
 
         return $.xml();
     }

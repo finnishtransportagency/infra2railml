@@ -2,3 +2,4 @@ node_modules/
 *.code-workspace
 *.railml
 *.xml
+*_visualization.html

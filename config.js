@@ -7,7 +7,8 @@ module.exports = {
         normalizeWhitespace: true
     },
     railml: {
-        visualize: false
+        visualize: true,
+        debugVisualization: true
     },
     http: {
         throttle: {

@@ -4,7 +4,7 @@
   "description": "rata.digitraffic.fi/infra-api transformation to railML v2.2.",
   "main": "index.js",
   "bin": {
-    "infra2railml": "cross-env LOGGER_LEVEL=info bin/infra2railml"
+    "infra2railml": "bin/infra2railml"
   },
   "scripts": {
     "test": "test"

@@ -1,6 +1,10 @@
 const _ = require('lodash');
 const elementUtils = require('./element-utils');
 
+// elementti.vaihde.tyyppi values for crossings in the API
+// rr = raideristeys, srr = sovitettu raideristeys
+const CROSSING_TYPES = ['rr', 'srr'];
+
 /**
  * Tells if the given element is anyhow related to specified rail,
  * regardless of it's track number, position etc.
@@ -73,9 +77,9 @@ function getSpeedLimits(raide, ratanumero, alku, loppu) {
 }
 
 /**
- * Returns the switches to be nested under given track.
+ * Returns all switches and crossings to be nested under given track.
  */
-function getRailSwitches(raideId, ratanumero, alku, loppu, elementit) {
+function findRailSwitches(raideId, ratanumero, alku, loppu, elementit) {
 
     const beginElement = elementUtils.getConnectingElement(alku, elementit);
     const beginRef = elementUtils.getReference(raideId, 'begin', beginElement);
@@ -88,14 +92,19 @@ function getRailSwitches(raideId, ratanumero, alku, loppu, elementit) {
 };
 
 /**
+ * Returns the switches to be nested under given track.
+ */
+function getRailSwitches(raideId, ratanumero, alku, loppu, elementit) {
+    const vaihteet = findRailSwitches(raideId, ratanumero, alku, loppu, elementit);
+    return _.filter(vaihteet, (v) => !CROSSING_TYPES.includes(v.vaihde.tyyppi));
+}
+
+/**
  * Returns the crossings to be nested under given track.
  */
 function getRailCrossings(raideId, ratanumero, alku, loppu, elementit) {
-    
-    const switches = getRailSwitches(raideId, ratanumero, alku, loppu, elementit);
-    
-    return _.filter(switches, (e) =>
-        !!e.vaihde && (e.vaihde.tyyppi === "rr" || e.vaihde.tyyppi === "srr"));
+    const vaihteet = findRailSwitches(raideId, ratanumero, alku, loppu, elementit);
+    return _.filter(vaihteet, (v) => CROSSING_TYPES.includes(v.vaihde.tyyppi));
 }
 
 module.exports = {

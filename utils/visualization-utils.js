@@ -8,11 +8,19 @@ const positionUtils = require('../utils/position-utils');
  */
 function getBoundingBox(visualElements) {
 
-    let minX = 90; // Max value for latitude
-    let minY = 180; // Max value for longitude
 
-    let maxX = -90; // Min value for latitude
-    let maxY = -180; // Min value for longitude
+    let maxX = 90; // The maximum value for latitude
+    let maxY = 180; // The maximum value for latitude
+
+    let minX = -90; // The minimum value for latitude
+    let minY = -180; // The minimum value for latitude
+
+
+    let smallestX = maxX;
+    let smallestY = maxY;
+
+    let biggestX = minX;
+    let biggestY = minY;
 
     // Gather all coordinates
     let coordinates = [];
@@ -30,23 +38,23 @@ function getBoundingBox(visualElements) {
     _.forEach(coordinates, (coordinate) => {
         let x = coordinate.x;
         let y = coordinate.y;
-        if(x < minX) minX = x;
-        if(y < minY) minY = y;
-        if(x > maxX) maxX = x;
-        if(y > maxY) maxY = y;
+        if(x < smallestX) smallestX = x;
+        if(y < smallestY) smallestY = y;
+        if(x > biggestX) biggestX = x;
+        if(y > biggestY) biggestY = y;
     });
 
     const boundingBox = {
         "min" : {
-            "x" : minX,
-            "y" : minY
+            "x" : smallestX,
+            "y" : smallestY
         },
         "max" : {
-            "x" : maxX,
-            "y" : maxY
+            "x" : biggestX,
+            "y" : biggestY
         },
-        "height" : (maxY - minY),
-        "width" : (maxX - minX)
+        "height" : (biggestY - smallestY),
+        "width" : (biggestX - smallestX)
     };
 
     return boundingBox;

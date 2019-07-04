@@ -1,20 +1,18 @@
 const _ = require('lodash');
 const canvasUtils = require('../utils/canvas-utils');
 const elementUtils = require('../utils/element-utils');
-const positionUtils = require('../utils/position-utils');
+
 /**
  * Calculates the shape of a axis-aligned bounding box
  * for given track visual elements list.
  */
 function getBoundingBox(visualElements) {
 
-
     let maxX = 90; // The maximum value for latitude
     let maxY = 180; // The maximum value for latitude
 
     let minX = -90; // The minimum value for latitude
     let minY = -180; // The minimum value for latitude
-
 
     let smallestX = maxX;
     let smallestY = maxY;
@@ -61,33 +59,48 @@ function getBoundingBox(visualElements) {
 }
 
 /**
- *  Returns the coordinates of an element.
+ *  Returns the coordinates of a track.
  */
-function getElementCoordinates(element) {
+function getTrackCoordinates(track) {
 
     let coordinates = {
         "start" : null,
         "end" : null
     };
 
+    // Tracks have an array with one array of coordinates
+    if(track.geometria.length > 0 && Array.isArray(track.geometria[0])) {
+        coordinates.start = {
+            "x" : track.geometria[0][0][0],
+            "y" : track.geometria[0][0][1]
+        };
+        const lastElementIndex = track.geometria[0].length - 1;
+        coordinates.end = {
+            "x" : track.geometria[0][lastElementIndex][0],
+            "y" : track.geometria[0][lastElementIndex][1]
+        }
+    } else {
+        console.error("Error: can't determine coordinates for a track.");
+    }
+
+    return coordinates;
+}
+
+/**
+ *  Returns the coordinates of an element.
+ */
+function getElementCoordinates(element) {
+
+    let coordinates = null;
+
     // Elements only have one coordinate
     if(element.geometria.length === 2 && !Array.isArray(element.geometria[0])) {
-        coordinates.start = {
+        coordinates = {
             "x" : element.geometria[0],
             "y" : element.geometria[1]
         }
-    }
-    // Tracks have an array with one array of coordinates
-    else if(element.geometria.length > 0 && Array.isArray(element.geometria[0])) {
-        coordinates.start = {
-            "x" : element.geometria[0][0][0],
-            "y" : element.geometria[0][0][1]
-        };
-        const lastElementIndex = element.geometria[0].length - 1;
-        coordinates.end = {
-            "x" : element.geometria[0][lastElementIndex][0],
-            "y" : element.geometria[0][lastElementIndex][1]
-        }
+    } else {
+        console.error("Error: can't determine coordinates for an element.");
     }
 
     return coordinates;
@@ -174,8 +187,8 @@ function createHTMLCanvasVisualization(fileNamePrefix, canvas, trackVisualElemen
                 const canvasPositionStart = getCanvasPositionForCoordinates(coordinatesStart,boundingBox, canvas.width, canvas.height);
                 const canvasPositionEnd = getCanvasPositionForCoordinates(coordinatesEnd,boundingBox, canvas.width, canvas.height);
 
-                canvasUtils.writeLabel(canvas, canvasPositionStart, trackVisualData.elements[i].type, "#0011ff");
-                canvasUtils.drawLine(canvas, canvasPositionStart, canvasPositionEnd, "#0011ff");
+                canvasUtils.writeLabel(canvas, canvasPositionStart, trackVisualData.elements[i].type, "#3062b9");
+                canvasUtils.drawLine(canvas, canvasPositionStart, canvasPositionEnd, "#4781ff");
                 canvasUtils.drawABox(canvas, canvasPositionStart, "#00ffe3");
             }
         }
@@ -198,7 +211,7 @@ function createHTMLCanvasVisualization(fileNamePrefix, canvas, trackVisualElemen
  */
 function getTracksVisualizationData(ratanumero, raide, trackElements) {
 
-    const raideCoordinates = getElementCoordinates(raide);
+    const raideCoordinates = getTrackCoordinates(raide);
 
     // Sort elements according to their position on track
     trackElements = _.sortBy(
@@ -215,14 +228,13 @@ function getTracksVisualizationData(ratanumero, raide, trackElements) {
         const elementId = element.tunniste;
         const elementRefId = elementId;
 
-        const coordinates = getElementCoordinates(element);
+        const elementCoordinates = getElementCoordinates(element);
         elementsVisualData.push({
             "id" : elementRefId,
-            "coordinates" : coordinates.start,
+            "coordinates" : elementCoordinates,
             "type" : element.tyyppi
         });
-    };
-
+    }
 
     return  {
         "id" : raide.tunniste,
@@ -233,5 +245,5 @@ function getTracksVisualizationData(ratanumero, raide, trackElements) {
 }
 
 module.exports = {
-    getBoundingBox, getCanvasPositionForCoordinates, createHTMLCanvasVisualization, getTracksVisualizationData, getElementCoordinates
+    getBoundingBox, getCanvasPositionForCoordinates, createHTMLCanvasVisualization, getTracksVisualizationData
 };

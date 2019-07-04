@@ -4,7 +4,7 @@ const config = require('../config');
 const trackElemVis = require('./track-element-vis');
 
 module.exports = {
-    marshall: (baseType, model) => {
+    marshall: (baseType, model, boundingBox) => {
 
         const { index } = model;
 
@@ -13,7 +13,11 @@ module.exports = {
 
         const $ = cheerio.load('<infrastructureVisualizations/>', config.cheerio);
 
-        const trackVis = _.map(index[baseType], trackElemVis.marshall);
+        let trackVis = "";
+        _.forEach(model.visualElements, (trackVisualData) => {
+            trackVis += trackElemVis.marshall(trackVisualData, boundingBox);
+        });
+
         $('infrastructureVisualizations').append(`<visualization id="${lineId}_vis" version="2.2" infrastructureRef="${infraId}"/>`);
         $('infrastructureVisualizations > visualization').append(`<lineVis ref="${lineId}"/>`);
         $('infrastructureVisualizations > visualization > lineVis').append(trackVis);

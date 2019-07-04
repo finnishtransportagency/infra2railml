@@ -10,6 +10,9 @@ const mileageChange = require('./mileage-change');
 const trackElements = require('./track-elements');
 const ocsElements = require('./ocs-elements');
 const railUtils = require('../utils/rail-utils');
+const visualizationUtils = require('../utils/visualization-utils');
+const elementUtils = require('../utils/element-utils');
+const positionUtils = require('../utils/position-utils');
 
 // Notice: the order of child elements is significant.
 // https://wiki.railml.org/index.php?title=IS:track
@@ -43,7 +46,7 @@ function marshallTrack(raide, memo) {
     
     // mileage changes, i.e. absPos corrections due to track kilometers not always being exactly 1000 meters
     const onRailMileposts = _.filter(kilometrit, (k) => railUtils.isMilepostOnRail(ratanumero, alku, loppu, k));    
-    const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(raideId, alku, kilometrit, k)), _.isEmpty);
+    const mileageChanges = _.reject(_.map(onRailMileposts, (k) => mileageChange.marshall(raideId, alku, loppu, kilometrit, k)), _.isEmpty);
     if (!_.isEmpty(mileageChanges)) {
         $('track > trackTopology').append('<mileageChanges/>');
         $('track > trackTopology > mileageChanges').append(mileageChanges);
@@ -75,8 +78,11 @@ function marshallTrack(raide, memo) {
     const onRailElements = _.filter(elements, (e) => railUtils.isOnRail(e, ratanumero, alku, loppu));
     const onRailElementGroups = _.groupBy(onRailElements, 'tyyppi');
     
-    $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
+    $('track').append(trackElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit, index.kaltevuudet));
     $('track').append(ocsElements.marshall(raide, ratanumero, alku, loppu, onRailElementGroups, kilometrit));
+
+    const trackData = visualizationUtils.getTracksVisualizationData(ratanumero, raide, onRailElements);
+    memo.visualElements.push(trackData);
 
     return {
         element: $.xml(),

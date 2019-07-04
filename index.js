@@ -1,7 +1,9 @@
 const fs = require('fs');
 const _ = require('lodash');
 const trackService = require('./services/tracks');
-const stationService = require('./services/stations.js');
+const stationService = require('./services/stations');
+const positionUtils = require('./utils/position-utils');
+const gradientUtils = require('./utils/gradient-utils');
 const railml = require('./marshallers/railml');
 const { BaseType } = railml;
 
@@ -74,14 +76,18 @@ module.exports = {
 
       // resolve track kilometers that have not been loaded
       const nonLoadedKms = _.transform(valienKilometrit, (res, kms, ratanumero) => {
+
         const kilometersToLoad = [];
         const diff = _.difference(kms, loadedKms);
+
         // fill in the blanks between diff and loaded
-        for (var i = _.min(diff); i < _.max(diff); i++) {
-          if (i < _.min(loadedKms) || i > _.max(loadedKms)) {
+        const limit = Math.max(_.max(diff), _.min(loadedKms));
+        for (let i = _.min(diff); i <= limit; i++) {
+          if (i < _.min(loadedKms) || i > _.max(loadedKms)) {
             kilometersToLoad.push(i);
           }
         }
+
         res[ratanumero] = kilometersToLoad;
         return res;
       }, {});
@@ -90,15 +96,22 @@ module.exports = {
         if (v.length > 0) res.push(`${k} [${v.join(', ')}]`);
         return res;
       }, []).join(', ');
-      console.info(`\r\x1b[KLoading additional kilometers; ${kmInfo}`);
+      console.info(`\r\x1b[KLoading additional kilometers ${kmInfo}`);
 
       // load extra kilometers and compose the index object
       Promise.all(_.flatMap(nonLoadedKms, (kms, ratanumero) =>
           _.flatMap(kms, (km) => trackService.getKilometer(ratanumero, km))
         ))
         .then((extraKilometrit) => {
+
+          const extraElementit = _.uniqBy(_.reject(_.flatMap(extraKilometrit, 'elementit'),_ .isEmpty), 'tunniste');
+          const kaikkiElementit = _.uniqBy(_.concat(elementit, extraElementit), 'tunniste');
+
+          const korkeudet = _.flatMap(raiteet, 'korkeuspisteet');
+          const kaltevuudet = gradientUtils.toSlopes(korkeudet, _.concat(kilometrit, extraKilometrit));
+
           return {
-            trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit, liikennepaikat
+            trackId, from, to, absLength, kilometrit, extraKilometrit, raiteet, elementit : kaikkiElementit, liikennepaikat, kaltevuudet
           };
         })
         .then(resolve);

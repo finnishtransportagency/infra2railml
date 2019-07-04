@@ -3,17 +3,20 @@ const config = require('../config');
 const positionUtils = require('../utils/position-utils');
 
 module.exports = {
-    marshall: (railId, raideAlku, kilometrit, km) => {
-
-        // TODO return undef if milepost not between rail begin/end
+    marshall: (railId, raideAlku, raideLoppu, kilometrit, km) => {
 
         if (km.pituus === 1000) return undefined;
 
-        const sijainti = { ratakm: km.ratakm, etaisyys: km.pituus };
         const alkuAbsPos = positionUtils.getAbsolutePosition(raideAlku);
-        
-        const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
+        const loppuAbsPos = positionUtils.getAbsolutePosition(raideLoppu);
         const absPos = 1000 + km.ratakm * 1000;
+
+        if (absPos < alkuAbsPos || absPos > loppuAbsPos) {
+            return undefined;
+        }
+
+        const sijainti = { ratakm: km.ratakm, etaisyys: km.pituus };
+        const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
         const absPosIn = alkuAbsPos + pos;
 
         const type = km.pituus > 1000 ? 'overlapping' : 'missing';

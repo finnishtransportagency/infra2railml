@@ -23,7 +23,7 @@ module.exports = {
         if (loppuElementti && ref && loppuElementti.tyyppi === 'vaihde') {
             $('trackEnd').append(`<connection id="tec_${raideId}" ref="${ref}" />`);
         } else if (loppuElementti && loppuElementti.tyyppi === 'puskin') {
-            $('trackEnd').append(`<bufferStop id="tebs_${raideId}" name="${loppuElementti.nimi || loppuElementti.tunniste}" />`);
+            $('trackEnd').append(`<bufferStop id="${loppuElementti.tunniste}" />`);
         } else {
             $('trackEnd').append(`<openEnd id="teoe_${raideId}" name="${raideId}" />`);
         }

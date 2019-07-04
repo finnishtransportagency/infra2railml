@@ -56,7 +56,8 @@ module.exports = {
       const absLength = _.sumBy(sorted, 'pituus');
 
       const elementit = _.uniqBy(_.reject(_.flatMap(kilometrit, 'elementit'), _.isEmpty), 'tunniste');
-      const raiteet = _.uniqBy(_.reject(_.flatMap(elementit, 'raiteet'), _.isEmpty), 'tunniste');
+      const kaikkiRaiteet = _.uniqBy(_.reject(_.flatMap(elementit, 'raiteet'), _.isEmpty), 'tunniste');
+      const raiteet = _.filter(kaikkiRaiteet, (r) => !_.isEmpty(_.find(r.ratakmvalit, (v) => v.ratanumero === trackId)));
 
       const liikennepaikanRaiteet = _.reject(_.flatMap(raiteet, 'liikennepaikanRaide'), _.isEmpty);
       const liikennepaikat = _.uniqBy(_.reject(_.flatMap(liikennepaikanRaiteet, 'liikennepaikka'), _.isEmpty), 'tunniste');

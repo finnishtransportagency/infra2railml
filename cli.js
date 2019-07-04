@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const cmd = require('commander');
 const app = require('./index');
 const { version } = require('./package.json');
@@ -23,9 +24,7 @@ function rails(trackNumber, args) {
 
   const { from, to, length } = args;
   
-  if (!trackNumber || trackNumber.length === 0 || !from || from > to) {
-    cmd.outputHelp();
-  } else {
+  if (isValidArgs(trackNumber, args)) {
 
     const start = new Date().getTime();    
     const count = !!to ? to - from + 1 : (length || 1);
@@ -37,7 +36,34 @@ function rails(trackNumber, args) {
       .then((railml) => app.writeToFile(filename, railml))
       .then(() => console.info(`\r\x1b[KDone! (${new Date().getTime() - start} ms)`))
       .catch((err) => console.error(err));
+
+  } else {
+    cmd.outputHelp();
   }
+}
+
+/**
+ * Returns true if given command-line parameters are valid and
+ * mutually logical, otherwise false.
+ */
+function isValidArgs(trackNumber, args) {
+
+  const { from, to, length } = args;
+
+  if (_.isUndefined(trackNumber) || _.isEmpty(trackNumber)) {
+    return false;
+  }
+  if (_.isUndefined(from) || from < 0) {
+    return false;
+  }
+  if (!_.isUndefined(to) && (to < 0 || to < from)) {
+    return false;
+  }
+  if (!_.isUndefined(length) && length < 1) {
+    return false;
+  }
+
+  return true;
 }
 
 /**

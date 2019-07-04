@@ -1,6 +1,6 @@
 module.exports = {
     infraApi: {
-        baseUrl: 'https://rata-beta.digitraffic.fi/infra-api/0.3'
+        baseUrl: 'https://rata.digitraffic.fi/infra-api/0.3'
     },
     cheerio: {
         xmlMode: true,

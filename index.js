@@ -2,7 +2,6 @@ const fs = require('fs');
 const _ = require('lodash');
 const trackService = require('./services/tracks');
 const stationService = require('./services/stations');
-const positionUtils = require('./utils/position-utils');
 const gradientUtils = require('./utils/gradient-utils');
 const railml = require('./marshallers/railml');
 const { BaseType } = railml;
@@ -107,7 +106,7 @@ module.exports = {
           const extraElementit = _.uniqBy(_.reject(_.flatMap(extraKilometrit, 'elementit'),_ .isEmpty), 'tunniste');
           const kaikkiElementit = _.uniqBy(_.concat(elementit, extraElementit), 'tunniste');
 
-          const korkeudet = _.flatMap(raiteet, 'korkeuspisteet');
+          const korkeudet = _.groupBy(_.flatMap(raiteet, 'korkeuspisteet'), (k) => k.sijainti.ratanumero);
           const kaltevuudet = gradientUtils.toSlopes(korkeudet, _.concat(kilometrit, extraKilometrit));
 
           return {

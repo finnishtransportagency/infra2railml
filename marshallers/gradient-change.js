@@ -11,13 +11,13 @@ module.exports = {
     marshall: (raideId, raideAlku, korkeuspisteet, kaltevuudet, kilometrit) => {
         
         const begin = [
-            getGradienChange(raideId, raideAlku, 'laskeva', raideAlku, kaltevuudet, kilometrit),
-            getGradienChange(raideId, raideAlku, 'nouseva', raideAlku, kaltevuudet, kilometrit)
+            getGradientChange(raideId, raideAlku, 'laskeva', raideAlku, kaltevuudet, kilometrit),
+            getGradientChange(raideId, raideAlku, 'nouseva', raideAlku, kaltevuudet, kilometrit)
         ];
         
         const changes = _.flatMap(korkeuspisteet, (k) => [
-            getGradienChange(raideId, raideAlku, 'laskeva', k.sijainti, kaltevuudet, kilometrit),
-            getGradienChange(raideId, raideAlku, 'nouseva', k.sijainti, kaltevuudet, kilometrit)
+            getGradientChange(raideId, raideAlku, 'laskeva', k.sijainti, kaltevuudet, kilometrit),
+            getGradientChange(raideId, raideAlku, 'nouseva', k.sijainti, kaltevuudet, kilometrit)
         ]);
         
         return _.reject(_.concat(begin, changes), _.isEmpty);
@@ -28,7 +28,7 @@ module.exports = {
  * Marshall gradientChange for the given position. Position may be
  * arbitrary, e.g. track begin, or exact corresponding to korkeuspiste.
  */
-function getGradienChange(raideId, raideAlku, suunta, sijainti, kaltevuudet, kilometrit) {
+function getGradientChange(raideId, raideAlku, suunta, sijainti, kaltevuudet, kilometrit) {
 
     const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
     const absPos = positionUtils.getAbsolutePosition(sijainti);

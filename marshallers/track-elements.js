@@ -24,7 +24,7 @@ module.exports = {
             $('trackElements > speedChanges').append(_.join(speedChanges, ''));
         }
 
-        const gradientChanges = gradientChange.marshall(raideId, alku, raide.korkeuspisteet, kaltevuudet, kilometrit);
+        const gradientChanges = gradientChange.marshall(raideId, alku, raide.korkeuspisteet, kaltevuudet[ratanumero], kilometrit);
         if (!_.isEmpty(gradientChanges)) {
             $('trackElements').append('<gradientChanges/>');
             $('trackElements > gradientChanges').append(_.join(gradientChanges, ''));

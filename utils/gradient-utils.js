@@ -24,32 +24,27 @@ function getSlope(sijainti, suunta, kaltevuudet) {
         return onPosition;
     }
 
-    /*
-    const absPos = positionUtils.getAbsolutePosition(sijainti);
-    const preceeding = _.last(_.takeWhile(suuntaan, (slope) =>
-        positionUtils.getAbsolutePosition(slope.sijainti) <= absPos
-    ));
-    */
-   const preceeding = _.last(_.takeWhile(suuntaan, (slope) =>
+    const preceding = _.last(_.takeWhile(suuntaan, (slope) =>
         slope.sijainti.ratakm < sijainti.ratakm ||
         (slope.sijainti.ratakm === sijainti.ratakm && slope.sijainti.etaisyys < sijainti.etaisyys)
     ));
- 
-    if (_.isEmpty(preceeding)) {
-        // TODO how to determine the slope before model beginning?
-        return { sijainti, suunta, kaltevuus: 0.0 };
-    }
 
-    // no match, assume the preceeding known value
-    return { sijainti: sijainti, kaltevuus: preceeding.kaltevuus, suunta: preceeding.suunta };
+    // no exact match, assume preceding value or zero
+    // TODO how to determine the slope before model beginning?
+    const kaltevuus = _.isEmpty(preceding) ? 0.0 : preceding.kaltevuus;
+
+    return { sijainti, suunta, kaltevuus };
 }
 
 /**
  * Converts the given elevation points to track slope values.
  */
 function toSlopes(korkeuspisteet, kilometrit) {
-    const sorted = _.sortBy(korkeuspisteet, (k) => positionUtils.getAbsolutePosition(k.sijainti));
-    return slopes(sorted, kilometrit, []);
+    return _.transform(korkeuspisteet, (res, korkeudet, ratanumero) => {
+        const sorted = _.sortBy(korkeudet, (k) => positionUtils.getAbsolutePosition(k.sijainti));
+        res[ratanumero] = slopes(sorted, kilometrit, []);
+        return res;
+    }, {});
 }
 
 /**
@@ -58,6 +53,7 @@ function toSlopes(korkeuspisteet, kilometrit) {
 function slopes(korkeuspisteet, kilometrit, kaltevuudet) {
 
     if (_.isEmpty(_.tail(korkeuspisteet))) {
+        // end of array reached
         return kaltevuudet;
     }
 
@@ -66,16 +62,18 @@ function slopes(korkeuspisteet, kilometrit, kaltevuudet) {
     const next = _.first(tail);
 
     const x = positionUtils.getPosition(head.sijainti, next.sijainti, kilometrit);
-    const y = next.korkeus > head.korkeus ? next.korkeus - head.korkeus : head.korkeus - next.korkeus;
+    const y = next.korkeus - head.korkeus;
     
-    if (x <= 0 || y <= 0) {
+    // Zero values mean "no change", thus no need for gradientChange element at this point.
+    // The x below zero might happen if we're missing kilometers due to 404 from API.
+    if (x <= 0 || y == 0) {
         return slopes(tail, kilometrit, kaltevuudet);
     }
 
-    const sign = next.korkeus > head.korkeus || next.korkeus === head.korkeus ? 1 : -1;
-    const slopePerMille = Math.tan(y/x) * 1000 * sign;
+    const slopePerMille = Math.tan(y/x) * 1000;
 
-    const slopeUp = Math.round(slopePerMille * 1000) / 1000; // round to three decimals
+    // round to three decimals and switch sign for opposite direction
+    const slopeUp = Math.round(slopePerMille * 1000) / 1000;
     const slopeDown = -1.0 * slopeUp;
 
     kaltevuudet.push({ sijainti: head.sijainti, suunta: 'nouseva', kaltevuus: slopeUp });

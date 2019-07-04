@@ -3,12 +3,14 @@ const cheerio = require('cheerio');
 const config = require('../config');
 const visualizationUtils = require('../utils/visualization-utils');
 
+// 30 000 pixels for every 0.2 of bounding box width
+const CANVAS_SIZE_RATIO = 30000 / 0.2;
 
 module.exports = {
     marshall: (trackVisualData, boundingBox) => {
 
-        let CANVAS_WIDTH = 30000 * boundingBox.width / 0.2;
-        let CANVAS_HEIGHT = CANVAS_WIDTH;
+        let canvasWidth = CANVAS_SIZE_RATIO * boundingBox.width;
+        let canvasHeight = canvasWidth * (boundingBox.height / boundingBox.width);
 
         const refId = trackVisualData.id;
         const $ = cheerio.load(`<trackVis ref="${refId}">`, config.cheerio);
@@ -17,9 +19,10 @@ module.exports = {
         const trackCanvasStartPosition = visualizationUtils.getCanvasPositionForCoordinates(
             trackVisualData.coordinates.start,
             boundingBox,
-            CANVAS_WIDTH,
-            CANVAS_HEIGHT
+            canvasWidth,
+            canvasHeight
         );
+
         $('trackVis').append(`<trackElementVis ref="tb_${refId}">
                             <position x="${trackCanvasStartPosition.x}" y="${trackCanvasStartPosition.y}"/>
                             </trackElementVis>`);
@@ -29,8 +32,8 @@ module.exports = {
             const trackElementCanvasPosition = visualizationUtils.getCanvasPositionForCoordinates(
                 elementVisualData.coordinates,
                 boundingBox,
-                CANVAS_WIDTH,
-                CANVAS_HEIGHT
+                canvasWidth,
+                canvasHeight
             );
             $('trackVis').append(`<trackElementVis ref="${elementVisualData.id}">
                                 <position x="${trackElementCanvasPosition.x}" y="${trackElementCanvasPosition.y}"/>
@@ -41,8 +44,8 @@ module.exports = {
         const trackCanvasEndPosition = visualizationUtils.getCanvasPositionForCoordinates(
             trackVisualData.coordinates.end,
             boundingBox,
-            CANVAS_WIDTH,
-            CANVAS_HEIGHT
+            canvasWidth,
+            canvasHeight
         );
         $('trackVis').append(`<trackElementVis ref="te_${refId}">
                             <position x="${trackCanvasEndPosition.x}" y="${trackCanvasEndPosition.y}"/>

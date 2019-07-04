@@ -8,7 +8,7 @@ module.exports = {
 
         const { index } = model;
 
-        const infraId = `infra_${index.trackId}_${index.from}-${index.to}`;
+        const infraId = `infra_${index.trackId}_${index.from}_${index.to}`;
         const lineId = `line_${index.trackId}_${index.from}_${index.to}`;
 
         const $ = cheerio.load('<infrastructureVisualizations/>', config.cheerio);

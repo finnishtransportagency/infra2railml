@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const config = require('../config');
-const elementUtils = require('../utils/element-utils');
 const positionUtils = require('../utils/position-utils');
 
 module.exports = {
@@ -11,10 +10,10 @@ module.exports = {
             return [];
         }
 
-        return [
+        return _.reject([
             getStopPost(raideId, raideAlku, kilometrit, liikennepaikanRaide, 'up'),
             getStopPost(raideId, raideAlku, kilometrit, liikennepaikanRaide, 'down')
-        ];
+        ], _.isUndefined);
     }
 };
 
@@ -31,6 +30,11 @@ const getStopPost = (raideId, raideAlku, kilometrit, liikennepaikanRaide, dir) =
 
     const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
     const absPos = positionUtils.getAbsolutePosition(sijainti);
+
+    if (pos < 0) {
+        // likely a rail related to station, but located a bit off from the station
+        return undefined;
+    }
 
     const $ = cheerio.load('<stopPost/>', config.cheerio);
     $('stopPost').attr('id', `stp_${raideId}_${pos}_${dir}`);

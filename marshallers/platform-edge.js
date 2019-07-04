@@ -22,6 +22,11 @@ module.exports = {
         const pos = positionUtils.getPosition(raideAlku, sijainti, kilometrit);
         const absPos = positionUtils.getAbsolutePosition(sijainti);
 
+        if (pos < 0) {
+            // likely a rail related to station, but located a bit off from the station
+            return undefined;
+        }
+
         const $ = cheerio.load('<platformEdge/>', config.cheerio);
         $('platformEdge').attr('id', `pe_${raideId}`);
         $('platformEdge').attr('name', nimi);

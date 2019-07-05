@@ -19,7 +19,7 @@ function fetchKilometer(trackId, km) {
 
     return http.get(url, options)
       .then((res) => {
-        process.stdout.write(`\r\x1b[K${res.status}: ${url}`);
+        process.stdout.write(`\r\x1b[K${res.status}: ${url} (${res.duration}ms)`);
         return _.first(res.data);
       })
       .catch((err) => {

@@ -15,7 +15,7 @@ function list() {
 
     return http.get(url, options)
         .then((res) => {
-            process.stdout.write(`\x1b[0G${res.status}: ${url}\x1b[K`);
+            process.stdout.write(`\r\x1b[K${res.status}: ${url} (${res.duration}ms)`);
             return _.sortBy(_.flatMap(res.data, (v, k) => v), 'nimi');
         })
         .catch((err) => {

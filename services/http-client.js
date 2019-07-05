@@ -10,4 +10,28 @@ const opts = {
     timeout: config.http.timeout
 };
 
-module.exports = axios.create(opts);
+const client = axios.create(opts)
+
+client.interceptors.request.use(
+    (conf) => {
+        conf.metadata = { startTime: new Date() };
+        return conf;
+    },
+    (error) => Promise.reject(error)
+);
+
+client.interceptors.response.use(
+    (res) => {
+        res.config.metadata.endTime = new Date();
+        res.duration = res.config.metadata.endTime - res.config.metadata.startTime;
+        return res;
+    },
+    (error) => {
+        error.config.metadata.endTime = new Date();
+        error.duration = error.config.metadata.endTime - error.config.metadata.startTime;
+        return Promise.reject(error);
+    }
+);
+
+
+module.exports = client;

@@ -12,7 +12,9 @@ const CrossingType = {
 
 const CROSSING_TYPES = {
     rr: CrossingType.SIMPLE,
-    srr: CrossingType.SIMPLE_SWITCH
+    srr: CrossingType.SIMPLE_SWITCH,
+    yrv: CrossingType.SIMPLE_SWITCH,
+    krv: CrossingType.DOUBLE_SWITCH
 };
 
 module.exports = {

@@ -2,8 +2,11 @@ const _ = require('lodash');
 const elementUtils = require('./element-utils');
 
 // elementti.vaihde.tyyppi values for crossings in the API
-// rr = raideristeys, srr = sovitettu raideristeys
-const CROSSING_TYPES = ['rr', 'srr'];
+// rr = raideristeys
+// srr = sovitettu raideristeys
+// yrv = yksipuolinen risteysvaihde
+// krv = kaksipuolinen risteysvaihde
+const CROSSING_TYPES = ['rr', 'srr', 'yrv', 'krv'];
 
 /**
  * Tells if the given element is anyhow related to specified rail,

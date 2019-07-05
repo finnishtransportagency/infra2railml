@@ -11,9 +11,13 @@ module.exports = {
         debugVisualization: true
     },
     http: {
+        // The API is sometimes very slow..
+        timeout: 60000,
         throttle: {
+            // cache threshold for new fetch
             threshold: 15 * 60 * 1000
         },
+        // number of concurrent requests
         concurrency: 10
     }
 };

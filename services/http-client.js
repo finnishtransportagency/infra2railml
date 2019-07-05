@@ -5,4 +5,9 @@ const config = require('../config');
 const cacheAdapter = cacheAdapterEnhancer(axios.defaults.adapter);
 const throttleAdapter = throttleAdapterEnhancer(cacheAdapter, config.http.throttle);
 
-module.exports = axios.create({ adapter: throttleAdapter });
+const opts = {
+    adapter: throttleAdapter,
+    timeout: config.http.timeout
+};
+
+module.exports = axios.create(opts);

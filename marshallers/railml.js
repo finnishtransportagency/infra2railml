@@ -55,7 +55,7 @@ function marshall(baseType, index) {
         const infra = infrastructure.marshall(baseType, results);
         $('railml').append(infra);
 
-        if (config.railml.visualize === true) {
+        if (baseType === BaseType.RAILS && config.railml.visualize === true) {
             // Calculate bounding box for visual elements
             const boundingBox = visualizationUtils.getBoundingBox(memo.visualElements);
 

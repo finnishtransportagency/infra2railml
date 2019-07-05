@@ -64,7 +64,10 @@ function getKilometer(trackId, km) {
         return Promise.map(kilometer.elementit, elements.findById, opts)
           .then((elements) => {
               return Promise.map(elements, (element) => {
-                return rails.findAllById(element.raiteet).then((rails) => {
+                // Elements often refer to same rails over and over again so the rails may
+                // have been loaded already, hence checking if the list contains objects or ids.
+                const railIds = _.map(element.raiteet, (r) => _.isObject(r) ? r.tunniste : r);
+                return rails.findAllById(railIds).then((rails) => {
                     element.raiteet = rails;
                     return element;
                   });

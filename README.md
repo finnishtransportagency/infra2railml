@@ -167,4 +167,4 @@ The API provides us with elevation information for each rail. This is mapped in 
  
  In addition to the visualization XML, an HTML page visualization can also be generated for debug purposes or just as an alternative visualization. If enabled in the settings, these will appear as .html files alongside the data/visualization XML files.
  
- NOTE: Currently the source data is fetched from Infra API with the parameters `{ srsName: 'crs:84', presentation: 'diagram' }`. Having the coordinates in diagram format helps to make the visualization more understandable. If new data is being fetched (and visualized) in the future from the Infra API, it should also have the same (or consistent) settings.     
+ NOTE: Currently the source data is fetched from Infra API with the parameters `{ srsName: 'crs:84', presentation: 'diagram' }`. Having the coordinates in diagram presentation helps to make the visualization more understandable. If new data is being fetched (and visualized) in the future from the Infra API, it should also have the same (or consistent) settings.     

@@ -56,14 +56,14 @@ function marshall(baseType, index) {
         $('railml').append(infra);
 
         if (baseType === BaseType.RAILS && config.railml.visualize === true) {
-            // Calculate bounding box for visual elements
+            // calculate bounding box for visual elements
             const boundingBox = visualizationUtils.getBoundingBox(memo.visualElements);
 
             const visuals = infrastructureVis.marshall(baseType, results, boundingBox);
             $('railml').append(visuals);
 
             if(config.railml.debugVisualization === true) {
-                // Create a debug image
+                // create a debug image
                 const { createCanvas } = require('canvas');
                 const canvas = createCanvas(5000, 5000);
                 const fileNamePrefix = `Rails-${results.index.trackId}_${results.index.from}_${results.index.to}`;

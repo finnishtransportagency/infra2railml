@@ -1,11 +1,14 @@
 const _ = require('lodash');
 const elementUtils = require('./element-utils');
 
-// elementti.vaihde.tyyppi values for crossings in the API
-// rr = raideristeys
-// srr = sovitettu raideristeys
-// yrv = yksipuolinen risteysvaihde
-// krv = kaksipuolinen risteysvaihde
+/**
+ * Switch types (elementti.vaihde.tyyppi) values for crossings in the API
+ * 
+ * - rr = raideristeys
+ * - srr = sovitettu raideristeys
+ * - yrv = yksipuolinen risteysvaihde
+ * - krv = kaksipuolinen risteysvaihde
+ */
 const CROSSING_TYPES = ['rr', 'srr', 'yrv', 'krv'];
 
 /**

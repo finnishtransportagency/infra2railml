@@ -64,7 +64,7 @@ module.exports = {
         // NOTE: signal function not provided in the API, home signals must be fixed manually.
         const func = element.liikennepaikka === null ? SignalFunction.BLOCKING : SignalFunction.EXIT;
 
-        // TODO element.opastin.puoli (vasen/oikea): corresponding railML term?
+        // TODO element.opastin.puoli (vasen/oikea): no corresponding railML term?
 
         const $ = cheerio.load('<signal/>', config.cheerio);
         $('signal').attr('id', element.tunniste);

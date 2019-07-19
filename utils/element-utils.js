@@ -23,7 +23,7 @@ function getConnectingElement(position, elements) {
 }
 
 /**
- * Resolve reference from track begin/end connection to another track or switch connection.
+ * Resolve reference from track begin or end connection to another track or switch connection.
  * The connections determined here are to follow OpenTrack generated models where only the
  * parting switch direction is referenced by tracks and the straight direction references
  * are from track end to track beginning.
@@ -36,6 +36,7 @@ function getReference(railId, type, element) {
         y.mistaSuunta === 'nouseva' && y.minneSuunta === 'nouseva' && (y.mista === railId || y.minne === railId)
     );
 
+    // find all switch connections
     const etuTaka = _.find(nousevat, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'taka');
     const takaEtu = _.find(nousevat, (y) => y.mistaRooli === 'taka' && y.minneRooli === 'etu');
     const etuVasen = _.find(nousevat, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'vasen');
@@ -43,10 +44,12 @@ function getReference(railId, type, element) {
     const etuOikea = _.find(nousevat, (y) => y.mistaRooli === 'etu' && y.minneRooli === 'oikea');
     const oikeaEtu = _.find(nousevat, (y) => y.mistaRooli === 'oikea' && y.minneRooli === 'etu');
 
+    // ..or is it a crossing? find connections for the referenced track/direction
+    // Here be dragons, the crossings from API don't seem to provide the required connections?
     const bc = _.find(nousevat, (y) => y.mistaRooli === 'b' && y.minneRooli === 'c');
     const cb = _.find(nousevat, (y) => y.mistaRooli === 'c' && y.minneRooli === 'b');
 
-    // Straight is primary, left/right for side-tracks. BC/CB for non-continuous line of crossings.
+    // for switches straight is primary, left/right for side-tracks. BC/CB for non-continuous line of crossings.
     const yhteys = etuTaka || takaEtu || etuVasen || vasenEtu || etuOikea || oikeaEtu || bc || cb;
 
     if (!yhteys) {

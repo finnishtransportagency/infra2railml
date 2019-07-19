@@ -24,13 +24,13 @@ function getAbsolutePosition(sijainti) {
  *  M1         M2         M3          M4     (mileposts, i.e. track kilometers)
  *  |  1000    |   925    |   1000    |      (actual length between mileposts)
  * 
- *       A------------------P------B         (position P on rail A-B) 
- *     1+500              3+100  3+500
+ *       A-----------------P----B            (position P on rail A-B) 
+ *     1+500             3+100 3+500
  * ```
  * For P, pos = sum(M1.length, M2.length) - A.distance + P.distance
  * 
- * With above values, pos = (1000 + 925) - 500 + 100 = 1525,
- * while without correction ((2 * 1000) + 100) - 500 = 1600.
+ * With above values, pos = (1000 + 925) - 500 + 100 = 1525 meters,
+ * while without correction (1000 + 1000) - 500 + 100 = 1600 meters.
  */
 function getPosition(raideAlku, sijainti, kilometrit) {
 

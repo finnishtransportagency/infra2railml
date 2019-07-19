@@ -66,7 +66,7 @@ function getConnections(element) {
     const refOut = yhteys.minneRooli === 'c' ? yhteys.minne : yhteys.mista;
 
     // Max 3 connections. B-C line considered secondary and thus referenced by the crossing. Primary line
-    // is continuous and reference are between tracks, i.e. similar to straight direction of switch.
+    // is continuous and references are between tracks, i.e. similar to straight direction of switch.
     return [
         `<connection id="crci_${element.tunniste}" ref="tec_${refIn}" orientation="incoming" />`,
         `<connection id="crco_${element.tunniste}" ref="tbc_${refOut}" orientation="outgoing" />`

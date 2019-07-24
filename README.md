@@ -156,4 +156,15 @@ Speed limits are collected from each rail and nested as `track` children. The sp
 ### Gradient Changes
 
 The API provides us with elevation information for each rail. This is mapped in railML `gradientChange` elements by first calculating the corresponding slope angles based on distance and elevation change between each elevation point. However, forming a continuous line of these points in rail-to-rail manner seems quite a tedious task, so we've simply assumed most parellel rails to have same elevation enough closely. In general this should work, especially for single or dual tracks, but might produce inaccuracy on more complex areas where each rail may have different elevation and slope near the same track position.
-               
+ 
+ ## Visualization (for OpenTrack software)
+ 
+ The process of creating visualization railML XML happens alongside the creation of the data portion of the railML XML in the following order:
+ 
+ 1. As the railML XML for tracks is being generated, an array containing the information of all the elements to be visualized is also being constructed.
+ 2. A bounding box is then calculated that is big enough to contain all the elements to be visualized. This is used to determine the size of the visualization in OpenTrack software.
+ 3. Finally, the visualization railML XML is generated where the position of an element is determined by scaling its real world position with the CANVAS_SIZE_RATIO constant that is specifically optimized for OpenTrack software view.
+ 
+ In addition to the visualization XML, an HTML page visualization can also be generated for debug purposes or just as an alternative visualization. If enabled in the settings, these will appear as .html files alongside the data/visualization XML files.
+ 
+ NOTE: Currently the source data is fetched from Infra API with the parameters `{ srsName: 'crs:84', presentation: 'diagram' }`. Having the coordinates in diagram presentation helps to make the visualization more understandable. If new data is being fetched (and visualized) in the future from the Infra API, it should also have the same (or consistent) settings.     

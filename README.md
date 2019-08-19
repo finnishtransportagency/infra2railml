@@ -46,11 +46,26 @@ Stations sub-command generates a flat list of all stations in Finland.
 
 ## Implementation Details
 
-The following describes the most important implementation details, as seen necessary, to help understand certain decisions we've made during the development.
+The following describes the most important implementation details, to help understand the certain solutions and decisions we've made during the development.
+
+### Infra API Usage
+
+The application uses the following API resources (variable path members denoted by `$`):
+
+- `../elementit/$tunniste.json`
+- `../kilometrimerkit/$tunniste.json`
+- `../radat/$ratanumero/$ratakm.json`
+- `../raiteet/$tunniste.json`
+- `../rautatieliikennepaikat.json`
+- `../rautatieliikennepaikat/$tunniste.json`
+
+The data is fetched by loading the desired track kilometers, then all elements of each kilometer, and finally the rails related to each element. The objects are complemented with selected child-objects, i.e. plain ID references are translated to actual objects.
+
+For each run, the HTTP requests are cached on client side to avoid repetitive calls to API and the number of concurrent requests is also limited to avoid exhausting the API server. See [config](./config.js) for related settings.
 
 ### Naming Conventions
 
-The API and railML terminology is overlapping but in the API everything is given in Finnish. Hence, to avoid confusion, Finnish terms are generally used to refer to API structrues and variables, while English is used for railML and general code.
+The API and railML terminology is overlapping but in the API everything is given in Finnish. Hence, to avoid confusion, Finnish terms are generally used to refer to API structures and variables, while English is used for railML and general code.
 
 ### Terminology Mapping
 

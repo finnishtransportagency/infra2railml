@@ -26,6 +26,8 @@ A command-line tool for converting selected data sets from the [Railway Infrastr
 - Confirm the `infra2railml` command is found in PATH (should output version number)
     - `infra2railml --version`
 
+*Notice: while we don't have an installer/executable package at the moment, the above instructions can also be used to set up the tool for end-users as well.*
+
 ## Usage
 
 For general usage and options, see `infra2railml --help`.
@@ -133,7 +135,7 @@ Generally, there are two ways a switch may be defined in the resulting railML:
 
     Notice: the switch could also be nested at the beginning of the `track` representing the rail `c-d`, which would not affect the resulting graph.
 
-1) The switch `s` is positioned at an arbitrary point `p` along the rail `a-b` which is considered continuous until the end `b`. The `switch` element must be nested under the `track` element representing rail `a-b` and contains a single `connection` child element that references the beginning of the `track` representing the rail `e-f`.
+1) The switch `s` is positioned at an arbitrary point `p` along the rail `a-b` which is considered continuous until the end `b`. The `switch` element must be nested under the `track` element representing rail `a-b` and contains a single `connection` child element that references the beginning of the `track` representing the rail `c-d`.
 
     ```
     a               p                  b
@@ -146,7 +148,7 @@ Generally, there are two ways a switch may be defined in the resulting railML:
 
 ### Crossings
 
-The Infra-API defines crossings as a sub-type of a switch, but in railML they are modelled using a separate `crossing` element. The conversion is somewhat problematic or even impossible because the API defines the crossing connections quite often as "non-breaking" for both directions. This means that there are only two individual rails involved, simply "running through" the crossing, instead of two incoming and two outgoing rails connected at the four points A, B, C and D. Also, depending on the crossing type, there is some variance how the connections are given. We can place the crossing along the rail of the other direction, e.g. A-D, without referring the rail explicitly (the `crossing` is simly nested as a child of `track`) but for B-C we need references for both incoming and outgoing rail end and begin, which are often not given in the data provided by the API.
+The Infra-API defines crossings as a sub-type of a switch, but in railML they are modelled using a separate `crossing` element. The conversion is somewhat problematic or even impossible because the API defines the crossing connections quite often as "non-breaking" for both directions. This means that there are only two individual rails involved, simply "running through" the crossing, instead of two incoming and two outgoing rails connected at the four points A, B, C and D. Also, depending on the crossing type, there is some variance how the connections are given. We can place the crossing along the rail of the other direction, e.g. A-D, without referring the rail explicitly (the `crossing` is simply nested as a child of `track`) but for B-C we need references for both incoming and outgoing rail end and begin, which are often not given in the data provided by the API.
 
 For example, to model a simple crossing on rail `a-b` at position `p`, the railML `crossing` element can be nested under the `track` that represents `a-b`. However, to keep the graph continuous the `crossing` also requires two `connection` child elements that reference the end of rail `c-d` and the beginning of rail `e-f`. However, the API often defines the connections as a single rail `c-f`.
 

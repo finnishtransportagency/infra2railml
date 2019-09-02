@@ -2,6 +2,8 @@
 
 A command-line tool for converting selected data sets from the [Railway Infrastructrure API](https://rata.digitraffic.fi/infra-api/0.3) to [railML v2.2](https://www.railml.org) format. The resulting railML models have been tested with [OpenTrack](http://www.opentrack.ch/) simulation software.
 
+The [Railway Infrastructrure API](https://rata.digitraffic.fi/infra-api/0.3) is an open data API provided by the [Traffic Management Finland Group](https://tmfg.fi/en) as a part of the [Digitraffic](https://www.digitraffic.fi/en/) service. The railway infrastructure data is licensed under the [Creative Commons 4.0 BY license](https://www.digitraffic.fi/en/terms-of-service/). 
+
 ## Development Environment
 
 ### Tools

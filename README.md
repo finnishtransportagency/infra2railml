@@ -28,7 +28,7 @@ use Command Prompt, Powershell or Git Bash to issue the commands. The latter is
 likely most compatible with these instructions.
 
 - Clone this repository somewhere on your disk
-    - `git clone git@github.com:finnishtransportagency/infra2railml.git`
+    - `git clone https://github.com/finnishtransportagency/infra2railml.git`
 - Switch to infra2railml directory
     - `cd infra2railml`
 - With Nodejs/npm, install the required dependencies

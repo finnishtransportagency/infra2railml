@@ -23,7 +23,8 @@ const throttleAdapter = throttleAdapterEnhancer(cacheAdapter, config.http.thrott
 
 const opts = {
     adapter: throttleAdapter,
-    timeout: config.http.timeout
+    timeout: config.http.timeout,
+    headers: {'accept-encoding': 'gzip'}
 };
 
 const client = axios.create(opts)

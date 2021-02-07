@@ -17,6 +17,7 @@
 const axios = require('axios');
 const { cacheAdapterEnhancer, throttleAdapterEnhancer } = require('axios-extensions');
 const config = require('../config');
+const https = require('https');
 
 const cacheAdapter = cacheAdapterEnhancer(axios.defaults.adapter);
 const throttleAdapter = throttleAdapterEnhancer(cacheAdapter, config.http.throttle);
@@ -24,6 +25,7 @@ const throttleAdapter = throttleAdapterEnhancer(cacheAdapter, config.http.thrott
 const opts = {
     adapter: throttleAdapter,
     timeout: config.http.timeout,
+    httpsAgent = new https.Agent({ keepAlive: true }),
     headers: {'accept-encoding': 'gzip'}
 };
 

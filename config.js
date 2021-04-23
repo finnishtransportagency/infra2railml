@@ -28,7 +28,7 @@ module.exports = {
     },
     http: {
         // The API is sometimes very slow..
-        timeout: 60000,
+        timeout: 300000,
         throttle: {
             // cache threshold for new fetch
             threshold: 15 * 60 * 1000

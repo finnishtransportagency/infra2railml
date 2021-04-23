@@ -27,7 +27,6 @@ function findById(id) {
 
     const options = {
         params: { srsName: 'crs:84', presentation: 'diagram' },
-        // transformResponse: (data) => _.first(JSON.parse(data))
     };
 
     return http.get(url, options)

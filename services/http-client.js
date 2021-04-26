@@ -29,15 +29,15 @@ const opts = {
 	headers: {'accept-encoding': 'gzip'}
 };
 
+const client = axios.create(opts)
+
 // Retry request three times to prevent 503 error and therefor corrupted data
 const axiosRetry = require('axios-retry');
-axiosRetry(axios, {
+axiosRetry(client, {
     retries: 3,
     shouldResetTimeout: true,
     retryCondition: (_error) => true // retry no matter what
   });
-
-const client = axios.create(opts)
 
 client.interceptors.request.use(
     (conf) => {

@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/finnishtransportagency/infra2railml#readme",
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.19.1",
     "axios-extensions": "^3.0.6",
     "axios-retry": "3.1.9", 
     "bluebird": "^3.5.5",

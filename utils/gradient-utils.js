@@ -78,7 +78,7 @@ function slopes(korkeuspisteet, kilometrit, kaltevuudet) {
     const next = _.first(tail);
 
     const x = positionUtils.getPosition(head.sijainti, next.sijainti, kilometrit);
-    const y = next.korkeus - head.korkeus;
+    const y = next.korkeusN60 - head.korkeusN60;
     
     // Zero values mean "no change", thus no need for gradientChange element at this point.
     // The x below zero might happen if we're missing kilometers due to 404 from API.

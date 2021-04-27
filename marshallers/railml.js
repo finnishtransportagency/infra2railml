@@ -14,6 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+const formatter = require('xml-formatter');
 const _ = require('lodash');
 const cheerio = require('cheerio');
 const track = require('./track');
@@ -79,7 +80,7 @@ function marshall(baseType, index) {
             $('railml').append(visuals);
 
             if(config.railml.debugVisualization === true) {
-                // create a debug image
+                // creatnodee a debug image
                 const { createCanvas } = require('canvas');
                 const canvas = createCanvas(5000, 5000);
                 const fileNamePrefix = `Rails-${results.index.trackId}_${results.index.from}_${results.index.to}`;
@@ -87,7 +88,7 @@ function marshall(baseType, index) {
             }
         }
 
-        resolve($.xml());
+        resolve(formatter($.xml()));
     });
 }
 

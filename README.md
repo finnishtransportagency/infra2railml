@@ -1,6 +1,8 @@
 # Infra-API transformation to railML v2.2
 
+----
 Note! This application has not been developed for a while and might therefore not work correctly. The development of the application is currently assessed. 
+----
 
 A command-line tool for converting selected data sets from the [Railway Infrastructrure API](https://rata.digitraffic.fi/infra-api/0.3) to [railML v2.2](https://www.railml.org) format. The resulting railML models have been tested with [OpenTrack](http://www.opentrack.ch/) simulation software.
 

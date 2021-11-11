@@ -15,6 +15,7 @@
  * the License.
  */
 const axios = require('axios');
+const https = require('https')
 const { cacheAdapterEnhancer, throttleAdapterEnhancer } = require('axios-extensions');
 const config = require('../config');
 
@@ -23,11 +24,12 @@ const throttleAdapter = throttleAdapterEnhancer(cacheAdapter, config.http.thrott
 
 const opts = {
     adapter: throttleAdapter,
-    timeout: config.http.timeout
+    timeout: config.http.timeout,
+	httpsAgent: new https.Agent({ keepAlive: true }),
+	headers: {'accept-encoding': 'gzip'}
 };
 
 const client = axios.create(opts)
-
 client.interceptors.request.use(
     (conf) => {
         conf.metadata = { startTime: new Date() };

@@ -1,0 +1,32 @@
+{
+  "name": "infra2railml",
+  "version": "1.0.1",
+  "description": "rata.digitraffic.fi/infra-api transformation to railML v2.2.",
+  "main": "index.js",
+  "bin": {
+    "infra2railml": "bin/infra2railml"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finnishtransportagency/infra2railml.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/finnishtransportagency/infra2railml/issues"
+  },
+  "homepage": "https://github.com/finnishtransportagency/infra2railml#readme",
+  "dependencies": {
+    "axios": "^0.21.2",
+    "axios-extensions": "^3.0.6",
+    "bluebird": "^3.5.5",
+    "canvas": "^2.5.0",
+    "cheerio": "^1.0.0-rc.2",
+    "commander": "^2.19.0",
+    "lodash": "^4.17.21",
+    "xml-formatter": "^2.5.1"
+  }
+}

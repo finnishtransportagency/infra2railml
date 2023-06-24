@@ -23,7 +23,7 @@
     "axios": "^0.21.2",
     "axios-extensions": "^3.0.6",
     "bluebird": "^3.5.5",
-    "canvas": "^2.5.0",
+    "canvas": "^2.11.2",
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.19.0",
     "lodash": "^4.17.21",
